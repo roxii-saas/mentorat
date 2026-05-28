@@ -3,6 +3,9 @@
 :root {
   --background: #fdf8f3;
   --foreground: #1a1a1a;
+  --brand: #c97d4e;
+  --brand-dark: #a85e35;
+  --brand-light: #f5d5b8;
 }
 
 @theme inline {
@@ -15,12 +18,129 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Override dark mode — questo è un sito business, no dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #fdf8f3;
     --foreground: #1a1a1a;
   }
+}
+
+/* === ANIMAZIONI 3D === */
+
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+  50% { transform: translateY(-15px) rotateX(2deg) rotateY(-2deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes float-card-1 {
+  0%, 100% { transform: translate(0, 0) rotate(-3deg); }
+  50% { transform: translate(-8px, -12px) rotate(-5deg); }
+}
+
+@keyframes float-card-2 {
+  0%, 100% { transform: translate(0, 0) rotate(2deg); }
+  50% { transform: translate(8px, -10px) rotate(4deg); }
+}
+
+@keyframes float-card-3 {
+  0%, 100% { transform: translate(0, 0) rotate(1deg); }
+  50% { transform: translate(-6px, -14px) rotate(-1deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(201, 125, 78, 0.3), 0 0 40px rgba(201, 125, 78, 0.1); }
+  50% { box-shadow: 0 0 30px rgba(201, 125, 78, 0.5), 0 0 60px rgba(201, 125, 78, 0.2); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes counter-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-float-3d { animation: float-3d 6s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 5s ease-in-out infinite; }
+.animate-float-card-1 { animation: float-card-1 4s ease-in-out infinite; }
+.animate-float-card-2 { animation: float-card-2 5s ease-in-out infinite; }
+.animate-float-card-3 { animation: float-card-3 4.5s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-fade-up { animation: fade-up 0.8s ease-out forwards; }
+.animate-blob { animation: blob 10s ease-in-out infinite; }
+.animate-marquee { animation: marquee 30s linear infinite; }
+.animate-counter-pulse { animation: counter-pulse 2s ease-in-out infinite; }
+
+.shimmer-text {
+  background: linear-gradient(90deg, #c97d4e 0%, #f5d5b8 50%, #c97d4e 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* 3D perspective utilities */
+.perspective-1000 { perspective: 1000px; }
+.preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+
+/* Hover 3D card */
+.tilt-card {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+.tilt-card:hover {
+  transform: perspective(1000px) rotateY(-5deg) rotateX(5deg) translateY(-8px);
+}
+
+/* Scroll smooth */
+html { scroll-behavior: smooth; }
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Reveal on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
