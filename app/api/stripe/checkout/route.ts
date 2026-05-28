@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     line_items: [
       {
         price_data: {
-          currency: settings.currency ?? 'eur',
+          currency: (settings.currency ?? 'eur').toLowerCase(),
           product_data: {
             name: settings.product_name ?? 'Mentorat Premium cu Roxana',
             description: settings.product_description ?? '',

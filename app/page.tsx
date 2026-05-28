@@ -402,38 +402,115 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════ CUM FUNCȚIONEAZĂ ═══════════ */}
-      <section id="cum-functioneaza" className="py-20 sm:py-24 px-4 sm:px-6 max-w-4xl mx-auto reveal">
-        <div className="text-center mb-12 sm:mb-14">
+      {/* ═══════════ CUM FUNCȚIONEAZĂ — TIMELINE ═══════════ */}
+      <section id="cum-functioneaza" className="py-20 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto reveal">
+        <div className="text-center mb-12 sm:mb-16">
           <span className="text-[#c97d4e] font-sans font-bold text-xs tracking-[0.2em] uppercase">Procesul în 4 pași</span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold mt-3 text-gray-900">Cum funcționează?</h2>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold mt-3 text-gray-900">
+            Cum funcționează?
+          </h2>
+          <p className="text-gray-600 font-sans text-base sm:text-lg mt-3 max-w-xl mx-auto">
+            De la prima clicătură la primii 3.000€ — totul într-un flux clar și simplu.
+          </p>
         </div>
 
-        <div className="relative space-y-4 sm:space-y-5">
-          {/* Linea verticale connettiva */}
-          <div className="absolute left-8 sm:left-9 top-12 bottom-12 w-0.5 bg-gradient-to-b from-[#c97d4e] via-[#c97d4e]/40 to-transparent hidden sm:block" />
+        {/* TIMELINE */}
+        <div className="relative">
+          {/* Linea verticale centrale (desktop) / sinistra (mobile) */}
+          <div className="absolute left-7 md:left-1/2 md:-translate-x-1/2 top-2 bottom-2 w-1 bg-gradient-to-b from-[#c97d4e] via-[#c97d4e]/50 to-[#c97d4e]/10 rounded-full" />
 
-          {[
-            { step: '01', title: 'Cumperi programul', desc: 'Plată securizată cu Stripe. Acces instant în platformă pe email — în mai puțin de 60 secunde.', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-            { step: '02', title: 'Programezi prima sesiune', desc: 'Intri în platformă și alegi direct din calendarul Roxanei un slot care îți convine.', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-            { step: '03', title: 'Primești strategia personalizată', desc: 'Roxana analizează situația ta concretă și îți creează un plan specific, pe măsura ta.', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-            { step: '04', title: 'Implementezi și crești', desc: 'Urmezi pașii cu suport continuu prin platformă. Ajungi la 3.000€/lună în maxim 6 luni.', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
-          ].map((item, i) => (
-            <div key={i} className="relative flex items-start sm:items-center gap-4 sm:gap-6 bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100 hover:border-[#c97d4e]/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-              <div className="flex-shrink-0 w-16 h-16 sm:w-[68px] sm:h-[68px] bg-gradient-to-br from-[#c97d4e] to-[#a85e35] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform z-10">
-                <span className="text-white font-serif font-bold text-lg sm:text-xl">{item.step}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#c97d4e" strokeWidth="1.8" className="w-4 h-4 flex-shrink-0 hidden sm:block">
-                    <path d={item.icon} strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <h3 className="font-serif font-bold text-lg sm:text-xl text-gray-900">{item.title}</h3>
+          <div className="space-y-10 sm:space-y-12">
+            {[
+              {
+                step: '01',
+                time: 'Ziua 1 · 60 secunde',
+                title: 'Cumperi programul',
+                desc: 'Plată securizată prin Stripe. Primești instant pe email datele de acces la platforma de mentorat.',
+                icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+                color: 'from-blue-400 to-indigo-500',
+              },
+              {
+                step: '02',
+                time: 'Ziua 1 · în 5 minute',
+                title: 'Programezi prima sesiune',
+                desc: 'Intri în platformă, alegi din calendarul Roxanei un slot care îți convine. Confirmare instantanee.',
+                icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+                color: 'from-purple-400 to-pink-500',
+              },
+              {
+                step: '03',
+                time: 'Sesiunea ta · 60 minute',
+                title: 'Primești strategia personalizată',
+                desc: 'Roxana analizează situația ta concretă și îți creează un plan specific, pas cu pas, pe măsura ta.',
+                icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
+                color: 'from-amber-400 to-orange-500',
+              },
+              {
+                step: '04',
+                time: 'În următoarele 3-6 luni',
+                title: 'Implementezi și crești',
+                desc: 'Urmezi pașii cu suport continuu prin platformă. Ajungi la 3.000€+/lună și depășești-ți obiectivele.',
+                icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+                color: 'from-emerald-400 to-teal-500',
+              },
+            ].map((item, i) => {
+              const isRight = i % 2 === 1
+              return (
+                <div key={i} className={`relative flex items-center gap-4 md:gap-8 ${isRight ? 'md:flex-row-reverse' : ''}`}>
+
+                  {/* Step indicator (number bubble) */}
+                  <div className="absolute left-7 md:left-1/2 md:-translate-x-1/2 -translate-y-0 z-10">
+                    <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center shadow-xl border-4 border-[#fdf8f3] animate-pulse-glow`}>
+                      <span className="text-white font-serif font-bold text-lg">{item.step}</span>
+                    </div>
+                  </div>
+
+                  {/* Spazio per la linea su mobile */}
+                  <div className="w-14 md:w-1/2 flex-shrink-0 md:flex-shrink" />
+
+                  {/* Card content */}
+                  <div className={`flex-1 md:w-1/2 ${isRight ? 'md:pr-12' : 'md:pl-12'} pl-2 md:pl-12`}>
+                    <div className={`bg-white rounded-2xl p-5 sm:p-6 shadow-md border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group ${isRight ? 'md:text-right' : ''}`}>
+                      <div className={`flex items-center gap-2 mb-2 ${isRight ? 'md:flex-row-reverse md:justify-start' : ''}`}>
+                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-4 h-4">
+                            <path d={item.icon} strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <span className="text-xs font-sans font-bold text-[#c97d4e] uppercase tracking-wider">
+                          {item.time}
+                        </span>
+                      </div>
+                      <h3 className="font-serif font-bold text-lg sm:text-xl text-gray-900 mb-2">{item.title}</h3>
+                      <p className="text-gray-600 font-sans text-sm leading-relaxed">{item.desc}</p>
+                    </div>
+
+                    {/* Connecting arrow (only desktop) */}
+                    <div className={`hidden md:block absolute top-1/2 -translate-y-1/2 ${isRight ? 'right-1/2 mr-7' : 'left-1/2 ml-7'}`}>
+                      <svg viewBox="0 0 24 24" fill="#c97d4e" className={`w-4 h-4 ${isRight ? 'rotate-180' : ''}`}>
+                        <path d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-600 font-sans text-sm sm:text-base leading-relaxed">{item.desc}</p>
+              )
+            })}
+          </div>
+
+          {/* Final flag */}
+          <div className="relative mt-12 flex justify-center">
+            <div className="absolute left-7 md:left-1/2 md:-translate-x-1/2 -top-4 z-10">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#c97d4e] to-[#a85e35] flex items-center justify-center shadow-xl border-4 border-[#fdf8f3]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-6 h-6">
+                  <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
             </div>
-          ))}
+            <div className="ml-20 md:ml-0 md:mt-16 inline-flex items-center gap-2 bg-gradient-to-r from-[#c97d4e] to-[#a85e35] text-white font-sans font-bold px-6 py-3 rounded-full shadow-xl">
+              <span>🎉</span>
+              Ai ajuns la 3.000€/lună!
+            </div>
+          </div>
         </div>
       </section>
 
@@ -564,8 +641,7 @@ export default function LandingPage() {
                 </div>
                 <p className="text-white/80 font-sans text-sm mb-1">Plătești doar</p>
                 <div className="flex items-baseline justify-center gap-2 mb-1">
-                  <p className="text-6xl sm:text-7xl font-serif font-bold">{settings?.price_amount ?? 297}</p>
-                  <p className="text-3xl font-serif font-bold">€</p>
+                  <p className="text-5xl sm:text-7xl font-serif font-bold">{price}</p>
                 </div>
                 <p className="text-white/70 text-sm font-sans mb-2">o singură plată</p>
                 <p className="text-white/90 text-xs font-sans font-semibold bg-white/10 rounded-full py-1.5 px-3 inline-block self-center mb-6">

@@ -52,20 +52,33 @@ export default function SetariPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <h2 className="font-bold font-serif mb-4">Preț și produs</h2>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Preț (€)</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-sans">€</span>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Preț</label>
                 <input
                   type="number"
                   min="1"
                   value={settings.price_amount}
                   onChange={e => setSettings(s => ({ ...s, price_amount: parseInt(e.target.value) || 0 }))}
-                  className="w-full border border-gray-200 rounded-xl pl-8 pr-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e]"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e]"
                 />
               </div>
-              <p className="text-xs text-gray-400 font-sans mt-1">Prețul va fi actualizat automat pe landing page și în Stripe.</p>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Monedă</label>
+                <select
+                  value={settings.currency}
+                  onChange={e => setSettings(s => ({ ...s, currency: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e] bg-white"
+                >
+                  <option value="eur">EUR · Euro (€)</option>
+                  <option value="ron">RON · Leu românesc (lei)</option>
+                  <option value="usd">USD · Dolar american ($)</option>
+                  <option value="gbp">GBP · Liră sterlină (£)</option>
+                  <option value="chf">CHF · Franc elvețian</option>
+                </select>
+              </div>
             </div>
+            <p className="text-xs text-gray-400 font-sans">Prețul și moneda se aplică automat pe landing page și în Stripe.</p>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Nume produs</label>
               <input type="text" value={settings.product_name}
@@ -104,7 +117,7 @@ export default function SetariPage() {
           <p className="text-sm font-sans text-gray-600">
             <strong>Preview buton landing:</strong>{' '}
             {settings.sales_active
-              ? `"Vreau să mă transform acum — ${settings.price_amount}€"`
+              ? `"Vreau să mă transform — ${new Intl.NumberFormat('ro-RO', { style: 'currency', currency: settings.currency.toUpperCase() }).format(settings.price_amount)}"`
               : '"Lista de așteptare — în curând"'}
           </p>
         </div>
