@@ -26,7 +26,15 @@ export default function LoginPage() {
       return
     }
 
-    // Determina ruolo e redirect
+    // Prova prima dai metadata (più veloce, non dipende da RLS)
+    const metaRole = data.user.user_metadata?.role
+
+    if (metaRole === 'admin') {
+      router.push('/admin')
+      return
+    }
+
+    // Fallback: leggi dalla tabella profiles
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
