@@ -21,10 +21,10 @@ export default async function DashboardHome() {
   const firstName = profile?.full_name?.split(' ')[0] || 'prietenă'
 
   const statusMap: Record<string, { label: string; color: string }> = {
-    pending: { label: 'În așteptare', color: 'bg-amber-100 text-amber-700' },
-    confirmed: { label: 'Confirmată', color: 'bg-green-100 text-green-700' },
-    completed: { label: 'Finalizată', color: 'bg-blue-100 text-blue-700' },
-    cancelled: { label: 'Anulată', color: 'bg-red-100 text-red-600' },
+    pending: { label: 'În așteptare', color: 'badge-pending' },
+    confirmed: { label: 'Confirmată', color: 'badge-confirmed' },
+    completed: { label: 'Finalizată', color: 'badge-completed' },
+    cancelled: { label: 'Anulată', color: 'badge-cancelled' },
   }
 
   return (

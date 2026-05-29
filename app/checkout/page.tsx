@@ -68,7 +68,7 @@ export default function CheckoutPage() {
   const appearance = {
     theme: 'stripe' as const,
     variables: {
-      colorPrimary: '#c97d4e',
+      colorPrimary: "#ED03E9",
       colorBackground: '#ffffff',
       colorText: '#1a1a1a',
       colorDanger: '#ef4444',
