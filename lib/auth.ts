@@ -6,16 +6,16 @@ export async function requireAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Controlla prima i metadata (non dipendono da RLS)
-  if (user.user_metadata?.role === 'admin') return user
+  // Usa la funzione is_admin() di Postgres (SECURITY DEFINER)
+  const { data: isAdmin } = await supabase.rpc('is_admin')
+  if (!isAdmin) redirect('/dashboard')
 
-  // Fallback: tabella profiles
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  return user
+}
 
-  if (profile?.role !== 'admin') redirect('/dashboard')
+export async function requireAuth() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
   return user
 }

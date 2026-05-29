@@ -15,22 +15,20 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch (err) {
-    console.error('Webhook signature verification failed:', err)
+    console.error('Webhook signature failed:', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session
+  if (event.type === 'payment_intent.succeeded') {
+    const pi = event.data.object as Stripe.PaymentIntent
 
-    if (session.payment_status !== 'paid') return NextResponse.json({ received: true })
+    const email = pi.metadata?.customer_email || pi.receipt_email
+    const fullName = pi.metadata?.customer_name || ''
 
-    const email = session.customer_details?.email
-    if (!email) return NextResponse.json({ error: 'No email' }, { status: 400 })
-
-    const fullName =
-      session.custom_fields?.find(f => f.key === 'full_name')?.text?.value ||
-      session.customer_details?.name ||
-      ''
+    if (!email) {
+      console.error('No email in payment intent:', pi.id)
+      return NextResponse.json({ error: 'No email' }, { status: 400 })
+    }
 
     const supabase = createAdminClient()
 
@@ -39,26 +37,20 @@ export async function POST(req: Request) {
     const existingUser = existingUsers?.users?.find(u => u.email === email)
 
     if (existingUser) {
-      // Aggiorna solo il purchased_at se già esiste
       await supabase.from('profiles').update({
         purchased_at: new Date().toISOString(),
-        stripe_customer_id: session.customer as string,
-        stripe_payment_intent_id: session.payment_intent as string,
+        stripe_payment_intent_id: pi.id,
       }).eq('id', existingUser.id)
       return NextResponse.json({ received: true })
     }
 
-    // Crea nuovo utente
     const tempPassword = generatePassword(14)
 
     const { data: newUser, error } = await supabase.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
-      user_metadata: {
-        full_name: fullName,
-        role: 'client',
-      },
+      user_metadata: { full_name: fullName, role: 'client' },
     })
 
     if (error || !newUser.user) {
@@ -66,15 +58,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Could not create user' }, { status: 500 })
     }
 
-    // Aggiorna profilo con dati Stripe
     await supabase.from('profiles').update({
       full_name: fullName,
-      stripe_customer_id: session.customer as string,
-      stripe_payment_intent_id: session.payment_intent as string,
+      stripe_payment_intent_id: pi.id,
       purchased_at: new Date().toISOString(),
     }).eq('id', newUser.user.id)
 
-    // Manda email di benvenuto con Resend
     await sendWelcomeEmail({ to: email, name: fullName || email, password: tempPassword })
   }
 

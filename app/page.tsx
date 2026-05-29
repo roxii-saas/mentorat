@@ -15,7 +15,7 @@ interface Settings {
 
 export default function LandingPage() {
   const [settings, setSettings] = useState<Settings | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [spotsLeft] = useState(3)
@@ -55,13 +55,9 @@ export default function LandingPage() {
     }
   }, [])
 
-  const handleBuy = async () => {
+  const handleBuy = () => {
     if (!settings?.sales_active) return
-    setLoading(true)
-    const res = await fetch('/api/stripe/checkout', { method: 'POST' })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
-    else setLoading(false)
+    window.location.href = '/checkout'
   }
 
   const price = settings ? formatPrice(settings.price_amount, settings.currency.toUpperCase()) : '297 €'
