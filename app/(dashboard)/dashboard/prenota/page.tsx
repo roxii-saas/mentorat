@@ -79,12 +79,12 @@ export default function PrenotaPage() {
         {/* Slots */}
         <div className="lg:col-span-2 space-y-3">
           {loading ? (
-            <div className="bg-white rounded-2xl p-10 text-center text-gray-400 font-sans border border-gray-100">
+            <div className="admin-card rounded-2xl p-10 text-center text-gray-400 font-sans border border-gray-100">
               <div className="w-8 h-8 border-3 border-[#c97d4e] border-t-transparent rounded-full animate-spin mx-auto mb-3" style={{ borderWidth: 3 }} />
               Se încarcă disponibilitatea...
             </div>
           ) : Object.keys(slots).length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
+            <div className="admin-card rounded-2xl border border-gray-100 p-10 text-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" className="w-14 h-14 mx-auto mb-3">
                 <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -92,7 +92,7 @@ export default function PrenotaPage() {
               <p className="text-gray-400 text-sm font-sans">Verifică din nou în curând sau contactează Roxana.</p>
             </div>
           ) : Object.entries(slots).map(([date, daySlots]) => (
-            <div key={date} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+            <div key={date} className="admin-card rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
               <h3 className="font-serif font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm sm:text-base">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#c97d4e" strokeWidth="2" className="w-4 h-4">
                   <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>

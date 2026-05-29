@@ -24,6 +24,40 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ── DASHBOARD THEME CLASSES ── */
+/* Light (default) */
+.admin-card {
+  background: #ffffff;
+  border-color: #f0f0f0;
+}
+.admin-text-primary { color: #111827; }
+.admin-text-secondary { color: #374151; }
+.admin-text-muted { color: #6b7280; }
+.admin-input {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+/* Dark */
+.dark .admin-card {
+  background: #111827;
+  border-color: rgba(255,255,255,0.06);
+}
+.dark .admin-text-primary { color: #f9fafb; }
+.dark .admin-text-secondary { color: #d1d5db; }
+.dark .admin-text-muted { color: #6b7280; }
+.dark .admin-input {
+  background: #1f2937;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #f9fafb;
+}
+.dark .admin-input option { background: #1f2937; }
+
+/* Dashboard bg */
+.dashboard-bg { background: #f9fafb; }
+.dark .dashboard-bg { background: #030712; }
+
 /* Anti-zoom iOS: input font min 16px */
 input, select, textarea {
   font-size: 16px !important;

@@ -57,7 +57,7 @@ export default async function DashboardHome() {
           { label: 'Sesiuni viitoare', value: upcoming.length, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', color: 'from-purple-500 to-pink-600', bg: 'bg-purple-50' },
           { label: 'Zile ca membră', value: daysAsMember, icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z', color: 'from-[#c97d4e] to-[#a85e35]', bg: 'bg-orange-50' },
         ].map(card => (
-          <div key={card.label} className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <div key={card.label} className="admin-card rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
             <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center mb-3`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="none" className="w-5 h-5">
                 <path d={card.icon} fill={`url(#g${card.label.replace(/\s/g, '')})`} />
@@ -117,7 +117,7 @@ export default async function DashboardHome() {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-6 sm:p-8 text-center h-full flex flex-col items-center justify-center">
+            <div className="admin-card rounded-2xl border-2 border-dashed border-gray-200 p-6 sm:p-8 text-center h-full flex flex-col items-center justify-center">
               <div className="w-16 h-16 bg-[#c97d4e]/10 rounded-2xl flex items-center justify-center mb-4">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#c97d4e" strokeWidth="1.8" className="w-8 h-8">
                   <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
@@ -137,7 +137,7 @@ export default async function DashboardHome() {
         </div>
 
         {/* Progress circle */}
-        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+        <div className="admin-card rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
           <h3 className="font-serif font-semibold text-gray-800 mb-4">Progresul tău</h3>
           <div className="flex items-center justify-center my-2">
             <ProgressCircle completed={completed.length} total={Math.max(completed.length + upcoming.length, 1)} />
@@ -159,7 +159,7 @@ export default async function DashboardHome() {
 
       {/* Storico sessioni */}
       {bookings && bookings.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="admin-card rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-serif font-bold text-base sm:text-lg text-gray-900">Istoricul sesiunilor</h2>
             <span className="text-xs font-sans text-gray-400">{bookings.length} sesiuni</span>
