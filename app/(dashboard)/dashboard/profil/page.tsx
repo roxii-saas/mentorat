@@ -65,12 +65,12 @@ export default function ProfilPage() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Nume complet</label>
             <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e]" />
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 focus:border-[#ED03E9]" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Telefon</label>
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+40..."
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e]" />
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 focus:border-[#ED03E9]" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Email</label>
@@ -78,7 +78,7 @@ export default function ProfilPage() {
               className="w-full border border-gray-100 rounded-xl px-4 py-3 font-sans text-sm bg-gray-50 text-gray-400 cursor-not-allowed" />
           </div>
           <button type="submit" disabled={saving}
-            className="w-full bg-[#c97d4e] hover:bg-[#a85e35] text-white font-sans font-semibold py-3 rounded-xl transition-colors disabled:opacity-60">
+            className="w-full bg-[#ED03E9] hover:bg-[#a85e35] text-white font-sans font-semibold py-3 rounded-xl transition-colors disabled:opacity-60">
             {saved ? '✓ Salvat!' : saving ? 'Se salvează...' : 'Salvează modificările'}
           </button>
         </form>
@@ -90,7 +90,7 @@ export default function ProfilPage() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Parolă nouă</label>
             <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} minLength={8} required
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e]" />
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 focus:border-[#ED03E9]" />
           </div>
           {pwMsg && (
             <p className={`text-sm font-sans ${pwMsg.includes('succes') ? 'text-green-600' : 'text-red-600'}`}>{pwMsg}</p>

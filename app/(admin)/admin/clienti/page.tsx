@@ -36,7 +36,7 @@ export default async function ClientiPage() {
         {[
           { label: 'Totale', value: total, color: 'from-blue-500 to-indigo-600' },
           { label: 'Cu sesiuni', value: withBookings, color: 'from-green-500 to-emerald-600' },
-          { label: 'Noi luna aceasta', value: recent, color: 'from-[#c97d4e] to-[#a85e35]' },
+          { label: 'Noi luna aceasta', value: recent, color: 'from-[#ED03E9] to-[#B800BA]' },
         ].map(s => (
           <div key={s.label} className="bg-gray-900 rounded-2xl p-4 border border-white/5 text-center">
             <p className={`text-2xl sm:text-3xl font-serif font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>{s.value}</p>
@@ -70,7 +70,7 @@ export default async function ClientiPage() {
                   <tr key={client.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-gradient-to-br from-[#c97d4e] to-[#a85e35] rounded-full flex items-center justify-center text-white font-sans font-bold text-sm flex-shrink-0 shadow-md">
+                        <div className="w-9 h-9 bg-gradient-to-br from-[#ED03E9] to-[#B800BA] rounded-full flex items-center justify-center text-white font-sans font-bold text-sm flex-shrink-0 shadow-md">
                           {(client.full_name || client.email || '?')[0].toUpperCase()}
                         </div>
                         <p className="text-sm font-semibold text-white font-sans">{client.full_name || '—'}</p>
@@ -105,7 +105,7 @@ export default async function ClientiPage() {
             const hasPaid = !!client.purchased_at
             return (
               <div key={client.id} className="px-4 py-4 flex items-start gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#c97d4e] to-[#a85e35] rounded-full flex items-center justify-center text-white font-sans font-bold text-sm flex-shrink-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#ED03E9] to-[#B800BA] rounded-full flex items-center justify-center text-white font-sans font-bold text-sm flex-shrink-0">
                   {(client.full_name || client.email || '?')[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">

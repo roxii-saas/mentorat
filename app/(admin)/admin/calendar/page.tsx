@@ -104,9 +104,9 @@ export default function CalendarPage() {
             const dayB = bookings.filter(b => isSameDay(parseISO(b.scheduled_at), day))
             return (
               <div key={day.toISOString()}
-                className={`min-h-[64px] sm:min-h-[80px] border-b border-r border-white/5 p-1 sm:p-1.5 ${isToday(day) ? 'bg-[#c97d4e]/5' : ''}`}>
+                className={`min-h-[64px] sm:min-h-[80px] border-b border-r border-white/5 p-1 sm:p-1.5 ${isToday(day) ? 'bg-[#ED03E9]/5' : ''}`}>
                 <p className={`text-xs font-sans font-semibold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                  isToday(day) ? 'bg-[#c97d4e] text-white' : 'text-gray-500'
+                  isToday(day) ? 'bg-[#ED03E9] text-white' : 'text-gray-500'
                 }`}>{format(day, 'd')}</p>
                 <div className="space-y-0.5">
                   {dayB.map(b => (
@@ -141,7 +141,7 @@ export default function CalendarPage() {
             <div className="bg-gray-800 rounded-xl p-3.5 mb-4">
               <p className="font-semibold text-white font-sans text-sm">{selected.profiles?.full_name || selected.profiles?.email}</p>
               <p className="text-gray-400 text-xs font-sans mt-0.5">{selected.profiles?.email}</p>
-              <p className="text-[#c97d4e] text-xs font-sans mt-1 font-semibold">
+              <p className="text-[#ED03E9] text-xs font-sans mt-1 font-semibold">
                 {format(parseISO(selected.scheduled_at), "EEEE, d MMMM yyyy 'la' HH:mm", { locale: ro })}
               </p>
             </div>
@@ -158,18 +158,18 @@ export default function CalendarPage() {
                 <label className="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Link sesiune (Meet/Zoom)</label>
                 <input type="url" value={meetLink} onChange={e => setMeetLink(e.target.value)}
                   placeholder="https://meet.google.com/..."
-                  className="w-full bg-gray-800 border border-white/10 text-white rounded-xl px-4 py-2.5 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e]" />
+                  className="w-full bg-gray-800 border border-white/10 text-white rounded-xl px-4 py-2.5 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 focus:border-[#ED03E9]" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Note admin</label>
                 <textarea value={adminNotes} onChange={e => setAdminNotes(e.target.value)} rows={2}
-                  className="w-full bg-gray-800 border border-white/10 text-white rounded-xl px-4 py-2.5 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40 focus:border-[#c97d4e] resize-none" />
+                  className="w-full bg-gray-800 border border-white/10 text-white rounded-xl px-4 py-2.5 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 focus:border-[#ED03E9] resize-none" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <button onClick={saveBooking} disabled={saving}
-                className="col-span-2 bg-gradient-to-r from-[#c97d4e] to-[#a85e35] text-white font-sans font-semibold py-3 rounded-xl transition-all disabled:opacity-60 active:scale-95 shadow-md">
+                className="col-span-2 bg-gradient-to-r from-[#ED03E9] to-[#B800BA] text-white font-sans font-semibold py-3 rounded-xl transition-all disabled:opacity-60 active:scale-95 shadow-md">
                 {saving ? 'Se salvează...' : '✓ Confirmă & Salvează'}
               </button>
               {selected.status !== 'completed' && (

@@ -70,27 +70,27 @@ export default function DisponibilitatePage() {
     <div className="space-y-4 sm:space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold admin-text-primary">Disponibilitate</h1>
-          <p className="admin-text-muted font-sans text-sm mt-0.5">Setează slot-urile pentru sesiuni</p>
+          <h1 className="text-xl sm:text-2xl font-serif font-bold db-text">Disponibilitate</h1>
+          <p className="db-muted font-sans text-sm mt-0.5">Setează slot-urile pentru sesiuni</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="admin-card rounded-xl px-4 py-2 text-center border">
+          <div className="db-card rounded-xl px-4 py-2 text-center border">
             <p className="text-lg font-serif font-bold text-green-500">{totalFree}</p>
-            <p className="text-xs admin-text-muted font-sans">Libere</p>
+            <p className="text-xs db-muted font-sans">Libere</p>
           </div>
-          <div className="admin-card rounded-xl px-4 py-2 text-center border">
-            <p className="text-lg font-serif font-bold text-[#c97d4e]">{totalBooked}</p>
-            <p className="text-xs admin-text-muted font-sans">Rezervate</p>
+          <div className="db-card rounded-xl px-4 py-2 text-center border">
+            <p className="text-lg font-serif font-bold text-[#ED03E9]">{totalBooked}</p>
+            <p className="text-xs db-muted font-sans">Rezervate</p>
           </div>
         </div>
       </div>
 
       {/* Add form */}
-      <div className="admin-card rounded-2xl p-5 sm:p-6">
+      <div className="db-card rounded-2xl p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif font-bold admin-text-primary text-base sm:text-lg">Adaugă slot nou</h2>
+          <h2 className="font-serif font-bold db-text text-base sm:text-lg">Adaugă slot nou</h2>
           <button type="button" onClick={() => { setBulkMode(!bulkMode); setBulkDays([]) }}
-            className="text-xs font-sans text-[#c97d4e] hover:underline">
+            className="text-xs font-sans text-[#ED03E9] hover:underline">
             {bulkMode ? 'Mod simplu' : 'Mai multe zile'}
           </button>
         </div>
@@ -98,23 +98,23 @@ export default function DisponibilitatePage() {
         <div className={`grid gap-4 mb-4 ${bulkMode ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
           {!bulkMode && (
             <div>
-              <label className="block text-sm font-semibold admin-text-secondary mb-1.5 font-sans">Data</label>
+              <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Data</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="admin-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40" />
+                className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40" />
             </div>
           )}
           <div>
-            <label className="block text-sm font-semibold admin-text-secondary mb-1.5 font-sans">Ora de start</label>
+            <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Ora de start</label>
             <select value={startTime} onChange={e => setStartTime(e.target.value)}
-              className="admin-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40">
+              className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40">
               {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold admin-text-secondary mb-1.5 font-sans">Ora de final</label>
+            <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Ora de final</label>
             <select value={endTime} onChange={e => setEndTime(e.target.value)}
-              className="admin-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/40">
+              className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40">
               {TIMES.filter(t => t > startTime).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -122,14 +122,14 @@ export default function DisponibilitatePage() {
 
         {bulkMode && (
           <div className="mb-4">
-            <p className="text-sm font-semibold admin-text-secondary mb-2 font-sans">Selectează zilele:</p>
+            <p className="text-sm font-semibold db-text2 mb-2 font-sans">Selectează zilele:</p>
             <div className="flex flex-wrap gap-2">
               {next14.map(day => (
                 <button key={day} type="button" onClick={() => toggleDay(day)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-sans font-semibold border-2 transition-all active:scale-95 ${
                     bulkDays.includes(day)
-                      ? 'border-[#c97d4e] bg-[#c97d4e] text-white'
-                      : 'border-gray-200 dark:border-white/10 admin-text-secondary hover:border-[#c97d4e]/50'
+                      ? 'border-[#ED03E9] bg-[#ED03E9] text-white'
+                      : 'border-gray-200 border-gray-200 db-text2 hover:border-[#ED03E9]/50'
                   }`}>
                   {format(parseISO(day), 'EEE d MMM', { locale: ro })}
                 </button>
@@ -138,11 +138,11 @@ export default function DisponibilitatePage() {
           </div>
         )}
 
-        {error && <p className="text-red-500 text-sm font-sans mb-3 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-xl">{error}</p>}
+        {error && <p className="text-red-500 text-sm font-sans mb-3 bg-red-50 bg-red-50 px-4 py-2 rounded-xl">{error}</p>}
 
         <button type="button" onClick={addSlot}
           disabled={adding || (!bulkMode && !date) || (bulkMode && bulkDays.length === 0)}
-          className="flex items-center gap-2 bg-gradient-to-r from-[#c97d4e] to-[#a85e35] text-white font-sans font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50 shadow-md hover:shadow-lg active:scale-95 transition-all">
+          className="flex items-center gap-2 bg-gradient-to-r from-[#ED03E9] to-[#B800BA] text-white font-sans font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50 shadow-md hover:shadow-lg active:scale-95 transition-all">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
             <path d="M12 5v14M5 12h14" strokeLinecap="round"/>
           </svg>
@@ -153,32 +153,32 @@ export default function DisponibilitatePage() {
       {/* Slots list */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#c97d4e] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#ED03E9] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : Object.keys(slots).length === 0 ? (
-        <div className="admin-card rounded-2xl p-10 text-center admin-text-muted font-sans text-sm">
+        <div className="db-card rounded-2xl p-10 text-center db-muted font-sans text-sm">
           Nu există slot-uri. Adaugă unul mai sus.
         </div>
       ) : (
         <div className="space-y-3">
           {Object.entries(slots).map(([d, daySlots]) => (
-            <div key={d} className="admin-card rounded-2xl p-4 sm:p-5">
-              <h3 className="font-serif font-semibold admin-text-primary mb-3 text-sm sm:text-base capitalize">
+            <div key={d} className="db-card rounded-2xl p-4 sm:p-5">
+              <h3 className="font-serif font-semibold db-text mb-3 text-sm sm:text-base capitalize">
                 {format(parseISO(d), "EEEE, d MMMM yyyy", { locale: ro })}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {daySlots.map(slot => (
                   <div key={slot.id} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-sans border transition-colors ${
                     slot.is_booked
-                      ? 'border-green-500/30 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400'
-                      : 'border-gray-200 dark:border-white/10 admin-text-secondary'
+                      ? 'border-green-500/30 bg-green-50 text-green-700'
+                      : 'border-gray-200 border-gray-200 db-text2'
                   }`}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                       <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" strokeLinecap="round"/>
                     </svg>
                     <span className="font-semibold">{slot.start_time}–{slot.end_time}</span>
                     {slot.is_booked
-                      ? <span className="text-xs font-bold text-green-600 dark:text-green-400">✓ Rezervat</span>
+                      ? <span className="text-xs font-bold text-green-600">✓ Rezervat</span>
                       : <button type="button" onClick={() => deleteSlot(slot.id)}
                           className="text-gray-400 hover:text-red-500 transition-colors ml-1">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">

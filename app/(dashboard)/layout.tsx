@@ -1,4 +1,3 @@
-import { ThemeProvider } from '@/components/ThemeProvider'
 import Sidebar from '@/components/Sidebar'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -11,24 +10,17 @@ const clientItems = [
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-
-  // Fetch parallelo — non aspetta prima getUser poi profiles
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles').select('full_name').eq('id', user.id).single()
-
+  const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
   return (
-    <ThemeProvider storageKey="dashboard-theme">
-      <div className="flex h-screen overflow-hidden dashboard-bg transition-colors duration-200">
-        <Sidebar items={clientItems} role="client" userName={profile?.full_name ?? undefined} userEmail={user.email}/>
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-            <div className="max-w-5xl mx-auto w-full">{children}</div>
-          </main>
-        </div>
+    <div className="flex h-screen overflow-hidden db-bg">
+      <Sidebar items={clientItems} role="client" userName={profile?.full_name ?? undefined} userEmail={user.email}/>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="max-w-5xl mx-auto w-full">{children}</div>
+        </main>
       </div>
-    </ThemeProvider>
+    </div>
   )
 }
