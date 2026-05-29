@@ -29,17 +29,23 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
     )
     document.querySelectorAll('.reveal').forEach(el => io.observe(el))
 
+    let rafId = 0
     const onMove = (e: MouseEvent) => {
       if (window.innerWidth < 1024 || !heroRef.current) return
-      const x = ((e.clientX / window.innerWidth) - .5) * 16
-      const y = ((e.clientY / window.innerHeight) - .5) * 10
-      heroRef.current.style.transform = `translate3d(${x}px,${y}px,0)`
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => {
+        if (!heroRef.current) return
+        const x = ((e.clientX / window.innerWidth) - .5) * 16
+        const y = ((e.clientY / window.innerHeight) - .5) * 10
+        heroRef.current.style.transform = `translate3d(${x}px,${y}px,0)`
+      })
     }
     window.addEventListener('mousemove', onMove, { passive: true })
 
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('mousemove', onMove)
+      cancelAnimationFrame(rafId)
       io.disconnect()
     }
   }, [])

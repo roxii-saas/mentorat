@@ -1,16 +1,22 @@
-import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
-import "./globals.css";
+import type { Metadata, Viewport } from "next"
+import { Playfair_Display, Inter } from "next/font/google"
+import "./globals.css"
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
-});
+  weight: ["400", "700"],
+  display: "swap",
+  preload: true,
+})
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-});
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: true,
+})
 
 export const metadata: Metadata = {
   title: "Mentorat cu Roxana — De la 0 la 3.000€",
@@ -23,24 +29,24 @@ export const metadata: Metadata = {
     locale: "ro_RO",
     type: "website",
   },
-};
+}
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#c97d4e",
-};
+  themeColor: "#ED03E9",
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ro" className={`${playfair.variable} ${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+    <html lang="ro" className={`${playfair.variable} ${inter.variable} antialiased`}>
+      <head>
+        {/* Preconnect per risorse esterne critiche */}
+        <link rel="preconnect" href="https://sivrczlkoqtyjeiuvvvq.supabase.co"/>
+        <link rel="dns-prefetch" href="https://js.stripe.com"/>
+        <link rel="dns-prefetch" href="https://api.resend.com"/>
+      </head>
+      <body className="font-sans">{children}</body>
     </html>
-  );
+  )
 }
