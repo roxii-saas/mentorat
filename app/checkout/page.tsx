@@ -269,7 +269,7 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
                       options={{
                         layout: 'tabs',
                         wallets: { applePay: 'auto', googlePay: 'auto' },
-                        fields: { billingDetails: 'never' },
+                        fields: { billingDetails: { name: 'never', email: 'never' } },
                         terms: { card: 'never' },
                       }}
                     />
