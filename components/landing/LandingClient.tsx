@@ -104,7 +104,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
   const price = formatPrice(settings.price_amount, settings.currency.toUpperCase())
   const comparisonPrice = settings.comparison_price ?? 1376
-  const savings = comparisonPrice - settings.price_amount
+
   const ctaText = settings.cta_text || 'Vreau să mă transform'
   const heroSrc = settings.hero_image_url || '/roxana.jpg'
   const mentorSrc = settings.mentor_image_url || '/roxana.jpg'
@@ -422,10 +422,10 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
           <div className="space-y-6">
             {[
-              { n:'1', t:'Cumperi programul', sub:'Ziua 1 · 60 secunde', d:'Plată securizată. Primești imediat pe email datele de acces la platformă — în mai puțin de 60 de secunde.', accent:'#ED03E9', icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-              { n:'2', t:'Programezi prima sesiune', sub:'Ziua 1 · 5 minute', d:'Intri în platformă și alegi un slot liber din calendarul Roxanei. Confirmare automată instantanee.', accent:'#6B00E8', icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+              { n:'1', t:'Rezervi locul tău', sub:'Ziua 1 · 60 secunde', d:'Plată securizată. Primești imediat o confirmare pe email. Roxana te va contacta în curând pentru a stabili pașii următori.', accent:'#ED03E9', icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+              { n:'2', t:'Roxana te contactează', sub:'În cel mai scurt timp', d:'Roxana îți scrie direct pe email sau te sună pentru a programa prima sesiune și a discuta situația ta.', accent:'#6B00E8', icon:'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z' },
               { n:'3', t:'Primești strategia ta personalizată', sub:'Sesiunea · 60 minute', d:'Roxana analizează situația ta concretă și îți creează un plan specific, aplicabil imediat, adaptat exact nevoilor tale.', accent:'#ED03E9', icon:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-              { n:'4', t:'Implementezi și ajungi la 3.000€', sub:'Primele 3–6 luni', d:'Urmezi pașii cu suport continuu prin platformă. Ajungi la 3.000€+/lună și depășești propriile așteptări.', accent:'#6B00E8', icon:'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
+              { n:'4', t:'Implementezi și ajungi la 3.000€', sub:'Primele 3–6 luni', d:'Urmezi pașii cu suport continuu din partea Roxanei. Ajungi la 3.000€+/lună și depășești propriile așteptări.', accent:'#6B00E8', icon:'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
             ].map((step, i) => (
               <div key={i} className="timeline-step relative flex items-start gap-5"
                 style={{ transitionDelay:`${i * 0.12}s` }}>
@@ -717,7 +717,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                 <div className="flex flex-col gap-2 mt-1">
                   {[
                     { icon:'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', t:'Plată securizată Stripe' },
-                    { icon:'M13 10V3L4 14h7v7l9-11h-7z', t:'Acces imediat' },
+                    { icon:'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', t:'Confirmare pe email' },
                     { icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', t:'Garanție satisfacție' },
                   ].map(item => (
                     <div key={item.t} className="flex items-center justify-center gap-2 text-white/80 text-xs font-sans">
@@ -745,7 +745,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             {[
               { q:'Pentru cine este acest mentorat?', a:'Pentru femei care vor să-și construiască o afacere online profitabilă. Indiferent că ești la început sau ai deja încercat fără succes, te ajut să creezi un sistem care funcționează.' },
               { q:'Cât timp durează până văd rezultate?', a:'Majoritatea clientelor văd primele rezultate concrete în 30-60 de zile. La 3-6 luni ajung la 3.000€+/lună, cu condiția implementării strategiei.' },
-              { q:'Ce se întâmplă imediat după plată?', a:'Primești instantaneu pe email datele de acces la platformă. De acolo programezi prima ta sesiune cu Roxana din calendarul disponibil.' },
+              { q:'Ce se întâmplă imediat după plată?', a:'Primești imediat un email de confirmare a rezervării. Roxana te va contacta în curând direct pe email sau telefon pentru a stabili împreună pașii următori și prima sesiune.' },
               { q:'Cum se desfășoară sesiunea?', a:'Online, prin Google Meet sau Zoom. Roxana analizează situația ta specifică și îți construiește o strategie personalizată, pas cu pas.' },
               { q:'Există garanție de rambursare?', a:'Da. Dacă după prima sesiune nu ești complet mulțumită, returnăm integral suma plătită — fără întrebări.' },
             ].map((f, i) => (
@@ -783,7 +783,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           <p className="text-white/60 text-lg sm:text-xl mb-12 font-sans">Următoarea ta versiune începe astăzi.</p>
           <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} large white />
           <div className="flex flex-wrap items-center justify-center gap-5 mt-9">
-            {['Plată securizată','Acces imediat','Garanție satisfacție'].map(t => (
+            {['Plată securizată','Confirmare imediată','Garanție satisfacție'].map(t => (
               <div key={t} className="flex items-center gap-1.5 text-white/40 text-sm font-sans">
                 <svg viewBox="0 0 16 16" fill="none" stroke="#ED03E9" strokeWidth="2" className="w-3.5 h-3.5"><path d="M3 8l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 {t}
@@ -822,7 +822,12 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                   </a>
                 </li>
                 <li><Link href="/login" className="flex items-center gap-2 text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><path d="M3 10a7 7 0 1014 0A7 7 0 003 10zm4 0a3 3 0 116 0 3 3 0 01-6 0z" strokeLinecap="round"/></svg>Intră în cont</Link></li>
-                <li><Link href="/dashboard" className="flex items-center gap-2 text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><rect x="2" y="2" width="7" height="7" rx="1"/><rect x="11" y="2" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/><rect x="2" y="11" width="7" height="7" rx="1"/></svg>Dashboard clientă</Link></li>
+                <li>
+                  <a href="mailto:roxana@roxii-dinca.com" className="flex items-center gap-2 text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L17 8M5 19h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Contactează Roxana
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
