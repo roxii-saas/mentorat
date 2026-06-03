@@ -337,14 +337,12 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
 
               {/* Product */}
               <div className="flex items-start gap-4 pb-5 border-b border-black/[.05] mb-5">
-                <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center shadow-lg shadow-[#ED03E9]/25">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-6 h-6">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                <div className="flex-shrink-0 w-14 h-auto flex items-center justify-center">
+                  <Image src="/logo.png" alt="Mentorat cu Roxana" width={56} height={56} className="w-14 h-auto object-contain"/>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-serif font-bold text-[#0A0A0A] text-base leading-snug">{order.productName}</p>
-                  <p className="text-[#737373] font-sans text-xs mt-1">Sesiune 1:1 · Acces platformă</p>
+                  <p className="text-[#737373] font-sans text-xs mt-1">Rezervare loc · Mentorat 1:1</p>
                   <div className="flex items-center gap-0.5 mt-1.5">
                     {[...Array(5)].map((_,i) => (
                       <svg key={i} viewBox="0 0 16 16" fill="#ED03E9" className="w-3 h-3">
@@ -380,10 +378,17 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
               {/* Price */}
               <div className="border-t border-black/[.05] pt-5">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-sans font-semibold text-[#737373] text-sm">Total de plată</span>
+                  <span className="font-sans font-semibold text-[#737373] text-sm">Taxă de rezervare</span>
                   <span className="font-serif font-bold text-2xl text-[#0A0A0A]">{price}</span>
                 </div>
-                <p className="text-[11px] text-[#ABABAB] font-sans text-right">O singură plată · Fără abonament</p>
+                <p className="text-[11px] text-[#ABABAB] font-sans text-right">Nu este costul integral al programului</p>
+              </div>
+
+              {/* Reservation note */}
+              <div className="mt-3 bg-[#F3EEFF] border border-[#ED03E9]/15 rounded-xl px-3.5 py-3">
+                <p className="text-[11px] text-[#B800BA] font-sans font-semibold leading-relaxed">
+                  ℹ️ Prin această plată îți rezervi locul în program. Roxana te va contacta pentru a stabili împreună pașii următori.
+                </p>
               </div>
 
               {/* Guarantee */}

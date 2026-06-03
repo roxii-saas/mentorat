@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { generatePassword } from '@/lib/utils'
 
 async function callEdgeFunction(
-  email: string, name: string, userId: string, password: string,
+  email: string, name: string, userId: string,
   amount?: number, currency?: string, phone?: string
 ): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -27,7 +27,7 @@ async function callEdgeFunction(
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${serviceKey}`,
       },
-      body: JSON.stringify({ email, name, userId, password, amount, currency, phone }),
+      body: JSON.stringify({ email, name, userId, amount, currency, phone }),
     })
     const text = await res.text()
     if (!res.ok) {
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         }).eq('id', existingUser.id),
         supabase.auth.admin.updateUserById(existingUser.id, { password: tempPassword }),
       ])
-      await callEdgeFunction(email, fullName || email, existingUser.id, tempPassword, pi.amount / 100, pi.currency, phone)
+      await callEdgeFunction(email, fullName || email, existingUser.id, pi.amount / 100, pi.currency, phone)
       return NextResponse.json({ received: true })
     }
 
@@ -133,7 +133,7 @@ export async function POST(req: Request) {
     }).eq('id', newUser.user.id)
 
     console.log('[Webhook] Utente creato:', newUser.user.id, '— invio email...')
-    await callEdgeFunction(email, fullName || email, newUser.user.id, tempPassword, pi.amount / 100, pi.currency, phone)
+    await callEdgeFunction(email, fullName || email, newUser.user.id, pi.amount / 100, pi.currency, phone)
   }
 
   return NextResponse.json({ received: true })

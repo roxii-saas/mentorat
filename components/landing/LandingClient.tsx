@@ -639,21 +639,24 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section id="pret" className="py-24 px-5 max-w-5xl mx-auto reveal">
         <div className="text-center mb-12">
           <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Investiția</span>
-          <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Tot ce primești în program</h2>
+          <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Rezervă-ți locul acum</h2>
           <p className="text-[#737373] font-sans mt-4 text-base max-w-xl mx-auto leading-relaxed">
-            Un singur pachet complet. Fără costuri ascunse. Acces imediat după plată.
+            Plătești o taxă de rezervare pentru a-ți asigura locul în program. Roxana te va contacta pentru a stabili pașii următori.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-5 gap-6 sm:gap-8 items-stretch">
           {/* Lista benefici */}
           <div className="lg:col-span-3 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-black/5">
-            <h3 className="font-serif font-bold text-xl text-[#0A0A0A] mb-6 flex items-center gap-2">
+            <h3 className="font-serif font-bold text-xl text-[#0A0A0A] mb-2 flex items-center gap-2">
               <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="2" className="w-5 h-5">
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              Ce include pachetul:
+              Ce primești în program:
             </h3>
+            <p className="text-[#737373] font-sans text-sm mb-5 leading-relaxed">
+              La rezervare, Roxana te va contacta pentru a stabili detaliile sesiunii și pașii următori.
+            </p>
             <div className="grid sm:grid-cols-2 gap-3.5 reveal-children">
               {[
                 { t:'Sesiune 1:1 cu Roxana (60 min)',  val:'297€' },
@@ -697,11 +700,16 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                 Ofertă limitată
               </div>
 
-              <p className="text-white/75 font-sans text-sm font-medium mb-1">Tu plătești doar</p>
+              <p className="text-white/75 font-sans text-sm font-medium mb-1">Taxă de rezervare loc</p>
               <p className="text-5xl sm:text-6xl font-serif font-bold mb-1 leading-none">{price}</p>
-              <p className="text-white/60 text-sm font-sans mb-3">o singură plată · fără abonament</p>
-              <div className="inline-block self-center bg-white/15 rounded-full py-1.5 px-5 mb-7">
-                <p className="text-white font-bold text-sm">Economisești <span className="text-yellow-200">{savings.toLocaleString('ro-RO')}€</span></p>
+              <p className="text-white/60 text-sm font-sans mb-3">nu este costul integral al programului</p>
+              <div className="inline-block self-center bg-white/15 rounded-full py-1.5 px-5 mb-3">
+                <p className="text-white font-bold text-sm">Valoare program: <span className="line-through text-white/60">{comparisonPrice.toLocaleString('ro-RO')}€</span></p>
+              </div>
+              <div className="inline-block self-center bg-white/10 border border-white/20 rounded-xl py-2 px-4 mb-7">
+                <p className="text-white/85 text-xs font-sans leading-relaxed">
+                  💡 Prin această plată îți rezervi locul.<br/>Roxana te contactează cu pașii următori.
+                </p>
               </div>
 
               <div className="flex-1 flex flex-col justify-end gap-3">

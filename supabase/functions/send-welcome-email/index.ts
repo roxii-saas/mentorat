@@ -6,8 +6,10 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://mentorat.roxii-dinca.com'
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'Roxana Dinca <noreply@roxii-dinca.com>'
-// ⬇️ Per cambiare l'email admin: npx supabase secrets set ADMIN_NOTIFICATION_EMAIL=nuova@email.com
+// ⬇️ Per cambiare: npx supabase secrets set ADMIN_NOTIFICATION_EMAIL=nuova@email.com
 const ADMIN_EMAIL = Deno.env.get('ADMIN_NOTIFICATION_EMAIL') ?? 'roxiiprogramari@gmail.com'
+
+const LOGO_URL = `${SITE_URL}/logo.png`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -20,7 +22,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, name, userId, password, amount, currency, phone } = await req.json()
+    const { email, name, userId, amount, currency, phone } = await req.json()
 
     if (!email || !userId) {
       return new Response(JSON.stringify({ error: 'email e userId richiesti' }), { status: 400 })
@@ -32,7 +34,6 @@ Deno.serve(async (req) => {
       timeZone: 'Europe/Bucharest', dateStyle: 'full', timeStyle: 'short',
     })
 
-    // Helper per inviare email via Resend
     const sendEmail = async (to, subject, html) => {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -46,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     // ──────────────────────────────────────────
-    // 1. EMAIL DI BENVENUTO AL CLIENTE
+    // 1. EMAIL DI RINGRAZIAMENTO AL CLIENTE
     // ──────────────────────────────────────────
     const clientHtml = `
 <!DOCTYPE html>
@@ -58,74 +59,68 @@ Deno.serve(async (req) => {
 <body style="margin:0;padding:0;background:#F3EEFF;font-family:'Inter',system-ui,sans-serif;">
   <div style="max-width:580px;margin:40px auto;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 40px rgba(107,0,232,0.10);">
 
-    <div style="background:linear-gradient(135deg,#ED03E9,#6B00E8);padding:40px 32px;text-align:center;">
-      <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.15em;text-transform:uppercase;">Mentorat cu Roxana</p>
-      <h1 style="margin:0;font-size:28px;font-weight:800;color:#ffffff;line-height:1.2;">Bun venit! Contul tău este gata 🎉</h1>
+    <!-- Header gradient cu logo -->
+    <div style="background:linear-gradient(135deg,#ED03E9,#6B00E8);padding:36px 32px 32px;text-align:center;">
+      <img src="${LOGO_URL}" alt="Mentorat cu Roxana"
+        style="height:52px;width:auto;object-fit:contain;filter:brightness(0) invert(1);margin-bottom:20px;display:block;margin-left:auto;margin-right:auto;" />
+      <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;line-height:1.25;">
+        Îți mulțumim pentru rezervare! 🎉
+      </h1>
     </div>
 
+    <!-- Body -->
     <div style="padding:36px 32px;">
-      <p style="margin:0 0 16px;font-size:17px;color:#0A0A0A;line-height:1.6;">
+
+      <p style="margin:0 0 18px;font-size:17px;color:#0A0A0A;line-height:1.6;">
         Bună, <strong>${displayName}</strong>!
       </p>
-      <p style="margin:0 0 24px;font-size:15px;color:#3D3D3D;line-height:1.7;">
-        Felicitări! Plata a fost confirmată și contul tău a fost creat automat.
-        Mai jos găsești datele de acces — te recomandăm să-ți schimbi parola după primul login.
+
+      <p style="margin:0 0 16px;font-size:15px;color:#3D3D3D;line-height:1.75;">
+        Rezervarea ta a fost confirmată cu succes. Ești cu un pas mai aproape de a-ți transforma afacerea online și de a ajunge la <strong style="color:#0A0A0A;">3.000€/lună</strong>.
       </p>
 
-      <!-- Credentials box -->
-      <div style="background:#F3EEFF;border:1.5px solid rgba(237,3,233,0.25);border-radius:16px;padding:24px;margin:0 0 28px;">
-        <p style="margin:0 0 16px;font-size:12px;font-weight:700;color:#B800BA;text-transform:uppercase;letter-spacing:.12em;">🔑 Datele tale de acces</p>
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="padding:8px 0;font-size:13px;font-weight:600;color:#737373;width:80px;">Email</td>
-            <td style="padding:8px 0;font-size:14px;color:#0A0A0A;">${email}</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 0;font-size:13px;font-weight:600;color:#737373;">Parolă</td>
-            <td style="padding:8px 0;">
-              <code style="background:#fff;border:1.5px solid rgba(237,3,233,0.2);padding:6px 12px;border-radius:8px;font-size:15px;font-weight:700;color:#ED03E9;letter-spacing:.05em;">${password || '(a se seta la primul login)'}</code>
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- CTA -->
-      <div style="text-align:center;margin:0 0 28px;">
-        <a href="${SITE_URL}/login"
-          style="display:inline-block;background:linear-gradient(135deg,#ED03E9,#6B00E8);color:#ffffff;text-decoration:none;padding:15px 36px;border-radius:12px;font-weight:700;font-size:16px;letter-spacing:.02em;">
-          Intră în platformă →
-        </a>
+      <!-- Highlight box -->
+      <div style="background:#F3EEFF;border-left:4px solid #ED03E9;border-radius:0 12px 12px 0;padding:20px 24px;margin:24px 0;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#B800BA;text-transform:uppercase;letter-spacing:.1em;">Ce urmează</p>
+        <p style="margin:0;font-size:15px;color:#3D3D3D;line-height:1.7;">
+          Roxana te va contacta în curând pentru a stabili pașii următori în programul de Mentorat și pentru a programa prima ta sesiune 1:1.
+        </p>
       </div>
 
       <!-- Steps -->
-      <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#0A0A0A;text-transform:uppercase;letter-spacing:.1em;">Ce urmează:</p>
-      <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
+      <table style="width:100%;border-collapse:separate;border-spacing:0 10px;margin:8px 0 24px;">
         ${[
-          ['1', 'Intră în cont', 'Folosește email-ul și parola de mai sus'],
-          ['2', 'Schimbă parola', 'Din Dashboard → Profil → Schimbă parola'],
-          ['3', 'Programează sesiunea', 'Alege un slot liber din calendarul Roxanei'],
-        ].map(([n, title, desc]) => `
+          ['📞', 'Vei fi contactată de Roxana', 'Pe email sau telefon, pentru a stabili împreună pașii următori.'],
+          ['📅', 'Programați prima sesiune', 'O sesiune 1:1 de 60 de minute, dedicată situației tale concrete.'],
+          ['🚀', 'Primești strategia personalizată', 'Un plan clar și acționabil pentru a ajunge la 3.000€/lună.'],
+        ].map(([emoji, title, desc]) => `
           <tr>
-            <td style="width:32px;vertical-align:top;padding-top:2px;">
-              <div style="width:24px;height:24px;background:linear-gradient(135deg,#ED03E9,#6B00E8);border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;color:#fff;">${n}</div>
-            </td>
+            <td style="width:40px;vertical-align:top;font-size:22px;padding-top:2px;">${emoji}</td>
             <td style="padding-left:12px;">
-              <p style="margin:0;font-size:14px;font-weight:600;color:#0A0A0A;">${title}</p>
-              <p style="margin:2px 0 0;font-size:12px;color:#737373;">${desc}</p>
+              <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#0A0A0A;">${title}</p>
+              <p style="margin:0;font-size:13px;color:#737373;line-height:1.5;">${desc}</p>
             </td>
           </tr>
         `).join('')}
       </table>
 
-      <p style="margin:28px 0 0;font-size:13px;color:#ABABAB;line-height:1.6;">
-        Dacă ai întrebări, scrie-ne la
-        <a href="mailto:roxana@roxii-dinca.com" style="color:#ED03E9;">roxana@roxii-dinca.com</a>.
+      <p style="margin:0 0 28px;font-size:14px;color:#3D3D3D;line-height:1.7;">
+        Dacă ai întrebări înainte ca Roxana să te contacteze, scrie-ne oricând la
+        <a href="mailto:roxana@roxii-dinca.com" style="color:#ED03E9;text-decoration:none;font-weight:600;">roxana@roxii-dinca.com</a>.
+      </p>
+
+      <p style="margin:0;font-size:15px;color:#0A0A0A;line-height:1.6;">
+        Cu drag,<br/>
+        <strong>Roxana Dinca</strong><br/>
+        <span style="font-size:13px;color:#737373;">Mentor & Coach Business Online</span>
       </p>
     </div>
 
+    <!-- Footer -->
     <div style="background:#F3EEFF;padding:20px 32px;text-align:center;border-top:1px solid rgba(237,3,233,0.1);">
-      <p style="margin:0;font-size:12px;color:#B800BA;font-weight:600;">Cu drag, Roxana 💜</p>
-      <p style="margin:4px 0 0;font-size:11px;color:#ABABAB;">© ${new Date().getFullYear()} Mentorat cu Roxana · Toate drepturile rezervate</p>
+      <img src="${LOGO_URL}" alt="Mentorat cu Roxana"
+        style="height:32px;width:auto;object-fit:contain;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;" />
+      <p style="margin:0;font-size:11px;color:#ABABAB;">© ${new Date().getFullYear()} Mentorat cu Roxana · Toate drepturile rezervate</p>
     </div>
   </div>
 </body>
@@ -133,7 +128,7 @@ Deno.serve(async (req) => {
 
     const clientResult = await sendEmail(
       email,
-      '🎉 Bun venit în Mentorat — Datele tale de acces',
+      '🎉 Rezervarea ta este confirmată — Mentorat cu Roxana',
       clientHtml
     )
     if (!clientResult.ok) {
@@ -149,44 +144,57 @@ Deno.serve(async (req) => {
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#F3EEFF;font-family:'Inter',system-ui,sans-serif;">
   <div style="max-width:540px;margin:32px auto;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(107,0,232,0.10);">
+
+    <!-- Header cu logo -->
     <div style="background:linear-gradient(135deg,#ED03E9,#6B00E8);padding:28px 28px 24px;text-align:center;">
-      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.15em;text-transform:uppercase;">Admin · Mentorat cu Roxana</p>
-      <h1 style="margin:0;font-size:22px;font-weight:800;color:#fff;">💰 Vânzare nouă!</h1>
+      <img src="${LOGO_URL}" alt="Mentorat cu Roxana"
+        style="height:44px;width:auto;object-fit:contain;filter:brightness(0) invert(1);margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;" />
+      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.15em;text-transform:uppercase;">Admin · Notificare</p>
+      <h1 style="margin:0;font-size:22px;font-weight:800;color:#fff;">💰 Rezervare nouă!</h1>
     </div>
+
     <div style="padding:28px;">
       <p style="margin:0 0 20px;font-size:15px;color:#3D3D3D;line-height:1.6;">
-        Cineva tocmai a cumpărat programul de mentorat. Detalii mai jos:
+        O nouă rezervare a fost finalizată cu succes. Contacteaz-o pe clientă pentru a stabili pașii următori.
       </p>
+
+      <!-- Client info -->
       <div style="background:#F3EEFF;border:1.5px solid rgba(237,3,233,0.2);border-radius:14px;padding:20px;margin:0 0 20px;">
         <table style="width:100%;border-collapse:collapse;">
           <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;width:100px;">Clientă</td>
-            <td style="padding:6px 0;font-size:14px;font-weight:700;color:#0A0A0A;">${displayName}</td>
+            <td style="padding:7px 0;font-size:13px;font-weight:600;color:#737373;width:100px;">Clientă</td>
+            <td style="padding:7px 0;font-size:15px;font-weight:700;color:#0A0A0A;">${displayName}</td>
           </tr>
           <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Email</td>
-            <td style="padding:6px 0;font-size:14px;color:#0A0A0A;">${email}</td>
+            <td style="padding:7px 0;font-size:13px;font-weight:600;color:#737373;">Email</td>
+            <td style="padding:7px 0;font-size:14px;color:#0A0A0A;">
+              <a href="mailto:${email}" style="color:#ED03E9;text-decoration:none;">${email}</a>
+            </td>
           </tr>
           ${phone ? `<tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Telefon</td>
-            <td style="padding:6px 0;font-size:14px;"><a href="tel:${phone}" style="color:#ED03E9;text-decoration:none;">${phone}</a></td>
+            <td style="padding:7px 0;font-size:13px;font-weight:600;color:#737373;">Telefon</td>
+            <td style="padding:7px 0;font-size:14px;">
+              <a href="tel:${phone}" style="color:#ED03E9;text-decoration:none;">${phone}</a>
+            </td>
           </tr>` : ''}
           <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Sumă</td>
-            <td style="padding:6px 0;font-size:16px;font-weight:800;color:#ED03E9;">${priceStr}</td>
+            <td style="padding:7px 0;font-size:13px;font-weight:600;color:#737373;">Sumă</td>
+            <td style="padding:7px 0;font-size:18px;font-weight:800;color:#ED03E9;">${priceStr}</td>
           </tr>
           <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Data</td>
-            <td style="padding:6px 0;font-size:13px;color:#3D3D3D;">${now}</td>
+            <td style="padding:7px 0;font-size:13px;font-weight:600;color:#737373;">Data</td>
+            <td style="padding:7px 0;font-size:13px;color:#3D3D3D;">${now}</td>
           </tr>
         </table>
       </div>
+
       <div style="text-align:center;">
         <a href="${SITE_URL}/admin/clienti"
-          style="display:inline-block;background:linear-gradient(135deg,#ED03E9,#6B00E8);color:#fff;text-decoration:none;padding:13px 28px;border-radius:12px;font-weight:700;font-size:14px;">
+          style="display:inline-block;background:linear-gradient(135deg,#ED03E9,#6B00E8);color:#fff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:700;font-size:14px;">
           Deschide panoul de admin →
         </a>
       </div>
+
       <p style="margin:20px 0 0;font-size:12px;color:#ABABAB;text-align:center;">
         Notificare automată · Mentorat cu Roxana
       </p>
@@ -197,7 +205,7 @@ Deno.serve(async (req) => {
 
     await sendEmail(
       ADMIN_EMAIL,
-      `💰 Vânzare nouă — ${displayName} (${priceStr})`,
+      `💰 Rezervare nouă — ${displayName} (${priceStr})`,
       adminHtml
     )
 

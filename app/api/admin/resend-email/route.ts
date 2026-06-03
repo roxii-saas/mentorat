@@ -41,7 +41,6 @@ export async function POST(req: Request) {
       email: targetUser.email,
       name: targetProfile?.full_name || targetUser.email,
       userId,
-      password: tempPassword,
       phone: targetProfile?.phone || '',
     }),
   })
