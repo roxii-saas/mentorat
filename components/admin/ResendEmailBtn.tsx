@@ -2,16 +2,16 @@
 
 import { useState } from 'react'
 
-export default function ResendEmailBtn({ userId, email }: { userId: string; email: string }) {
+export default function ResendEmailBtn({ purchaseId, email }: { purchaseId: string; email: string }) {
   const [state, setState] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
 
   const handleResend = async () => {
-    if (!confirm(`Reinviare email con credenziali a ${email}?`)) return
+    if (!confirm(`Retrimite email de confirmare la ${email}?`)) return
     setState('loading')
     const res = await fetch('/api/admin/resend-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ purchaseId }),
     })
     setState(res.ok ? 'ok' : 'error')
     setTimeout(() => setState('idle'), 4000)
@@ -19,7 +19,7 @@ export default function ResendEmailBtn({ userId, email }: { userId: string; emai
 
   return (
     <button onClick={handleResend} disabled={state === 'loading'}
-      title="Retrimite email cu credențiale"
+      title="Retrimite email de confirmare"
       className={`inline-flex items-center gap-1 text-[11px] font-sans font-semibold px-2.5 py-1 rounded-lg transition-all ${
         state === 'ok'    ? 'bg-green-50 text-green-700 border border-green-200' :
         state === 'error' ? 'bg-red-50 text-red-600 border border-red-200' :
