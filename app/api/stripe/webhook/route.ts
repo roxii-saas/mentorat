@@ -5,7 +5,7 @@ import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generatePassword } from '@/lib/utils'
 
-async function callEdgeFunction(email: string, name: string, userId: string) {
+async function callEdgeFunction(email: string, name: string, userId: string, amount?: number, currency?: string) {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-welcome-email`
   const res = await fetch(url, {
     method: 'POST',
@@ -13,7 +13,7 @@ async function callEdgeFunction(email: string, name: string, userId: string) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
     },
-    body: JSON.stringify({ email, name, userId }),
+    body: JSON.stringify({ email, name, userId, amount, currency }),
   })
   if (!res.ok) {
     const body = await res.text()
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       }).eq('id', existingUser.id)
 
       // Invia comunque l'email (potrebbe non averla ricevuta prima)
-      await callEdgeFunction(email, fullName || email, existingUser.id)
+      await callEdgeFunction(email, fullName || email, existingUser.id, pi.amount / 100, pi.currency)
       return NextResponse.json({ received: true })
     }
 
@@ -98,8 +98,8 @@ export async function POST(req: Request) {
       purchased_at: new Date().toISOString(),
     }).eq('id', newUser.user.id)
 
-    // 5. Chiama Edge Function per inviare email di benvenuto
-    await callEdgeFunction(email, fullName || email, newUser.user.id)
+    // 5. Chiama Edge Function per inviare email di benvenuto + notifica admin
+    await callEdgeFunction(email, fullName || email, newUser.user.id, pi.amount / 100, pi.currency)
   }
 
   return NextResponse.json({ received: true })

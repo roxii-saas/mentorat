@@ -6,6 +6,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://mentorat.roxii-dinca.com'
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'Roxana Dinca <noreply@roxii-dinca.com>'
+// ⬇️ Per cambiare l'email admin: npx supabase secrets set ADMIN_NOTIFICATION_EMAIL=nuova@email.com
+const ADMIN_EMAIL = Deno.env.get('ADMIN_NOTIFICATION_EMAIL') ?? 'roxiiprogramari@gmail.com'
 
 Deno.serve(async (req) => {
   // CORS preflight
@@ -19,10 +21,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, name, userId } = await req.json() as {
+    const { email, name, userId, amount, currency } = await req.json() as {
       email: string
       name?: string
       userId: string
+      amount?: number
+      currency?: string
     }
 
     if (!email || !userId) {
@@ -133,30 +137,99 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-    // Invia email via Resend
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: email,
-        subject: '🎉 Bun venit în Mentorat — Accesează contul tău!',
-        html,
-      }),
-    })
-
-    const resendData = await resendResponse.json()
-
-    if (!resendResponse.ok) {
-      console.error('Resend error:', resendData)
-      return new Response(JSON.stringify({ error: 'Email non inviata', details: resendData }), { status: 500 })
+    // Helper per inviare email via Resend
+    const sendEmail = async (to: string, subject: string, htmlBody: string) => {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: FROM_EMAIL, to, subject, html: htmlBody }),
+      })
+      const data = await res.json()
+      if (!res.ok) console.error(`Resend error (${to}):`, data)
+      else console.log(`Email inviata a ${to} — id:`, data.id)
+      return { ok: res.ok, data }
     }
 
-    console.log('Email inviata con successo:', resendData.id, 'a:', email)
-    return new Response(JSON.stringify({ ok: true, emailId: resendData.id }), {
+    // 1. Email di benvenuto al cliente
+    const clientResult = await sendEmail(
+      email,
+      '🎉 Bun venit în Mentorat — Accesează contul tău!',
+      html
+    )
+    if (!clientResult.ok) {
+      return new Response(JSON.stringify({ error: 'Email cliente non inviata', details: clientResult.data }), { status: 500 })
+    }
+
+    // 2. Notifica all'admin
+    const priceStr = amount && currency
+      ? `${amount} ${currency.toUpperCase()}`
+      : 'N/D'
+    const now = new Date().toLocaleString('ro-RO', { timeZone: 'Europe/Bucharest', dateStyle: 'full', timeStyle: 'short' })
+
+    const adminHtml = `
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F3EEFF;font-family:'Inter',system-ui,sans-serif;">
+  <div style="max-width:540px;margin:32px auto;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(107,0,232,0.10);">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#ED03E9,#6B00E8);padding:28px 28px 24px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:.15em;text-transform:uppercase;">Admin · Mentorat cu Roxana</p>
+      <h1 style="margin:0;font-size:22px;font-weight:800;color:#fff;">💰 Vânzare nouă!</h1>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:28px;">
+      <p style="margin:0 0 20px;font-size:15px;color:#3D3D3D;line-height:1.6;">
+        Cineva tocmai a cumpărat programul de mentorat. Detalii mai jos:
+      </p>
+
+      <!-- Client info -->
+      <div style="background:#F3EEFF;border:1.5px solid rgba(237,3,233,0.2);border-radius:14px;padding:20px;margin:0 0 20px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;width:120px;">Clientă</td>
+            <td style="padding:6px 0;font-size:14px;font-weight:700;color:#0A0A0A;">${displayName}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Email</td>
+            <td style="padding:6px 0;font-size:14px;color:#0A0A0A;">${email}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Sumă</td>
+            <td style="padding:6px 0;font-size:16px;font-weight:800;color:#ED03E9;">${priceStr}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Data</td>
+            <td style="padding:6px 0;font-size:13px;color:#3D3D3D;">${now}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;">
+        <a href="${SITE_URL}/admin/clienti"
+          style="display:inline-block;background:linear-gradient(135deg,#ED03E9,#6B00E8);color:#fff;text-decoration:none;padding:13px 28px;border-radius:12px;font-weight:700;font-size:14px;">
+          Deschide panoul de admin →
+        </a>
+      </div>
+
+      <p style="margin:20px 0 0;font-size:12px;color:#ABABAB;text-align:center;">
+        Această notificare a fost trimisă automat de platforma Mentorat cu Roxana.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`
+
+    await sendEmail(
+      ADMIN_EMAIL,
+      `💰 Vânzare nouă — ${displayName} (${priceStr})`,
+      adminHtml
+    )
+
+    return new Response(JSON.stringify({ ok: true, emailId: clientResult.data.id }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
