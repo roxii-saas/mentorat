@@ -50,7 +50,7 @@ export default function Sidebar({ items, role, userName, userEmail }: SidebarPro
           </svg>
         </button>
         <Link href={home}>
-          <Image src="/logo.png" alt="Mentorat" width={100} height={34} className="h-8 w-auto object-contain"/>
+          <Image src="/logo.png" alt="Mentorat" width={140} height={46} className="h-11 w-auto object-contain"/>
         </Link>
         <div className="w-8 h-8 bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg">
           {initials}
@@ -74,7 +74,7 @@ export default function Sidebar({ items, role, userName, userEmail }: SidebarPro
                     <path d="M10 2L3 6l7 4 7-4-7-4zM3 13l7 4 7-4M3 9.5l7 4 7-4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-              : <Image src="/logo.png" alt="Mentorat" width={120} height={40} className="h-10 w-auto object-contain"/>
+              : <Image src="/logo.png" alt="Mentorat" width={160} height={54} className="h-14 w-auto object-contain"/>
             }
             {false && (
               <div className="leading-tight min-w-0">

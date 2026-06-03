@@ -108,46 +108,72 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
 
           <Link href="/" className="flex items-center group">
-            <Image src="/logo.png" alt="Mentorat cu Roxana" width={120} height={40}
-              className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+            <Image src="/logo.png" alt="Mentorat cu Roxana" width={160} height={54}
+              className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
               priority/>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8">
             {[['#despre','Despre'],['#proces','Proces'],['#rezultate','Rezultate'],['#pret','Preț']].map(([h,l]) => (
-              <a key={h} href={h} className="text-[13px] font-sans font-medium text-[#3D3D3D] hover:text-[#ED03E9] transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#ED03E9] after:transition-all hover:after:w-full">{l}</a>
+              <a key={h} href={h} className="text-[11px] font-sans font-semibold text-[#3D3D3D] hover:text-[#ED03E9] transition-colors uppercase tracking-[.1em] relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#ED03E9] after:transition-all hover:after:w-full">{l}</a>
             ))}
           </nav>
 
           <div className="hidden sm:flex items-center gap-3">
-            <Link href="/login" className="text-[13px] font-sans font-medium text-[#3D3D3D] hover:text-[#0A0A0A] flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-black/5 transition-all">
+            <Link href="/login" className="text-[12px] font-sans font-medium text-[#3D3D3D] hover:text-[#0A0A0A] flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-black/5 transition-all">
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
                 <path d="M10 11a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" strokeLinecap="round"/>
               </svg>
               Contul meu
             </Link>
-            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} />
+            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} subtle />
           </div>
 
-          <button className="sm:hidden p-2" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="sm:hidden p-2 rounded-lg hover:bg-black/5 transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" className="w-5 h-5">
-              {menuOpen ? <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round"/> : <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round"/>}
+              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
-
-        {menuOpen && (
-          <div className="sm:hidden bg-white border-t border-black/5 px-5 py-4 space-y-1">
-            {[['#despre','Despre'],['#proces','Proces'],['#rezultate','Rezultate'],['#pret','Preț']].map(([h,l]) => (
-              <a key={h} href={h} onClick={() => setMenuOpen(false)} className="block py-2.5 text-sm font-sans font-medium text-[#3D3D3D] hover:text-[#ED03E9]">{l}</a>
-            ))}
-            <div className="pt-3 border-t border-black/5 flex flex-col gap-2">
-              <Link href="/login" onClick={() => setMenuOpen(false)} className="text-center py-2.5 text-sm font-sans font-medium text-[#3D3D3D] border border-black/10 rounded-xl">Contul meu</Link>
-              <BuyBtn onClick={() => { setMenuOpen(false); handleBuy() }} loading={buyLoading} price={price} active={settings.sales_active} />
-            </div>
-          </div>
-        )}
       </header>
+
+      {/* Mobile drawer overlay */}
+      {menuOpen && (
+        <div
+          className="sm:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer — scorre da sinistra */}
+      <div className={`sm:hidden fixed top-0 left-0 h-full w-[280px] bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
+          <Image src="/logo.png" alt="Mentorat cu Roxana" width={130} height={44} className="h-10 w-auto object-contain"/>
+          <button onClick={() => setMenuOpen(false)} className="p-2 rounded-xl hover:bg-black/5 transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" className="w-5 h-5">
+              <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-4 py-6">
+          <p className="text-[10px] font-bold font-sans text-[#ABABAB] tracking-[.18em] uppercase px-3 mb-3">Navigare</p>
+          {[['#despre','Despre'],['#proces','Proces'],['#rezultate','Rezultate'],['#pret','Preț']].map(([h,l]) => (
+            <a key={h} href={h} onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[#1A1A2E] font-sans font-bold text-sm uppercase tracking-[.1em] hover:bg-[#ED03E9]/6 hover:text-[#ED03E9] transition-all">
+              {l}
+            </a>
+          ))}
+        </nav>
+        <div className="px-4 py-5 border-t border-black/5 space-y-2.5">
+          <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 py-3 text-sm font-sans font-semibold text-[#3D3D3D] border border-black/10 rounded-xl hover:border-[#ED03E9]/30 hover:text-[#ED03E9] transition-all">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
+              <path d="M10 11a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" strokeLinecap="round"/>
+            </svg>
+            Contul meu
+          </Link>
+          <BuyBtn onClick={() => { setMenuOpen(false); handleBuy() }} loading={buyLoading} price={price} active={settings.sales_active} full />
+        </div>
+      </div>
 
       {/* ─────────── HERO ─────────── */}
       <section className="relative min-h-screen flex flex-col lg:flex-row items-center pt-16 pb-12 px-5 max-w-6xl mx-auto gap-12 lg:gap-16">
@@ -277,29 +303,36 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
       {/* ─────────── TRUST BAR ─────────── */}
       <div className="bg-[#0A0A0A] py-5 overflow-hidden">
-        <div className="flex whitespace-nowrap animate-marquee gap-16" style={{ width:'max-content' }}>
-          {[...Array(2)].flatMap(() => [
+        {(() => {
+          const items = [
             { icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', text:'200+ Cliente Mulțumite' },
             { icon:'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z', text:'Rating 5.0 / 5.0' },
             { icon:'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', text:'Rezultate în 60 de zile' },
             { icon:'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', text:'Plată Securizată Stripe' },
             { icon:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', text:'3.000€+ Venit Mediu' },
-          ]).map((item, i) => (
-            <span key={i} className="inline-flex items-center gap-2.5 text-white/50 text-[13px] font-sans font-medium tracking-wide">
+          ]
+          const renderSet = (keyPrefix: number) => items.map((item, i) => (
+            <span key={`${keyPrefix}-${i}`} className="inline-flex items-center gap-2.5 text-white/50 text-[13px] font-sans font-medium tracking-wide px-8">
               <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-4 h-4 flex-shrink-0">
                 <path d={item.icon} strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               {item.text}
             </span>
-          ))}
-        </div>
+          ))
+          return (
+            <div className="flex whitespace-nowrap animate-marquee" style={{ width:'max-content' }}>
+              {renderSet(0)}
+              {renderSet(1)}
+            </div>
+          )
+        })()}
       </div>
 
       {/* ─────────── PROBLEMA ─────────── */}
       <section className="py-24 px-5 max-w-5xl mx-auto reveal">
         <div className="text-center mb-14">
-          <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Recunoști situația?</span>
-          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 mb-4 text-[#0A0A0A] leading-tight">
+          <span className="text-[#ED03E9] font-sans font-bold text-[13px] tracking-[.18em] uppercase">Recunoști situația?</span>
+          <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 mb-4 text-[#0A0A0A] leading-tight">
             Dacă bifezi 2 din 6 —<br/><span className="text-[#ED03E9]">ai nevoie de mentorat acum.</span>
           </h2>
         </div>
@@ -334,7 +367,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Soluția</span>
-            <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 mb-4 text-[#0A0A0A] leading-tight">
+            <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 mb-4 text-[#0A0A0A] leading-tight">
               3 piloni pentru a ajunge la <span className="text-[#ED03E9]">3.000€/lună</span>
             </h2>
           </div>
@@ -365,7 +398,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section id="proces" className="py-24 px-5 max-w-3xl mx-auto reveal">
         <div className="text-center mb-14">
           <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Procesul</span>
-          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
+          <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
             De la clic la <span className="text-[#ED03E9]">3.000€/lună</span>
           </h2>
           <p className="text-[#737373] font-sans mt-4 text-base leading-relaxed">
@@ -440,7 +473,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Transformarea</span>
-            <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
+            <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
               Înainte vs. <span className="text-[#ED03E9]">După</span>
             </h2>
           </div>
@@ -489,7 +522,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section id="rezultate" className="py-24 px-5 max-w-5xl mx-auto reveal">
         <div className="text-center mb-12">
           <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Povești reale</span>
-          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Ce spun clientele mele</h2>
+          <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Ce spun clientele mele</h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-5 reveal-children">
@@ -525,7 +558,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           {/* Label centrata */}
           <div className="text-center mb-10">
             <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Mentorul tău</span>
-            <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
+            <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
               Bună, eu sunt Roxana
             </h2>
           </div>
@@ -599,7 +632,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section id="pret" className="py-24 px-5 max-w-5xl mx-auto reveal">
         <div className="text-center mb-12">
           <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Investiția</span>
-          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Tot ce primești în program</h2>
+          <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Tot ce primești în program</h2>
           <p className="text-[#737373] font-sans mt-4 text-base max-w-xl mx-auto leading-relaxed">
             Un singur pachet complet. Fără costuri ascunse. Acces imediat după plată.
           </p>
@@ -751,8 +784,8 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-10 mb-10">
             <div>
               <div className="mb-4">
-                <Image src="/logo.png" alt="Mentorat cu Roxana" width={130} height={44}
-                  className="h-11 w-auto object-contain brightness-0 invert"/>
+                <Image src="/logo.png" alt="Mentorat cu Roxana" width={170} height={58}
+                  className="h-14 w-auto object-contain brightness-0 invert"/>
               </div>
               <p className="text-[#636363] text-sm font-sans leading-relaxed">Mentor & Coach de Business Online. Ajut femeile să construiască afaceri profitabile de la zero.</p>
             </div>
@@ -798,13 +831,19 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
   )
 }
 
-function BuyBtn({ onClick, loading, price, active, large, white, full }: {
+function BuyBtn({ onClick, loading, price, active, large, white, full, subtle }: {
   onClick: () => void; loading: boolean; price: string; active: boolean
-  large?: boolean; white?: boolean; full?: boolean
+  large?: boolean; white?: boolean; full?: boolean; subtle?: boolean
 }) {
   if (!active) return (
-    <button disabled className={`inline-flex items-center justify-center gap-2 font-sans font-semibold rounded-2xl bg-black/10 text-[#737373] cursor-not-allowed ${large?'px-10 py-5 text-lg':full?'w-full py-3.5 text-base':'px-7 py-3.5 text-sm'}`}>
+    <button disabled className={`inline-flex items-center justify-center gap-2 font-sans font-semibold rounded-2xl bg-black/10 text-[#737373] cursor-not-allowed ${large?'px-10 py-5 text-lg':full?'w-full py-3.5 text-base':subtle?'px-4 py-2 text-xs':'px-7 py-3.5 text-sm'}`}>
       Lista de așteptare
+    </button>
+  )
+  if (subtle) return (
+    <button onClick={onClick} disabled={loading}
+      className="inline-flex items-center gap-2 text-[12px] font-sans font-semibold text-[#ED03E9] border border-[#ED03E9]/35 px-4 py-2.5 rounded-xl hover:bg-[#ED03E9]/6 hover:border-[#ED03E9]/60 transition-all active:scale-[.98]">
+      {loading ? 'Se procesează...' : <>Cumpără · {price} <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
     </button>
   )
   return (
