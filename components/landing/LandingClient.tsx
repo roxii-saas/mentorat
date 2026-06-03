@@ -323,75 +323,70 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       </section>
 
       {/* ─────────── TIMELINE PROFESIONALĂ ─────────── */}
-      <section id="proces" className="py-24 px-5 max-w-5xl mx-auto reveal">
-        <div className="text-center mb-16">
+      <section id="proces" className="py-24 px-5 max-w-3xl mx-auto reveal">
+        <div className="text-center mb-14">
           <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Procesul</span>
           <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
             De la clic la <span className="text-[#ED03E9]">3.000€/lună</span>
           </h2>
-          <p className="text-[#737373] font-sans mt-3 max-w-lg mx-auto">Un drum clar, pas cu pas. Fără surprize, fără jargon. Doar rezultate.</p>
+          <p className="text-[#737373] font-sans mt-4 text-base leading-relaxed">
+            Un drum clar, pas cu pas. Fără surprize, fără jargon. Doar rezultate.
+          </p>
         </div>
 
+        {/* Timeline verticală — un singur column, curat pe orice ecran */}
         <div className="relative">
-          {/* Linie centrală */}
-          <div className="absolute left-[28px] lg:left-1/2 top-0 bottom-0 lg:-translate-x-px w-px bg-gradient-to-b from-[#ED03E9] via-[#6B00E8] to-transparent" />
+          {/* Linie verticală */}
+          <div className="absolute left-7 top-7 bottom-7 w-0.5 bg-gradient-to-b from-[#ED03E9] via-[#6B00E8] to-transparent rounded-full" />
 
-          <div className="space-y-10 lg:space-y-0">
+          <div className="space-y-6">
             {[
-              { n:'1', t:'Cumperi programul', sub:'Ziua 1 · 60 secunde', d:'Plată securizată. Accesul la platformă apare pe email instant — în mai puțin de 60 de secunde.', accent:'#ED03E9', icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-              { n:'2', t:'Programezi prima sesiune', sub:'Ziua 1 · 5 minute', d:'Intri în platformă și alegi un slot din calendarul Roxanei. Confirmare automată instantanee.', accent:'#6B00E8', icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-              { n:'3', t:'Primești strategia ta', sub:'Sesiunea · 60 minute', d:'Roxana analizează situația ta concretă și îți creează un plan specific, personalizat, aplicabil imediat.', accent:'#ED03E9', icon:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-              { n:'4', t:'Implementezi și crești', sub:'3–6 luni', d:'Urmezi pașii cu suport continuu prin platformă. Ajungi la 3.000€+/lună și depășești propriile așteptări.', accent:'#6B00E8', icon:'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
-            ].map((step, i) => {
-              const isRight = i % 2 === 1
-              return (
-                <div key={i} className={`relative flex items-center gap-0 lg:gap-0 ${isRight ? 'lg:flex-row-reverse' : ''} mb-10 lg:mb-0 lg:pb-14`}>
-                  {/* Nod centrale */}
-                  <div className="absolute left-[28px] lg:left-1/2 lg:-translate-x-1/2 z-10">
-                    <div className="w-14 h-14 rounded-full border-4 border-white shadow-xl flex items-center justify-center animate-glow" style={{ background:`linear-gradient(135deg,${step.accent},${step.accent}88)` }}>
-                      <span className="text-white font-serif font-bold text-lg">{step.n}</span>
-                    </div>
-                  </div>
-
-                  {/* Spazio mobile */}
-                  <div className="w-[70px] flex-shrink-0 lg:hidden" />
-
-                  {/* Card */}
-                  <div className={`flex-1 ${isRight ? 'lg:pl-0 lg:pr-12' : 'lg:pl-12'} pl-4 lg:w-[calc(50%-40px)]`}>
-                    <div className="bg-white border border-black/6 rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                      <div className={`flex items-center gap-2.5 mb-2 ${isRight ? 'lg:flex-row-reverse' : ''}`}>
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:`${step.accent}15` }}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke={step.accent} strokeWidth="1.8" className="w-4 h-4">
-                            <path d={step.icon} strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                        <span className="text-[11px] font-bold font-sans tracking-[.12em] uppercase" style={{ color: step.accent }}>{step.sub}</span>
-                      </div>
-                      <h3 className="font-serif font-bold text-lg text-[#0A0A0A] mb-1.5">{step.t}</h3>
-                      <p className="text-[#737373] text-sm font-sans leading-relaxed">{step.d}</p>
-                      <div className="w-0 group-hover:w-full h-[1.5px] mt-4 transition-all duration-500 rounded-full" style={{ background:`linear-gradient(90deg,${step.accent},transparent)` }} />
-                    </div>
-                  </div>
-
-                  {/* Lato vuoto desktop */}
-                  <div className="hidden lg:block flex-1 lg:w-[calc(50%-40px)]" />
+              { n:'1', t:'Cumperi programul', sub:'Ziua 1 · 60 secunde', d:'Plată securizată. Primești imediat pe email datele de acces la platformă — în mai puțin de 60 de secunde.', accent:'#ED03E9', icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+              { n:'2', t:'Programezi prima sesiune', sub:'Ziua 1 · 5 minute', d:'Intri în platformă și alegi un slot liber din calendarul Roxanei. Confirmare automată instantanee.', accent:'#6B00E8', icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+              { n:'3', t:'Primești strategia ta personalizată', sub:'Sesiunea · 60 minute', d:'Roxana analizează situația ta concretă și îți creează un plan specific, aplicabil imediat, adaptat exact nevoilor tale.', accent:'#ED03E9', icon:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+              { n:'4', t:'Implementezi și ajungi la 3.000€', sub:'Primele 3–6 luni', d:'Urmezi pașii cu suport continuu prin platformă. Ajungi la 3.000€+/lună și depășești propriile așteptări.', accent:'#6B00E8', icon:'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
+            ].map((step, i) => (
+              <div key={i} className="relative flex items-start gap-5">
+                {/* Nod */}
+                <div className="flex-shrink-0 w-14 h-14 rounded-2xl border-4 border-white shadow-xl flex items-center justify-center relative z-10"
+                  style={{ background:`linear-gradient(135deg,${step.accent},${step.accent}99)`, boxShadow:`0 4px 20px ${step.accent}40` }}>
+                  <span className="text-white font-serif font-bold text-xl">{step.n}</span>
                 </div>
-              )
-            })}
-          </div>
 
-          {/* Flag finale */}
-          <div className="relative flex justify-center mt-4 lg:mt-0">
-            <div className="absolute left-[28px] lg:left-1/2 lg:-translate-x-1/2 -top-3 z-10 w-14 h-14 rounded-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center shadow-xl border-4 border-white">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-6 h-6">
-                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div className="ml-20 lg:ml-0 lg:mt-16 inline-flex items-center gap-2.5 bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white font-sans font-bold px-7 py-3 rounded-full shadow-2xl shadow-[#ED03E9]/25">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-4 h-4">
-                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Ai ajuns la 3.000€/lună
+                {/* Card */}
+                <div className="flex-1 pb-2">
+                  <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-black/5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background:`${step.accent}12` }}>
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" className="w-3.5 h-3.5" style={{ stroke:step.accent }}>
+                          <path d={step.icon} strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <span className="text-[11px] font-bold font-sans tracking-[.1em] uppercase" style={{ color:step.accent }}>{step.sub}</span>
+                    </div>
+                    <h3 className="font-serif font-bold text-[#0A0A0A] text-lg sm:text-xl mb-2">{step.t}</h3>
+                    <p className="text-[#555566] text-sm sm:text-base font-sans leading-relaxed">{step.d}</p>
+                    <div className="w-0 group-hover:w-full h-[2px] mt-4 rounded-full transition-all duration-500" style={{ background:`linear-gradient(90deg,${step.accent},transparent)` }}/>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Flag */}
+            <div className="relative flex items-center gap-5">
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center shadow-xl border-4 border-white relative z-10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-6 h-6">
+                  <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white font-sans font-bold px-6 py-3 rounded-2xl shadow-xl shadow-[#ED03E9]/25">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-4 h-4">
+                    <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Ai ajuns la 3.000€/lună!
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -483,25 +478,75 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
       {/* ─────────── ROXANA ─────────── */}
       <section className="bg-white py-24 px-5 reveal">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative max-w-sm mx-auto md:max-w-none">
-            <div className="absolute -inset-6 bg-gradient-to-br from-[#ED03E9]/15 to-[#6B00E8]/10 rounded-[40px] blur-3xl" />
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-square">
-              <Image src="/roxana.jpg" alt="Roxana Dinca" fill className="object-cover object-top" sizes="400px"/>
-            </div>
-          </div>
-          <div>
+        <div className="max-w-5xl mx-auto">
+          {/* Label centrata */}
+          <div className="text-center mb-10">
             <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Mentorul tău</span>
-            <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-serif font-bold mt-3 mb-5 text-[#0A0A0A]">Bună, eu sunt Roxana</h2>
-            <p className="text-[#3D3D3D] leading-relaxed mb-4 font-sans">Am trecut și eu prin momentul în care nu știam cum să atrag clientele, cum să mă promovez sau dacă e posibil să câștig bani din online. <strong className="text-[#0A0A0A]">Știu exact cum te simți.</strong></p>
-            <p className="text-[#3D3D3D] leading-relaxed mb-7 font-sans">Astăzi am ajutat <strong className="text-[#0A0A0A]">200+ femei</strong> să construiască afaceri profitabile de la zero. Nu îți vând vise — îți ofer <strong className="text-[#0A0A0A]">strategii concrete</strong> care funcționează în România și nu numai.</p>
-            <div className="flex flex-wrap gap-2.5">
-              {['200+ cliente','3+ ani experiență','Rezultate măsurabile','98% satisfacție'].map(b => (
-                <span key={b} className="flex items-center gap-1.5 bg-[#ED03E9]/8 border border-[#ED03E9]/20 text-[#B800BA] font-sans font-semibold text-xs px-3 py-2 rounded-full">
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3"><path d="M3 8l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  {b}
-                </span>
-              ))}
+            <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
+              Bună, eu sunt Roxana
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-start">
+            {/* Foto — stesso stile dell'hero */}
+            <div className="relative max-w-[360px] mx-auto md:max-w-none">
+              <div className="absolute -inset-6 bg-gradient-to-br from-[#ED03E9]/20 to-[#6B00E8]/15 rounded-[40px] blur-3xl" />
+              {/* Stessa card dell'hero: 3/4 ratio, rounded-[28px] */}
+              <div className="relative rounded-[28px] overflow-hidden shadow-2xl shadow-black/15 border border-white/20"
+                style={{ aspectRatio:'3/4' }}>
+                <Image src="/roxana.jpg" alt="Roxana Dinca" fill className="object-cover object-top" sizes="(max-width:768px)340px,400px"/>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"/>
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3.5 shadow-lg">
+                    <p className="font-serif font-bold text-[#0A0A0A] text-sm">Roxana Dinca</p>
+                    <p className="text-[#737373] text-xs font-sans mt-0.5">Mentor & Coach Business Online</p>
+                    <div className="flex items-center gap-0.5 mt-1.5">
+                      {[...Array(5)].map((_,i) => (
+                        <svg key={i} viewBox="0 0 16 16" fill="#ED03E9" className="w-3 h-3">
+                          <path d="M8 1l1.854 3.756L14 5.528l-3 2.923.708 4.128L8 10.5l-3.708 2.079L5 8.45 2 5.528l4.146-.772L8 1z"/>
+                        </svg>
+                      ))}
+                      <span className="text-[10px] text-[#737373] font-sans ml-1">5.0 · 200+ recenzii</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testo */}
+            <div className="flex flex-col justify-center">
+              <p className="text-[#3D3D3D] leading-relaxed text-base sm:text-lg mb-5 font-sans">
+                Am trecut și eu prin momentul în care nu știam cum să atrag clientele, cum să mă promovez sau dacă e posibil să câștig bani din online.{' '}
+                <strong className="text-[#0A0A0A] font-semibold">Știu exact cum te simți.</strong>
+              </p>
+              <p className="text-[#3D3D3D] leading-relaxed text-base sm:text-lg mb-8 font-sans">
+                Astăzi am ajutat <strong className="text-[#0A0A0A] font-semibold">200+ femei</strong> să construiască afaceri profitabile de la zero. Nu îți vând vise — îți ofer{' '}
+                <strong className="text-[#0A0A0A] font-semibold">strategii concrete</strong> care funcționează în România și nu numai.
+              </p>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { n:'200+', l:'Cliente transformate' },
+                  { n:'3+',   l:'Ani de experiență' },
+                  { n:'98%',  l:'Rata de satisfacție' },
+                  { n:'0→3k', l:'Transformare medie' },
+                ].map(stat => (
+                  <div key={stat.l} className="bg-[#FAFAFA] border border-black/5 rounded-2xl p-4 text-center hover:border-[#ED03E9]/20 transition-colors">
+                    <p className="text-2xl font-serif font-bold text-[#ED03E9]">{stat.n}</p>
+                    <p className="text-xs text-[#737373] font-sans mt-1">{stat.l}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2.5">
+                {['200+ cliente','3+ ani experiență','Rezultate măsurabile','98% satisfacție'].map(b => (
+                  <span key={b} className="flex items-center gap-1.5 bg-[#ED03E9]/8 border border-[#ED03E9]/20 text-[#B800BA] font-sans font-semibold text-xs px-3 py-2 rounded-full">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3"><path d="M3 8l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    {b}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -512,46 +557,83 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         <div className="text-center mb-12">
           <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Investiția</span>
           <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Tot ce primești în program</h2>
+          <p className="text-[#737373] font-sans mt-4 text-base max-w-xl mx-auto leading-relaxed">
+            Un singur pachet complet. Fără costuri ascunse. Acces imediat după plată.
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-5 gap-7 items-stretch">
-          <div className="lg:col-span-3 bg-white border border-black/6 rounded-3xl p-6 sm:p-8">
-            <h3 className="font-serif font-bold text-lg text-[#0A0A0A] mb-5">Ce include pachetul:</h3>
-            <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid lg:grid-cols-5 gap-6 sm:gap-8 items-stretch">
+          {/* Lista benefici */}
+          <div className="lg:col-span-3 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-black/5">
+            <h3 className="font-serif font-bold text-xl text-[#0A0A0A] mb-6 flex items-center gap-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="2" className="w-5 h-5">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Ce include pachetul:
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3.5">
               {[
-                'Sesiune 1:1 cu Roxana (60 min)','Analiză completă profil online',
-                'Strategie personalizată de promovare','Plan acțiune lunar detaliat',
-                'Scripturi pentru atragerea clientelelor','Sistem de prețuri optimizat',
-                'Suport prin platformă post-sesiune','Materiale exclusive + bonusuri',
+                { t:'Sesiune 1:1 cu Roxana (60 min)',  val:'297€' },
+                { t:'Analiză completă profil online',   val:'147€' },
+                { t:'Strategie personalizată de promovare', val:'197€' },
+                { t:'Plan acțiune lunar detaliat',       val:'97€'  },
+                { t:'Scripturi pentru atragerea clientelelor', val:'147€' },
+                { t:'Sistem de prețuri optimizat',       val:'97€'  },
+                { t:'Suport prin platformă post-sesiune', val:'197€' },
+                { t:'Materiale exclusive + bonusuri',    val:'197€' },
               ].map(item => (
-                <div key={item} className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center flex-shrink-0">
-                    <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2" className="w-3 h-3"><path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <div key={item.t} className="flex items-start gap-3 p-3 rounded-2xl bg-[#FAFAFA] border border-black/4 hover:border-[#ED03E9]/20 transition-colors group">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-md shadow-[#ED03E9]/20">
+                    <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-3 h-3">
+                      <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
-                  <span className="text-[#3D3D3D] text-sm font-sans">{item}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[#1A1A2E] text-sm font-sans font-semibold leading-tight">{item.t}</p>
+                    <p className="text-[#9090A8] text-xs font-sans mt-0.5 line-through">Valoare: {item.val}</p>
+                  </div>
                 </div>
               ))}
             </div>
+            <div className="mt-6 pt-5 border-t border-black/5 flex items-center justify-between">
+              <span className="text-[#737373] font-sans text-sm font-medium">Valoare totală:</span>
+              <span className="text-2xl font-serif font-bold text-[#BCBCCC] line-through">1.376€</span>
+            </div>
           </div>
 
+          {/* Price card */}
           <div className="lg:col-span-2 relative">
-            <div className="absolute -inset-2 bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-3xl blur-xl opacity-25" />
-            <div className="relative h-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-3xl p-7 text-white text-center shadow-2xl flex flex-col">
-              <div className="inline-flex self-center items-center gap-1.5 bg-white/20 text-white text-[11px] font-bold px-3 py-1.5 rounded-full mb-5 uppercase tracking-wider">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3"><path d="M8 1l1.854 3.756L14 5.528l-3 2.923.708 4.128L8 10.5l-3.708 2.079L5 8.45 2 5.528l4.146-.772L8 1z"/></svg>
+            <div className="absolute -inset-2 bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-3xl blur-2xl opacity-30" />
+            <div className="relative h-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-3xl p-7 sm:p-8 text-white text-center shadow-2xl shadow-[#ED03E9]/30 flex flex-col overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[50px]" />
+
+              <div className="inline-flex self-center items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
+                <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                  <path d="M8 1l1.854 3.756L14 5.528l-3 2.923.708 4.128L8 10.5l-3.708 2.079L5 8.45 2 5.528l4.146-.772L8 1z"/>
+                </svg>
                 Ofertă limitată
               </div>
-              <p className="text-white/75 font-sans text-sm mb-1">Plătești doar</p>
-              <p className="text-6xl sm:text-7xl font-serif font-bold mb-1">{price}</p>
-              <p className="text-white/60 text-sm font-sans mb-2">o singură plată</p>
-              <p className="text-white/90 text-xs font-bold bg-white/15 rounded-full py-1.5 px-4 inline-block self-center mb-7">Valoare reală: 1.376€</p>
+
+              <p className="text-white/75 font-sans text-sm font-medium mb-1">Tu plătești doar</p>
+              <p className="text-5xl sm:text-6xl font-serif font-bold mb-1 leading-none">{price}</p>
+              <p className="text-white/60 text-sm font-sans mb-3">o singură plată · fără abonament</p>
+              <div className="inline-block self-center bg-white/15 rounded-full py-1.5 px-5 mb-7">
+                <p className="text-white font-bold text-sm">Economisești <span className="text-yellow-200">1.079€</span></p>
+              </div>
+
               <div className="flex-1 flex flex-col justify-end gap-3">
                 <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} white />
-                <div className="flex flex-col gap-1.5">
-                  {['Plată securizată Stripe','Acces imediat','Garanție satisfacție'].map(t => (
-                    <div key={t} className="flex items-center justify-center gap-1.5 text-white/75 text-xs font-sans">
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3"><path d="M3 8l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      {t}
+                <div className="flex flex-col gap-2 mt-1">
+                  {[
+                    { icon:'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', t:'Plată securizată Stripe' },
+                    { icon:'M13 10V3L4 14h7v7l9-11h-7z', t:'Acces imediat' },
+                    { icon:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', t:'Garanție satisfacție' },
+                  ].map(item => (
+                    <div key={item.t} className="flex items-center justify-center gap-2 text-white/80 text-xs font-sans">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
+                        <path d={item.icon} strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {item.t}
                     </div>
                   ))}
                 </div>
