@@ -23,12 +23,51 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll, { passive: true })
 
+    // Reveal generico + reveal-children staggered
     const io = new IntersectionObserver(
       (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
-      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.07, rootMargin: '0px 0px -30px 0px' }
     )
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el))
+    document.querySelectorAll('.reveal, .reveal-children').forEach(el => io.observe(el))
 
+    // Timeline line: cresce man mano che si scorre
+    const lineEl = document.querySelector('.timeline-line') as HTMLElement | null
+    const timelineSection = document.getElementById('proces')
+
+    const ioLine = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('active')
+          ioLine.unobserve(e.target)
+        }
+      })
+    }, { threshold: 0.1 })
+    if (lineEl) ioLine.observe(lineEl)
+
+    // Timeline steps: entrano uno alla volta con delay
+    const steps = document.querySelectorAll('.timeline-step')
+    const ioSteps = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible')
+          ioSteps.unobserve(e.target)
+        }
+      })
+    }, { threshold: 0.15, rootMargin: '0px 0px -20px 0px' })
+    steps.forEach(s => ioSteps.observe(s))
+
+    // Scroll progress della linea (live mentre si scorre)
+    const updateLineProgress = () => {
+      if (!lineEl || !timelineSection) return
+      const rect = timelineSection.getBoundingClientRect()
+      const winH = window.innerHeight
+      const progress = Math.max(0, Math.min(1, (winH - rect.top) / (rect.height + winH * 0.3)))
+      lineEl.style.transform = `scaleY(${progress})`
+    }
+    window.addEventListener('scroll', updateLineProgress, { passive: true })
+    updateLineProgress()
+
+    // Parallax mouse — solo desktop
     let rafId = 0
     const onMove = (e: MouseEvent) => {
       if (window.innerWidth < 1024 || !heroRef.current) return
@@ -44,9 +83,12 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
     return () => {
       window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('scroll', updateLineProgress)
       window.removeEventListener('mousemove', onMove)
       cancelAnimationFrame(rafId)
       io.disconnect()
+      ioLine.disconnect()
+      ioSteps.disconnect()
     }
   }, [])
 
@@ -300,7 +342,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-3 gap-5 reveal-children">
             {[
               { num:'01', icon:'M13 10V3L4 14h7v7l9-11h-7z', title:'Cum să te promovezi', desc:'Strategie de conținut autentică. Prezență magnetică online. Vizibilitate care atrage clientele ideale — fără să te epuizezi.', accent:'#ED03E9' },
               { num:'02', icon:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', title:'Cum să atragi clientele', desc:'Sistem complet de atracție și conversie. De la follower necunoscut la clientă plătitoare care te recomandă mai departe.', accent:'#6B00E8' },
@@ -334,10 +376,11 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           </p>
         </div>
 
-        {/* Timeline verticală — un singur column, curat pe orice ecran */}
+        {/* Timeline verticală animată */}
         <div className="relative">
-          {/* Linie verticală */}
-          <div className="absolute left-7 top-7 bottom-7 w-0.5 bg-gradient-to-b from-[#ED03E9] via-[#6B00E8] to-transparent rounded-full" />
+          {/* Linie care cresce con lo scroll — transform-origin: top */}
+          <div className="timeline-line absolute left-7 top-7 bottom-7 w-0.5 rounded-full"
+            style={{ background:'linear-gradient(to bottom,#ED03E9,#6B00E8,transparent)', transformOrigin:'top center' }}/>
 
           <div className="space-y-6">
             {[
@@ -346,16 +389,19 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               { n:'3', t:'Primești strategia ta personalizată', sub:'Sesiunea · 60 minute', d:'Roxana analizează situația ta concretă și îți creează un plan specific, aplicabil imediat, adaptat exact nevoilor tale.', accent:'#ED03E9', icon:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
               { n:'4', t:'Implementezi și ajungi la 3.000€', sub:'Primele 3–6 luni', d:'Urmezi pașii cu suport continuu prin platformă. Ajungi la 3.000€+/lună și depășești propriile așteptări.', accent:'#6B00E8', icon:'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
             ].map((step, i) => (
-              <div key={i} className="relative flex items-start gap-5">
-                {/* Nod */}
+              <div key={i} className="timeline-step relative flex items-start gap-5"
+                style={{ transitionDelay:`${i * 0.12}s` }}>
+                {/* Nod pulsante */}
                 <div className="flex-shrink-0 w-14 h-14 rounded-2xl border-4 border-white shadow-xl flex items-center justify-center relative z-10"
-                  style={{ background:`linear-gradient(135deg,${step.accent},${step.accent}99)`, boxShadow:`0 4px 20px ${step.accent}40` }}>
+                  style={{ background:`linear-gradient(135deg,${step.accent},${step.accent}99)`, boxShadow:`0 4px 20px ${step.accent}45` }}>
                   <span className="text-white font-serif font-bold text-xl">{step.n}</span>
+                  {/* Pulse ring */}
+                  <div className="absolute inset-0 rounded-2xl animate-ping opacity-20" style={{ background:step.accent, animationDuration:'2.5s' }}/>
                 </div>
 
-                {/* Card */}
+                {/* Card con slide-in */}
                 <div className="flex-1 pb-2">
-                  <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-black/5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+                  <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-black/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                     <div className="flex items-center gap-2 mb-2.5">
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background:`${step.accent}12` }}>
                         <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" className="w-3.5 h-3.5" style={{ stroke:step.accent }}>
@@ -372,8 +418,8 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               </div>
             ))}
 
-            {/* Flag */}
-            <div className="relative flex items-center gap-5">
+            {/* Flag finale */}
+            <div className="timeline-step relative flex items-center gap-5" style={{ transitionDelay:'0.5s' }}>
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center shadow-xl border-4 border-white relative z-10">
                 <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-6 h-6">
                   <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
@@ -402,7 +448,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid md:grid-cols-2 gap-5 reveal-children">
             <div className="bg-[#FAFAFA] border border-black/6 rounded-3xl p-7 relative overflow-hidden">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-gray-200 to-gray-100 rounded-t-3xl" />
               <div className="inline-flex items-center gap-1.5 bg-black/5 text-[#737373] text-[11px] font-sans font-bold px-3 py-1.5 rounded-full mb-5 uppercase tracking-wider">
@@ -449,7 +495,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Ce spun clientele mele</h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-3 gap-5 reveal-children">
           {[
             { n:'MT', name:'Maria T.', loc:'Cluj-Napoca', r:'0 → 3.200€/lună', t:'În 2 luni am ajuns la primii 1.500€. În 4 luni am depășit 3.000€/lună. Nu îmi venea să cred că se poate schimba atât de mult viața mea în atât de puțin timp.' },
             { n:'IP', name:'Ioana P.', loc:'București', r:'+2.500€/lună', t:'Roxana mi-a dat exact ce aveam nevoie: claritate și un plan real. Nu teorie goală — pași concreți pe care i-am implementat imediat cu rezultate vizibile.' },
@@ -571,7 +617,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               </svg>
               Ce include pachetul:
             </h3>
-            <div className="grid sm:grid-cols-2 gap-3.5">
+            <div className="grid sm:grid-cols-2 gap-3.5 reveal-children">
               {[
                 { t:'Sesiune 1:1 cu Roxana (60 min)',  val:'297€' },
                 { t:'Analiză completă profil online',   val:'147€' },
