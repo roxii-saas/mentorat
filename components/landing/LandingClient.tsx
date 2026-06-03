@@ -10,6 +10,10 @@ interface Settings {
   currency: string
   product_name: string
   sales_active: boolean
+  comparison_price: number
+  cta_text: string
+  hero_image_url: string | null
+  mentor_image_url: string | null
 }
 
 export default function LandingClient({ initialSettings }: { initialSettings: Settings }) {
@@ -99,6 +103,11 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
   }
 
   const price = formatPrice(settings.price_amount, settings.currency.toUpperCase())
+  const comparisonPrice = settings.comparison_price ?? 1376
+  const savings = comparisonPrice - settings.price_amount
+  const ctaText = settings.cta_text || 'Vreau să mă transform'
+  const heroSrc = settings.hero_image_url || '/roxana.jpg'
+  const mentorSrc = settings.mentor_image_url || '/roxana.jpg'
 
   return (
     <div className="bg-[#FAFAFA] text-[#0A0A0A] overflow-x-hidden">
@@ -125,7 +134,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                 <path d="M10 11a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" strokeLinecap="round"/>
               </svg>
             </Link>
-            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} subtle />
+            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} subtle />
           </div>
 
           <button className="sm:hidden p-2.5 rounded-lg hover:bg-black/5 transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
@@ -170,7 +179,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             </svg>
             Contul meu
           </Link>
-          <BuyBtn onClick={() => { setMenuOpen(false); handleBuy() }} loading={buyLoading} price={price} active={settings.sales_active} full />
+          <BuyBtn onClick={() => { setMenuOpen(false); handleBuy() }} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} full />
         </div>
       </div>
 
@@ -223,7 +232,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} large />
+            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} large />
             <a href="#proces" className="inline-flex items-center justify-center gap-2 text-sm font-sans font-semibold text-[#3D3D3D] px-7 py-4 rounded-2xl border border-black/10 hover:border-black/20 hover:bg-black/3 transition-all">
               Cum funcționează
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
@@ -260,7 +269,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
           <div className="relative rounded-[28px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.18)] border border-white/30">
             <div className="aspect-[3/4] relative">
-              <Image src="/roxana.jpg" alt="Roxana Dinca" fill className="object-cover object-top" priority sizes="(max-width:768px)340px,400px"/>
+              <Image src={heroSrc} alt="Roxana Dinca" fill className="object-cover object-top" priority sizes="(max-width:768px)340px,400px" unoptimized={heroSrc.startsWith('http')}/>
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"/>
             <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -365,7 +374,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section id="despre" className="bg-white py-24 px-5 reveal">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Soluția</span>
+            <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Soluția</span>
             <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 mb-4 text-[#0A0A0A] leading-tight">
               3 piloni pentru a ajunge la <span className="text-[#ED03E9]">3.000€/lună</span>
             </h2>
@@ -396,7 +405,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       {/* ─────────── TIMELINE PROFESIONALĂ ─────────── */}
       <section id="proces" className="py-24 px-5 max-w-3xl mx-auto reveal">
         <div className="text-center mb-14">
-          <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Procesul</span>
+          <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Procesul</span>
           <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
             De la clic la <span className="text-[#ED03E9]">3.000€/lună</span>
           </h2>
@@ -471,7 +480,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section className="bg-white py-24 px-5 reveal">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Transformarea</span>
+            <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Transformarea</span>
             <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
               Înainte vs. <span className="text-[#ED03E9]">După</span>
             </h2>
@@ -520,7 +529,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       {/* ─────────── TESTIMONIALE ─────────── */}
       <section id="rezultate" className="py-24 px-5 max-w-5xl mx-auto reveal">
         <div className="text-center mb-12">
-          <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Povești reale</span>
+          <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Povești reale</span>
           <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Ce spun clientele mele</h2>
         </div>
 
@@ -556,7 +565,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         <div className="max-w-5xl mx-auto">
           {/* Label centrata */}
           <div className="text-center mb-10">
-            <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Mentorul tău</span>
+            <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Mentorul tău</span>
             <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">
               Bună, eu sunt Roxana
             </h2>
@@ -568,7 +577,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               <div className="absolute -inset-6 bg-gradient-to-br from-[#ED03E9]/20 to-[#6B00E8]/15 rounded-[40px] blur-3xl" />
               {/* Stessa card dell'hero: 3/4 ratio, rounded-[28px] */}
               <div className="relative rounded-[28px] overflow-hidden shadow-2xl shadow-black/15 border border-white/20 aspect-[3/4] w-full">
-                <Image src="/roxana.jpg" alt="Roxana Dinca" fill className="object-cover object-top" sizes="(max-width:768px)340px,400px"/>
+                <Image src={mentorSrc} alt="Roxana Dinca" fill className="object-cover object-top" sizes="(max-width:768px)340px,400px" unoptimized={mentorSrc.startsWith('http')}/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"/>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3.5 shadow-lg">
@@ -629,7 +638,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       {/* ─────────── PREȚ ─────────── */}
       <section id="pret" className="py-24 px-5 max-w-5xl mx-auto reveal">
         <div className="text-center mb-12">
-          <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">Investiția</span>
+          <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">Investiția</span>
           <h2 className="text-[clamp(2.4rem,5.5vw,4.2rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Tot ce primești în program</h2>
           <p className="text-[#737373] font-sans mt-4 text-base max-w-xl mx-auto leading-relaxed">
             Un singur pachet complet. Fără costuri ascunse. Acces imediat după plată.
@@ -671,7 +680,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             </div>
             <div className="mt-6 pt-5 border-t border-black/5 flex items-center justify-between">
               <span className="text-[#737373] font-sans text-sm font-medium">Valoare totală:</span>
-              <span className="text-2xl font-serif font-bold text-[#BCBCCC] line-through">1.376€</span>
+              <span className="text-2xl font-serif font-bold text-[#BCBCCC] line-through">{comparisonPrice.toLocaleString('ro-RO')}€</span>
             </div>
           </div>
 
@@ -692,11 +701,11 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               <p className="text-5xl sm:text-6xl font-serif font-bold mb-1 leading-none">{price}</p>
               <p className="text-white/60 text-sm font-sans mb-3">o singură plată · fără abonament</p>
               <div className="inline-block self-center bg-white/15 rounded-full py-1.5 px-5 mb-7">
-                <p className="text-white font-bold text-sm">Economisești <span className="text-yellow-200">1.079€</span></p>
+                <p className="text-white font-bold text-sm">Economisești <span className="text-yellow-200">{savings.toLocaleString('ro-RO')}€</span></p>
               </div>
 
               <div className="flex-1 flex flex-col justify-end gap-3">
-                <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} white />
+                <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} white />
                 <div className="flex flex-col gap-2 mt-1">
                   {[
                     { icon:'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', t:'Plată securizată Stripe' },
@@ -721,7 +730,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section className="bg-white py-24 px-5 reveal">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <span className="text-[#ED03E9] font-sans font-bold text-[11px] tracking-[.18em] uppercase">FAQ</span>
+            <span className="text-[#ED03E9] font-sans font-bold text-[13px] sm:text-[11px] tracking-[.18em] uppercase">FAQ</span>
             <h2 className="text-[clamp(2rem,5vw,3rem)] font-serif font-bold mt-3 text-[#0A0A0A]">Întrebări frecvente</h2>
           </div>
           <div className="space-y-2">
@@ -764,7 +773,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             Ești gata să<br/><span className="text-shimmer">schimbi totul</span>?
           </h2>
           <p className="text-white/60 text-lg sm:text-xl mb-12 font-sans">Următoarea ta versiune începe astăzi.</p>
-          <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} large white />
+          <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} large white />
           <div className="flex flex-wrap items-center justify-center gap-5 mt-9">
             {['Plată securizată','Acces imediat','Garanție satisfacție'].map(t => (
               <div key={t} className="flex items-center gap-1.5 text-white/40 text-sm font-sans">
@@ -785,13 +794,13 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                 <Image src="/logo.png" alt="Mentorat cu Roxana" width={170} height={58}
                   className="h-14 w-auto object-contain brightness-0 invert"/>
               </div>
-              <p className="text-[#636363] text-sm font-sans leading-relaxed">Mentor & Coach de Business Online. Ajut femeile să construiască afaceri profitabile de la zero.</p>
+              <p className="text-white/55 text-sm font-sans leading-relaxed">Mentor & Coach de Business Online. Ajut femeile să construiască afaceri profitabile de la zero.</p>
             </div>
             <div>
               <p className="font-sans font-semibold text-white text-sm mb-4">Navigare</p>
               <ul className="space-y-2.5">
                 {[['#despre','Despre Roxana'],['#proces','Cum funcționează'],['#rezultate','Rezultate'],['#pret','Preț']].map(([h,l]) => (
-                  <li key={h}><a href={h} className="text-sm text-[#636363] hover:text-[#ED03E9] font-sans transition-colors">{l}</a></li>
+                  <li key={h}><a href={h} className="text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors">{l}</a></li>
                 ))}
               </ul>
             </div>
@@ -799,19 +808,19 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               <p className="font-sans font-semibold text-white text-sm mb-4">Cont</p>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="mailto:roxana@roxii-dinca.com" className="flex items-center gap-2 text-sm text-[#636363] hover:text-[#ED03E9] font-sans transition-colors">
+                  <a href="mailto:roxana@roxii-dinca.com" className="flex items-center gap-2 text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors">
                     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L17 8M5 19h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     Email contact
                   </a>
                 </li>
-                <li><Link href="/login" className="flex items-center gap-2 text-sm text-[#636363] hover:text-[#ED03E9] font-sans transition-colors"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><path d="M3 10a7 7 0 1014 0A7 7 0 003 10zm4 0a3 3 0 116 0 3 3 0 01-6 0z" strokeLinecap="round"/></svg>Intră în cont</Link></li>
-                <li><Link href="/dashboard" className="flex items-center gap-2 text-sm text-[#636363] hover:text-[#ED03E9] font-sans transition-colors"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><rect x="2" y="2" width="7" height="7" rx="1"/><rect x="11" y="2" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/><rect x="2" y="11" width="7" height="7" rx="1"/></svg>Dashboard clientă</Link></li>
+                <li><Link href="/login" className="flex items-center gap-2 text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><path d="M3 10a7 7 0 1014 0A7 7 0 003 10zm4 0a3 3 0 116 0 3 3 0 01-6 0z" strokeLinecap="round"/></svg>Intră în cont</Link></li>
+                <li><Link href="/dashboard" className="flex items-center gap-2 text-sm text-white/55 hover:text-[#ED03E9] font-sans transition-colors"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><rect x="2" y="2" width="7" height="7" rx="1"/><rect x="11" y="2" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/><rect x="2" y="11" width="7" height="7" rx="1"/></svg>Dashboard clientă</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-white/5 pt-7 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-[#3D3D3D] font-sans">© {new Date().getFullYear()} Roxana Dinca · Toate drepturile rezervate</p>
-            <div className="flex items-center gap-1.5 text-xs text-[#3D3D3D] font-sans">
+            <p className="text-xs text-white/30 font-sans">© {new Date().getFullYear()} Roxana Dinca · Toate drepturile rezervate</p>
+            <div className="flex items-center gap-1.5 text-xs text-white/30 font-sans">
               <svg viewBox="0 0 16 16" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-3.5 h-3.5"><path d="M8 1.5l1.56 3.16L13 5.25l-2.5 2.44.59 3.44L8 9.5l-3.09 1.63.59-3.44L3 5.25l3.44-.59L8 1.5z" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Plată securizată SSL
             </div>
@@ -821,7 +830,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
       {/* Mobile sticky CTA */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/8 px-4 py-3 shadow-2xl">
-        <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} subtle full />
+        <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} subtle full />
       </div>
       <div className="sm:hidden h-20" aria-hidden />
 
@@ -829,9 +838,9 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
   )
 }
 
-function BuyBtn({ onClick, loading, price, active, large, white, full, subtle }: {
+function BuyBtn({ onClick, loading, price, active, large, white, full, subtle, ctaText = 'Vreau să mă transform' }: {
   onClick: () => void; loading: boolean; price: string; active: boolean
-  large?: boolean; white?: boolean; full?: boolean; subtle?: boolean
+  large?: boolean; white?: boolean; full?: boolean; subtle?: boolean; ctaText?: string
 }) {
   if (!active) return (
     <button disabled className={`inline-flex items-center justify-center gap-2 font-sans font-semibold rounded-2xl bg-black/10 text-[#737373] cursor-not-allowed ${large?'px-10 py-5 text-lg':full?'w-full py-3.5 text-base':subtle?'px-4 py-2 text-xs':'px-7 py-3.5 text-sm'}`}>
@@ -854,7 +863,7 @@ function BuyBtn({ onClick, loading, price, active, large, white, full, subtle }:
         {loading ? (
           <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Se procesează...</>
         ) : (
-          <>Vreau să mă transform — {price}<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>
+          <>{ctaText} — {price}<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>
         )}
       </span>
     </button>
