@@ -5,23 +5,25 @@ import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generatePassword } from '@/lib/utils'
 
-async function callEdgeFunction(email: string, name: string, userId: string, amount?: number, currency?: string, phone?: string) {
+// Fire-and-forget: non blocca il webhook, Stripe riceve 200 immediatamente
+function callEdgeFunction(
+  email: string, name: string, userId: string, password: string,
+  amount?: number, currency?: string, phone?: string
+) {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-welcome-email`
-  const res = await fetch(url, {
+  fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
     },
-    body: JSON.stringify({ email, name, userId, amount, currency, phone }),
+    body: JSON.stringify({ email, name, userId, password, amount, currency, phone }),
   })
-  if (!res.ok) {
-    const body = await res.text()
-    console.error('Edge Function error:', res.status, body)
-  } else {
-    const body = await res.json()
-    console.log('Edge Function ok — emailId:', body.emailId)
-  }
+    .then(async res => {
+      if (!res.ok) console.error('Edge Function error:', res.status, await res.text())
+      else console.log('Edge Function ok — email inviata a:', email)
+    })
+    .catch(e => console.error('Edge Function fetch failed:', e))
 }
 
 export async function POST(req: Request) {
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
   if (event.type === 'payment_intent.succeeded') {
     const pi = event.data.object as Stripe.PaymentIntent
 
-    // 1. Email / nome / telefono: prova metadata → billing_details del payment method
+    // Email / nome / telefono: da metadata → billing_details del payment method
     let email: string | null = pi.metadata?.customer_email || pi.receipt_email || null
     let fullName: string = pi.metadata?.customer_name || ''
     let phone: string = pi.metadata?.customer_phone || ''
@@ -58,13 +60,12 @@ export async function POST(req: Request) {
 
     if (!email) {
       console.error('No email found in payment intent:', pi.id)
-      // Restituisci 200 per evitare che Stripe ripeta infinitamente
       return NextResponse.json({ received: true, warning: 'no email' })
     }
 
     const supabase = createAdminClient()
 
-    // 2. Controlla se utente esiste già
+    // Utente già esistente → aggiorna profilo e reinvia email
     const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 })
     const existingUser = users?.find(u => u.email === email)
 
@@ -75,12 +76,14 @@ export async function POST(req: Request) {
         ...(phone && { phone }),
       }).eq('id', existingUser.id)
 
-      // Invia comunque l'email (potrebbe non averla ricevuta prima)
-      await callEdgeFunction(email, fullName || email, existingUser.id, pi.amount / 100, pi.currency, phone)
+      // Genera nuova password temporanea e invia email
+      const tempPassword = generatePassword(14)
+      await supabase.auth.admin.updateUserById(existingUser.id, { password: tempPassword })
+      callEdgeFunction(email, fullName || email, existingUser.id, tempPassword, pi.amount / 100, pi.currency, phone)
       return NextResponse.json({ received: true })
     }
 
-    // 3. Crea nuovo utente
+    // Nuovo utente
     const tempPassword = generatePassword(14)
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email,
@@ -94,7 +97,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Could not create user' }, { status: 500 })
     }
 
-    // 4. Aggiorna profilo (incluso telefono se presente)
     await supabase.from('profiles').update({
       full_name: fullName,
       stripe_payment_intent_id: pi.id,
@@ -102,8 +104,8 @@ export async function POST(req: Request) {
       ...(phone && { phone }),
     }).eq('id', newUser.user.id)
 
-    // 5. Chiama Edge Function per inviare email di benvenuto + notifica admin
-    await callEdgeFunction(email, fullName || email, newUser.user.id, pi.amount / 100, pi.currency, phone)
+    // Fire-and-forget: restituiamo 200 a Stripe subito
+    callEdgeFunction(email, fullName || email, newUser.user.id, tempPassword, pi.amount / 100, pi.currency, phone)
   }
 
   return NextResponse.json({ received: true })

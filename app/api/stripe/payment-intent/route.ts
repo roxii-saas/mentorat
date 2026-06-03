@@ -20,9 +20,7 @@ export async function POST() {
   const paymentIntent = await stripe.paymentIntents.create({
     amount,
     currency,
-    // Card include Apple Pay e Google Pay (wallet su card)
-    // Rimuove Klarna, iDEAL, Bancontact ecc.
-    payment_method_types: ['card'],
+    automatic_payment_methods: { enabled: true },
     metadata: {
       product_name: settings.product_name ?? 'Mentorat Premium',
     },
