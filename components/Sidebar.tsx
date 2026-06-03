@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -48,15 +49,8 @@ export default function Sidebar({ items, role, userName, userEmail }: SidebarPro
             <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round"/>
           </svg>
         </button>
-        <Link href={home} className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-[#ED03E9] rounded-lg flex items-center justify-center shadow-lg shadow-[#ED03E9]/30">
-            <svg viewBox="0 0 20 20" fill="none" stroke="white" strokeWidth="2.2" className="w-3.5 h-3.5">
-              <path d="M10 2L3 6l7 4 7-4-7-4zM3 13l7 4 7-4M3 9.5l7 4 7-4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="font-serif font-bold text-[#0A0A0A] text-base">
-            {role==='admin'?'Admin':'Mentorat'}<span className="text-[#ED03E9]">.</span>
-          </span>
+        <Link href={home}>
+          <Image src="/logo.png" alt="Mentorat" width={100} height={34} className="h-8 w-auto object-contain"/>
         </Link>
         <div className="w-8 h-8 bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg">
           {initials}
@@ -73,13 +67,16 @@ export default function Sidebar({ items, role, userName, userEmail }: SidebarPro
 
         {/* Logo */}
         <div className="flex items-center justify-between h-14 px-3 flex-shrink-0" style={{ borderBottom:'1px solid rgba(255,255,255,0.5)' }}>
-          <Link href={home} className={cn('flex items-center gap-2.5 min-w-0', collapsed && 'lg:justify-center')}>
-            <div className="w-8 h-8 bg-[#ED03E9] rounded-xl flex items-center justify-center shadow-lg shadow-[#ED03E9]/30 flex-shrink-0">
-              <svg viewBox="0 0 20 20" fill="none" stroke="white" strokeWidth="2.2" className="w-4 h-4">
-                <path d="M10 2L3 6l7 4 7-4-7-4zM3 13l7 4 7-4M3 9.5l7 4 7-4" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            {!collapsed && (
+          <Link href={home} className={cn('flex items-center min-w-0', collapsed ? 'lg:justify-center' : '')}>
+            {collapsed
+              ? <div className="w-8 h-8 bg-[#ED03E9] rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="white" strokeWidth="2.2" className="w-4 h-4">
+                    <path d="M10 2L3 6l7 4 7-4-7-4zM3 13l7 4 7-4M3 9.5l7 4 7-4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              : <Image src="/logo.png" alt="Mentorat" width={120} height={40} className="h-10 w-auto object-contain"/>
+            }
+            {false && (
               <div className="leading-tight min-w-0">
                 <span className="font-serif font-bold text-[#0A0A0A] text-[15px] block">
                   {role==='admin'?'Admin':'Mentorat'}<span className="text-[#ED03E9]">.</span>

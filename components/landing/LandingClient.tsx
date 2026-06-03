@@ -107,13 +107,10 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/90 backdrop-blur-xl border-b border-black/5 shadow-sm' : ''}`}>
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
 
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-[#ED03E9] flex items-center justify-center shadow-lg shadow-[#ED03E9]/30 group-hover:scale-110 transition-transform duration-300">
-              <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
-                <path d="M10 2L3 6l7 4 7-4-7-4zM3 13l7 4 7-4M3 9.5l7 4 7-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="font-serif font-bold text-lg text-[#0A0A0A] tracking-tight">Roxana<span className="text-[#ED03E9]">.</span></span>
+          <Link href="/" className="flex items-center group">
+            <Image src="/logo.png" alt="Mentorat cu Roxana" width={120} height={40}
+              className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+              priority/>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8">
@@ -753,13 +750,9 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         <div className="max-w-5xl mx-auto">
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-10 mb-10">
             <div>
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-[#ED03E9] flex items-center justify-center shadow-lg">
-                  <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
-                    <path d="M10 2L3 6l7 4 7-4-7-4zM3 13l7 4 7-4M3 9.5l7 4 7-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <span className="font-serif font-bold text-white">Roxana Dinca</span>
+              <div className="mb-4">
+                <Image src="/logo.png" alt="Mentorat cu Roxana" width={130} height={44}
+                  className="h-11 w-auto object-contain brightness-0 invert"/>
               </div>
               <p className="text-[#636363] text-sm font-sans leading-relaxed">Mentor & Coach de Business Online. Ajut femeile să construiască afaceri profitabile de la zero.</p>
             </div>

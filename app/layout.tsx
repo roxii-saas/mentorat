@@ -21,6 +21,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Mentorat cu Roxana — De la 0 la 3.000€",
   description: "Strategii personalizate pentru succesul tău online. Cum să atragi clientele, cum să te promovezi și să obții claritate în online.",
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+      { url: '/logo.png',    type: 'image/png', sizes: '256x256' },
+    ],
+    apple: { url: '/apple-icon.png', type: 'image/png', sizes: '180x180' },
+  },
   openGraph: {
     title: "Mentorat cu Roxana — De la 0 la 3.000€",
     description: "Strategii personalizate pentru succesul tău online.",
@@ -28,6 +35,7 @@ export const metadata: Metadata = {
     siteName: "Mentorat Roxana",
     locale: "ro_RO",
     type: "website",
+    images: [{ url: '/logo.png', width: 400, height: 400 }],
   },
 }
 
