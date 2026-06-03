@@ -61,7 +61,7 @@ export default async function ClientiPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-black/[.04]">
-                {['Clientă', 'Email', 'Sesiuni', 'Înregistrată', 'Status'].map(h => (
+                {['Clientă', 'Email', 'Telefon', 'Sesiuni', 'Înregistrată', 'Status'].map(h => (
                   <th key={h} className="text-left px-5 py-3 text-[11px] font-bold db-muted font-sans uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -82,6 +82,17 @@ export default async function ClientiPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-sm db-muted font-sans">{client.email}</td>
+                    <td className="px-5 py-3.5 text-sm font-sans">
+                      {client.phone
+                        ? <a href={`tel:${client.phone}`} className="db-text hover:text-[#ED03E9] transition-colors flex items-center gap-1.5">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-3.5 h-3.5 flex-shrink-0 db-muted">
+                              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            {client.phone}
+                          </a>
+                        : <span className="db-muted">—</span>
+                      }
+                    </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold db-text font-sans">{bookings.length}</span>
@@ -123,7 +134,15 @@ export default async function ClientiPage() {
                     }
                   </div>
                   <p className="text-xs db-muted font-sans truncate mt-0.5">{client.email}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
+                  <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                    {client.phone && (
+                      <a href={`tel:${client.phone}`} className="text-xs db-muted font-sans flex items-center gap-1 hover:text-[#ED03E9] transition-colors">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-3 h-3">
+                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        {client.phone}
+                      </a>
+                    )}
                     <span className="text-xs db-muted font-sans">{bookings.length} sesiuni</span>
                     <span className="text-xs db-muted font-sans">{format(new Date(client.created_at), 'd MMM yyyy', { locale: ro })}</span>
                   </div>

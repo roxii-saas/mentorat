@@ -21,12 +21,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, name, userId, amount, currency } = await req.json() as {
+    const { email, name, userId, amount, currency, phone } = await req.json() as {
       email: string
       name?: string
       userId: string
       amount?: number
       currency?: string
+      phone?: string
     }
 
     if (!email || !userId) {
@@ -196,6 +197,10 @@ Deno.serve(async (req) => {
             <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Email</td>
             <td style="padding:6px 0;font-size:14px;color:#0A0A0A;">${email}</td>
           </tr>
+          ${phone ? `<tr>
+            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Telefon</td>
+            <td style="padding:6px 0;font-size:14px;color:#0A0A0A;"><a href="tel:${phone}" style="color:#ED03E9;text-decoration:none;">${phone}</a></td>
+          </tr>` : ''}
           <tr>
             <td style="padding:6px 0;font-size:13px;font-weight:600;color:#737373;">Sumă</td>
             <td style="padding:6px 0;font-size:16px;font-weight:800;color:#ED03E9;">${priceStr}</td>

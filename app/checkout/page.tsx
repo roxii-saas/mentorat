@@ -156,14 +156,15 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
   const elements = useElements()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!stripe || !elements) return
-    if (!name.trim() || !email.trim()) {
-      setError('Te rugăm să completezi numele și email-ul.')
+    if (!name.trim() || !email.trim() || !phone.trim()) {
+      setError('Te rugăm să completezi toate câmpurile obligatorii.')
       return
     }
     setSubmitting(true)
@@ -172,14 +173,14 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
     await fetch('/api/stripe/update-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientSecret: order.clientSecret, name, email }),
+      body: JSON.stringify({ clientSecret: order.clientSecret, name, email, phone }),
     })
 
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/checkout/success`,
-        payment_method_data: { billing_details: { name, email } },
+        payment_method_data: { billing_details: { name, email, phone } },
       },
     })
 
@@ -248,6 +249,24 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
                       />
                       <p className="text-[11px] text-[#ABABAB] font-sans mt-1">Datele de acces vor fi trimise pe acest email</p>
                     </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-[#3D3D3D] mb-1.5 font-sans">
+                        Număr de telefon <span className="text-[#ED03E9]">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                          <svg viewBox="0 0 20 20" fill="none" stroke="#ABABAB" strokeWidth="1.8" className="w-4 h-4">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <input
+                          type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                          placeholder="+40 7XX XXX XXX" required
+                          className="w-full bg-[#FAFAFA] border border-black/[.09] rounded-xl pl-10 pr-4 py-3 font-sans text-[15px] text-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/12 focus:border-[#ED03E9]/60 placeholder:text-[#ABABAB] transition-colors"
+                        />
+                      </div>
+                      <p className="text-[11px] text-[#ABABAB] font-sans mt-1">Folosit pentru comunicare legată de sesiunea ta</p>
+                    </div>
                   </div>
                 </div>
 
@@ -269,7 +288,7 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
                       options={{
                         layout: 'tabs',
                         wallets: { applePay: 'auto', googlePay: 'auto' },
-                        fields: { billingDetails: { name: 'never', email: 'never' } },
+                        fields: { billingDetails: { name: 'never', email: 'never', phone: 'never' } },
                         terms: { card: 'never' },
                       }}
                     />
