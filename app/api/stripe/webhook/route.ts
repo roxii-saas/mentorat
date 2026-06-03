@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 async function callEdgeFunction(
   email: string, name: string,
@@ -9,27 +10,19 @@ async function callEdgeFunction(
 ): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
   if (!supabaseUrl || !serviceKey) {
-    console.error('[Webhook] MANCANO env: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY')
+    console.error('[Webhook] Mancano env Supabase')
     return
   }
-
-  const url = `${supabaseUrl}/functions/v1/send-welcome-email`
-  console.log('[Webhook] Edge Function →', url, '| email:', email)
-
   try {
-    const res = await fetch(url, {
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-welcome-email`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${serviceKey}`,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceKey}` },
       body: JSON.stringify({ email, name, amount, currency, phone }),
     })
     const text = await res.text()
     if (!res.ok) console.error('[Webhook] Edge Function errore:', res.status, text)
-    else console.log('[Webhook] Email inviate con successo:', text)
+    else console.log('[Webhook] Email inviate:', text)
   } catch (e) {
     console.error('[Webhook] Edge Function fetch fallita:', e)
   }
@@ -39,7 +32,6 @@ export async function POST(req: Request) {
   const body = await req.text()
   const headersList = await headers()
   const sig = headersList.get('stripe-signature')
-
   if (!sig) return NextResponse.json({ error: 'No signature' }, { status: 400 })
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -62,7 +54,6 @@ export async function POST(req: Request) {
     const pi = event.data.object as Stripe.PaymentIntent
     console.log('[Webhook] PaymentIntent:', pi.id, pi.amount, pi.currency)
 
-    // Estrai email / nome / telefono
     let email: string | null = pi.metadata?.customer_email || pi.receipt_email || null
     let fullName = pi.metadata?.customer_name || ''
     let phone = pi.metadata?.customer_phone || ''
@@ -83,8 +74,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true, warning: 'no_email' })
     }
 
-    console.log('[Webhook] Invio email a:', email, '| nome:', fullName)
-    await callEdgeFunction(email, fullName || email, pi.amount / 100, pi.currency, phone)
+    // Salva acquisto nel database
+    try {
+      const supabase = createAdminClient()
+      const { error: dbError } = await supabase.from('purchases').upsert({
+        name: fullName || null,
+        email,
+        phone: phone || null,
+        amount: Math.round(pi.amount / 100),
+        currency: pi.currency,
+        stripe_payment_intent_id: pi.id,
+      }, { onConflict: 'stripe_payment_intent_id' })
+      if (dbError) console.error('[Webhook] Errore salvataggio DB:', dbError)
+      else console.log('[Webhook] Acquisto salvato nel DB per:', email)
+    } catch (e) {
+      console.error('[Webhook] Errore DB:', e)
+    }
+
+    // Invia email (fire-and-forget non blocca il 200 a Stripe)
+    callEdgeFunction(email, fullName || email, pi.amount / 100, pi.currency, phone)
   }
 
   return NextResponse.json({ received: true })

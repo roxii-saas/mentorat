@@ -9,53 +9,66 @@ export default async function AdminPage() {
   const supabase = await createClient()
 
   const [
-    { count: totalClients },
-    { count: pendingBookings },
-    { count: completedBookings },
-    { data: upcomingBookings },
+    { data: purchases },
     { data: settings },
-    { data: allBookings },
-    { data: allClients },
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count:'exact', head:true }).eq('role','client'),
-    supabase.from('bookings').select('*', { count:'exact', head:true }).eq('status','pending'),
-    supabase.from('bookings').select('*', { count:'exact', head:true }).eq('status','completed'),
-    supabase.from('bookings').select('*, profiles(full_name, email)').in('status',['pending','confirmed']).gte('scheduled_at', new Date().toISOString()).order('scheduled_at').limit(6),
-    supabase.from('platform_settings').select('price_amount, currency, sales_active').single(),
-    supabase.from('bookings').select('scheduled_at, status').order('scheduled_at'),
-    supabase.from('profiles').select('created_at').eq('role','client').order('created_at', { ascending:false }),
+    supabase.from('purchases')
+      .select('id, name, email, phone, amount, currency, created_at, stripe_payment_intent_id')
+      .order('created_at', { ascending: false }),
+    supabase.from('platform_settings')
+      .select('price_amount, currency, sales_active')
+      .single(),
   ])
 
   const priceAmount = settings?.price_amount ?? 297
   const currency = settings?.currency ?? 'eur'
 
-  // Build monthly data (last 12 months)
+  // Build monthly data (ultimi 12 mesi) dalla tabella purchases
   const months = Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(); d.setMonth(d.getMonth() - (11 - i))
-    return { month: format(d, 'MMM', { locale: ro }), year: d.getFullYear(), m: d.getMonth(), bookings:0, clients:0, revenue:0 }
+    const d = new Date()
+    d.setDate(1)
+    d.setMonth(d.getMonth() - (11 - i))
+    return {
+      label: format(d, 'MMM', { locale: ro }),
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      purchases: 0,
+      revenue: 0,
+    }
   })
-  allBookings?.forEach(b => {
-    const d = new Date(b.scheduled_at)
-    const idx = months.findIndex(x => x.m === d.getMonth() && x.year === d.getFullYear())
-    if (idx >= 0) { months[idx].bookings++; if (b.status==='completed') months[idx].revenue += priceAmount }
+
+  purchases?.forEach(p => {
+    const d = new Date(p.created_at)
+    const idx = months.findIndex(m => m.month === d.getMonth() && m.year === d.getFullYear())
+    if (idx >= 0) {
+      months[idx].purchases++
+      months[idx].revenue += p.amount ?? priceAmount
+    }
   })
-  allClients?.forEach(c => {
-    const d = new Date(c.created_at)
-    const idx = months.findIndex(x => x.m === d.getMonth() && x.year === d.getFullYear())
-    if (idx >= 0) months[idx].clients++
-  })
+
+  const totalRevenue = purchases?.reduce((sum, p) => sum + (p.amount ?? priceAmount), 0) ?? 0
+  const totalPurchases = purchases?.length ?? 0
+
+  // Ultime 6 prenotazioni
+  const recentPurchases = (purchases ?? []).slice(0, 6).map(p => ({
+    id: p.id,
+    name: p.name || p.email?.split('@')[0] || '—',
+    email: p.email,
+    phone: p.phone,
+    amount: p.amount,
+    currency: p.currency,
+    created_at: p.created_at,
+  }))
 
   return (
     <RealtimeDashboard initial={{
-      totalClients: totalClients ?? 0,
-      pendingBookings: pendingBookings ?? 0,
-      completedBookings: completedBookings ?? 0,
-      revenue: (completedBookings ?? 0) * priceAmount,
+      totalPurchases,
+      totalRevenue,
       currency,
       salesActive: settings?.sales_active ?? true,
       priceAmount,
-      upcomingBookings: (upcomingBookings as any) ?? [],
       monthlyData: months,
+      recentPurchases,
     }}/>
   )
 }

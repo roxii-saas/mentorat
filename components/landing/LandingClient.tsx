@@ -572,15 +572,17 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           </div>
 
           <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-start">
-            {/* Foto — stesso stile dell'hero */}
-            <div className="relative max-w-[360px] mx-auto md:max-w-none">
-              <div className="absolute -inset-6 bg-gradient-to-br from-[#ED03E9]/20 to-[#6B00E8]/15 rounded-[40px] blur-3xl" />
-              {/* Stessa card dell'hero: 3/4 ratio, rounded-[28px] */}
-              <div className="relative rounded-[28px] overflow-hidden shadow-2xl shadow-black/15 border border-white/20 aspect-[3/4] w-full">
-                <Image src={mentorSrc} alt="Roxana Dinca" fill className="object-cover object-top" sizes="(max-width:768px)340px,400px" unoptimized={mentorSrc.startsWith('http')}/>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"/>
+            {/* Foto — identica all'hero */}
+            <div className="flex-shrink-0 relative w-full max-w-[340px] mx-auto md:max-w-none">
+              <div className="absolute -inset-8 rounded-[40px] bg-gradient-to-br from-[#ED03E9]/20 via-[#6B00E8]/10 to-transparent blur-3xl" />
+              <div className="relative rounded-[28px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.18)] border border-white/30">
+                <div className="aspect-[3/4] relative">
+                  <Image src={mentorSrc} alt="Roxana Dinca" fill className="object-cover object-top"
+                    sizes="(max-width:768px)340px,400px" unoptimized={mentorSrc.startsWith('http')}/>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"/>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3.5 shadow-lg">
+                  <div className="bg-white/95 rounded-2xl p-3.5 shadow-xl">
                     <p className="font-serif font-bold text-[#0A0A0A] text-sm">Roxana Dinca</p>
                     <p className="text-[#737373] text-xs font-sans mt-0.5">Mentor & Coach Business Online</p>
                     <div className="flex items-center gap-0.5 mt-1.5">
@@ -592,6 +594,27 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                       <span className="text-[10px] text-[#737373] font-sans ml-1">5.0 · 200+ recenzii</span>
                     </div>
                   </div>
+                </div>
+              </div>
+              {/* Floating card stat */}
+              <div className="absolute -left-6 top-[22%] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] p-3 border border-black/5 hidden sm:block" style={{ animation:'float-card 4s ease-in-out infinite','--r':'-3deg' } as React.CSSProperties}>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ED03E9] to-[#B800BA] flex items-center justify-center shadow-md">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="white" strokeWidth="2" className="w-4 h-4">
+                      <path d="M3 10l3.5 3.5L17 6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <div><p className="text-xs font-bold text-[#0A0A0A] font-sans">200+</p><p className="text-[10px] text-[#737373] font-sans">cliente</p></div>
+                </div>
+              </div>
+              <div className="absolute -right-5 top-[52%] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] p-3 border border-black/5 hidden sm:block" style={{ animation:'float-card 5s ease-in-out infinite','--r':'2deg' } as React.CSSProperties}>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6B00E8] to-[#4C00A8] flex items-center justify-center shadow-md">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="white" strokeWidth="2" className="w-4 h-4">
+                      <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <div><p className="text-xs font-bold text-[#0A0A0A] font-sans">3.000€+</p><p className="text-[10px] text-[#737373] font-sans">lunar</p></div>
                 </div>
               </div>
             </div>
@@ -833,9 +856,17 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           </div>
           <div className="border-t border-white/5 pt-7 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 font-sans">© {new Date().getFullYear()} Roxana Dinca · Toate drepturile rezervate</p>
-            <div className="flex items-center gap-1.5 text-xs text-white/30 font-sans">
-              <svg viewBox="0 0 16 16" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-3.5 h-3.5"><path d="M8 1.5l1.56 3.16L13 5.25l-2.5 2.44.59 3.44L8 9.5l-3.09 1.63.59-3.44L3 5.25l3.44-.59L8 1.5z" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Plată securizată SSL
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              <Link href="/politica-de-confidentialitate" className="text-xs text-white/30 hover:text-white/60 font-sans transition-colors">Confidențialitate</Link>
+              <span className="text-white/15 text-xs">·</span>
+              <Link href="/termeni-si-conditii" className="text-xs text-white/30 hover:text-white/60 font-sans transition-colors">Termeni</Link>
+              <span className="text-white/15 text-xs">·</span>
+              <Link href="/politica-de-cookie" className="text-xs text-white/30 hover:text-white/60 font-sans transition-colors">Cookie</Link>
+              <span className="text-white/15 text-xs">·</span>
+              <div className="flex items-center gap-1 text-xs text-white/30 font-sans">
+                <svg viewBox="0 0 16 16" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-3 h-3"><path d="M8 1.5l1.56 3.16L13 5.25l-2.5 2.44.59 3.44L8 9.5l-3.09 1.63.59-3.44L3 5.25l3.44-.59L8 1.5z" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                SSL Securizat
+              </div>
             </div>
           </div>
         </div>
