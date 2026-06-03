@@ -37,10 +37,28 @@ function Badge({ status }: { status: string }) {
   return <span className={`${cls} text-[11px] font-bold font-sans px-2.5 py-1 rounded-full whitespace-nowrap`}>{l}</span>
 }
 
+type Period = '1m' | '3m' | '6m' | '12m'
+const PERIOD_LABELS: Record<Period, string> = { '1m': '1 lună', '3m': '3 luni', '6m': '6 luni', '12m': '12 luni' }
+const PERIOD_MONTHS: Record<Period, number> = { '1m': 1, '3m': 3, '6m': 6, '12m': 12 }
+
 export default function RealtimeDashboard({ initial }: { initial: InitialData }) {
   const [data, setData] = useState(initial)
   const [activity, setActivity] = useState<{ id: string; msg: string; time: Date; type: string }[]>([])
   const [connected, setConnected] = useState(false)
+  const [period, setPeriod] = useState<Period>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('admin-period')
+      if (saved && ['1m','3m','6m','12m'].includes(saved)) return saved as Period
+    }
+    return '6m'
+  })
+
+  const handlePeriod = (p: Period) => {
+    setPeriod(p)
+    try { localStorage.setItem('admin-period', p) } catch {}
+  }
+
+  const filteredMonthly = data.monthlyData.slice(-PERIOD_MONTHS[period])
 
   const refresh = useCallback(async () => {
     const supabase = createClient()
@@ -104,10 +122,10 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
     return () => { supabase.removeChannel(channel) }
   }, [refresh])
 
-  const sparkClients = data.monthlyData.map(m => ({ value: m.clients }))
-  const sparkBookings = data.monthlyData.map(m => ({ value: m.bookings }))
-  const areaData = data.monthlyData.map(m => ({ label: m.month, value: m.revenue }))
-  const barsData = data.monthlyData.map(m => ({ label: m.month, value: m.bookings, value2: m.clients }))
+  const sparkClients = filteredMonthly.map(m => ({ value: m.clients }))
+  const sparkBookings = filteredMonthly.map(m => ({ value: m.bookings }))
+  const areaData = filteredMonthly.map(m => ({ label: m.month, value: m.revenue }))
+  const barsData = filteredMonthly.map(m => ({ label: m.month, value: m.bookings, value2: m.clients }))
 
   const actIcons: Record<string, string> = {
     booking:   'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
@@ -132,8 +150,21 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Period selector */}
+          <div className="flex items-center g-card rounded-xl p-1 gap-0.5">
+            {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
+              <button key={p} onClick={() => handlePeriod(p)}
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold font-sans transition-all ${
+                  period === p
+                    ? 'bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white shadow-sm'
+                    : 'db-muted hover:bg-black/[.05]'
+                }`}>
+                {PERIOD_LABELS[p]}
+              </button>
+            ))}
+          </div>
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold font-sans transition-colors ${connected ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-            <span className={`relative flex h-1.5 w-1.5`}>
+            <span className="relative flex h-1.5 w-1.5">
               {connected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"/>}
               <span className={`relative rounded-full h-1.5 w-1.5 inline-flex ${connected ? 'bg-green-500' : 'bg-gray-400'}`}/>
             </span>

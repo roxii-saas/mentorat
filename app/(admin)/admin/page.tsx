@@ -29,9 +29,9 @@ export default async function AdminPage() {
   const priceAmount = settings?.price_amount ?? 297
   const currency = settings?.currency ?? 'eur'
 
-  // Build monthly data (last 6 months)
-  const months = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(); d.setMonth(d.getMonth() - (5 - i))
+  // Build monthly data (last 12 months)
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(); d.setMonth(d.getMonth() - (11 - i))
     return { month: format(d, 'MMM', { locale: ro }), year: d.getFullYear(), m: d.getMonth(), bookings:0, clients:0, revenue:0 }
   })
   allBookings?.forEach(b => {

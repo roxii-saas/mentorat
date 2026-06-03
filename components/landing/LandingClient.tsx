@@ -115,23 +115,22 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
           <nav className="hidden lg:flex items-center gap-8">
             {[['#despre','Despre'],['#proces','Proces'],['#rezultate','Rezultate'],['#pret','Preț']].map(([h,l]) => (
-              <a key={h} href={h} className="text-[11px] font-sans font-semibold text-[#3D3D3D] hover:text-[#ED03E9] transition-colors uppercase tracking-[.1em] relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#ED03E9] after:transition-all hover:after:w-full">{l}</a>
+              <a key={h} href={h} className="text-[13px] font-sans font-semibold text-[#3D3D3D] hover:text-[#ED03E9] transition-colors uppercase tracking-[.1em] relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#ED03E9] after:transition-all hover:after:w-full">{l}</a>
             ))}
           </nav>
 
           <div className="hidden sm:flex items-center gap-3">
-            <Link href="/login" className="text-[12px] font-sans font-medium text-[#3D3D3D] hover:text-[#0A0A0A] flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-black/5 transition-all">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
+            <Link href="/login" title="Contul meu" className="w-9 h-9 flex items-center justify-center rounded-xl text-[#3D3D3D] hover:text-[#0A0A0A] hover:bg-black/6 transition-all">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
                 <path d="M10 11a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" strokeLinecap="round"/>
               </svg>
-              Contul meu
             </Link>
             <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} subtle />
           </div>
 
-          <button className="sm:hidden p-2 rounded-lg hover:bg-black/5 transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2" className="w-5 h-5">
-              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round"/>
+          <button className="sm:hidden p-2.5 rounded-lg hover:bg-black/5 transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="1.8" className="w-6 h-6">
+              <path d="M4 6h16M4 12h10M4 18h16" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
@@ -568,8 +567,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             <div className="relative max-w-[360px] mx-auto md:max-w-none">
               <div className="absolute -inset-6 bg-gradient-to-br from-[#ED03E9]/20 to-[#6B00E8]/15 rounded-[40px] blur-3xl" />
               {/* Stessa card dell'hero: 3/4 ratio, rounded-[28px] */}
-              <div className="relative rounded-[28px] overflow-hidden shadow-2xl shadow-black/15 border border-white/20"
-                style={{ aspectRatio:'3/4' }}>
+              <div className="relative rounded-[28px] overflow-hidden shadow-2xl shadow-black/15 border border-white/20 aspect-[3/4] w-full">
                 <Image src="/roxana.jpg" alt="Roxana Dinca" fill className="object-cover object-top" sizes="(max-width:768px)340px,400px"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"/>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -822,8 +820,8 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       </footer>
 
       {/* Mobile sticky CTA */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/8 px-4 py-3 shadow-2xl">
-        <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} full />
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/8 px-4 py-3 shadow-2xl">
+        <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} subtle full />
       </div>
       <div className="sm:hidden h-20" aria-hidden />
 
@@ -842,7 +840,7 @@ function BuyBtn({ onClick, loading, price, active, large, white, full, subtle }:
   )
   if (subtle) return (
     <button onClick={onClick} disabled={loading}
-      className="inline-flex items-center gap-2 text-[12px] font-sans font-semibold text-[#ED03E9] border border-[#ED03E9]/35 px-4 py-2.5 rounded-xl hover:bg-[#ED03E9]/6 hover:border-[#ED03E9]/60 transition-all active:scale-[.98]">
+      className={`inline-flex items-center justify-center gap-2 font-sans font-semibold text-[#ED03E9] border border-[#ED03E9]/35 rounded-xl hover:bg-[#ED03E9]/6 hover:border-[#ED03E9]/60 transition-all active:scale-[.98] ${full ? 'w-full py-3 text-sm' : 'text-[12px] px-4 py-2.5'}`}>
       {loading ? 'Se procesează...' : <>Cumpără · {price} <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
     </button>
   )
