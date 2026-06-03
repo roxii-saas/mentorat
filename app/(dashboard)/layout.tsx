@@ -16,8 +16,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex h-screen overflow-hidden db-bg relative">
-      <div className="fixed top-[-100px] right-[-80px] w-[450px] h-[450px] rounded-full bg-[#ED03E9]/12 blur-[120px] pointer-events-none animate-blob" style={{ zIndex:0 }} />
-      <div className="fixed bottom-[-60px] left-[-60px] w-[350px] h-[350px] rounded-full bg-[#6B00E8]/10 blur-[100px] pointer-events-none animate-blob" style={{ animationDelay:'5s', zIndex:0 }} />
+      <div className="hidden md:block fixed top-[-100px] right-[-80px] w-[400px] h-[400px] rounded-full bg-[#ED03E9]/10 blur-[70px] pointer-events-none animate-blob" style={{ zIndex:0 }} />
+      <div className="hidden md:block fixed bottom-[-60px] left-[-60px] w-[300px] h-[300px] rounded-full bg-[#6B00E8]/8 blur-[60px] pointer-events-none animate-blob" style={{ animationDelay:'5s', zIndex:0 }} />
 
       <div className="relative z-10 flex w-full h-full">
         <Sidebar items={clientItems} role="client" userName={profile?.full_name ?? undefined} userEmail={user.email}/>

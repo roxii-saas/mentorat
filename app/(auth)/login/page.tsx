@@ -35,8 +35,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
-      <div className="absolute top-0 -left-32 w-96 h-96 rounded-full bg-[#ED03E9]/8 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 -right-32 w-96 h-96 rounded-full bg-[#6B00E8]/8 blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 -left-32 w-96 h-96 rounded-full bg-[#ED03E9]/8 hidden md:block blur-[60px] pointer-events-none" />
+      <div className="absolute bottom-0 -right-32 w-96 h-96 rounded-full bg-[#6B00E8]/8 hidden md:block blur-[60px] pointer-events-none" />
 
       <Link href="/" className="absolute top-5 left-5 z-10 inline-flex items-center gap-1.5 text-[#737373] hover:text-[#ED03E9] font-sans text-sm font-medium px-3 py-2 rounded-xl hover:bg-white/60 transition-all">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">

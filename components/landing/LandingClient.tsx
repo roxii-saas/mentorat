@@ -104,7 +104,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
     <div className="bg-[#FAFAFA] text-[#0A0A0A] overflow-x-hidden">
 
       {/* ─────────── HEADER ─────────── */}
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/90 backdrop-blur-xl border-b border-black/5 shadow-sm' : ''}`}>
+      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/97 sm:bg-white/92 sm:backdrop-blur-xl border-b border-black/5 shadow-sm' : ''}`}>
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
 
           <Link href="/" className="flex items-center group">
@@ -153,8 +153,8 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       <section className="relative min-h-screen flex flex-col lg:flex-row items-center pt-16 pb-12 px-5 max-w-6xl mx-auto gap-12 lg:gap-16">
 
         {/* Blobs decorativi */}
-        <div className="absolute top-24 -left-32 w-[500px] h-[500px] rounded-full bg-[#ED03E9]/8 blur-[120px] animate-blob pointer-events-none" />
-        <div className="absolute bottom-0 -right-32 w-[400px] h-[400px] rounded-full bg-[#6B00E8]/8 blur-[100px] animate-blob pointer-events-none" style={{ animationDelay:'5s' }} />
+        <div className="absolute top-24 -left-32 w-[500px] h-[500px] rounded-full bg-[#ED03E9]/8 hidden md:block blur-[60px] md:blur-[120px] animate-blob pointer-events-none" />
+        <div className="absolute bottom-0 -right-32 w-[400px] h-[400px] rounded-full bg-[#6B00E8]/8 hidden md:block blur-[50px] md:blur-[100px] animate-blob pointer-events-none" style={{ animationDelay:'5s' }} />
 
         {/* Testo */}
         <div className="flex-1 text-center lg:text-left z-10">
@@ -239,7 +239,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"/>
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3.5 shadow-xl">
+              <div className="bg-white/95 rounded-2xl p-3.5 shadow-xl">
                 <p className="font-serif font-bold text-[#0A0A0A] text-sm">Roxana Dinca</p>
                 <p className="text-[#737373] text-xs font-sans mt-0.5">Mentor & Coach Business Online</p>
                 <div className="flex items-center gap-0.5 mt-1.5">
@@ -393,7 +393,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                   style={{ background:`linear-gradient(135deg,${step.accent},${step.accent}99)`, boxShadow:`0 4px 20px ${step.accent}45` }}>
                   <span className="text-white font-serif font-bold text-xl">{step.n}</span>
                   {/* Pulse ring */}
-                  <div className="absolute inset-0 rounded-2xl animate-ping opacity-20" style={{ background:step.accent, animationDuration:'2.5s' }}/>
+                  <div className="hidden" />
                 </div>
 
                 {/* Card con slide-in */}
@@ -650,7 +650,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             <div className="relative h-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] rounded-3xl p-7 sm:p-8 text-white text-center shadow-2xl shadow-[#ED03E9]/30 flex flex-col overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[50px]" />
 
-              <div className="inline-flex self-center items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
+              <div className="inline-flex self-center items-center gap-1.5 bg-white/20 text-white text-[11px] font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
                 <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
                   <path d="M8 1l1.854 3.756L14 5.528l-3 2.923.708 4.128L8 10.5l-3.708 2.079L5 8.45 2 5.528l4.146-.772L8 1z"/>
                 </svg>
@@ -718,8 +718,8 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       {/* ─────────── CTA FINALE ─────────── */}
       <section className="relative py-32 px-5 text-center overflow-hidden">
         <div className="absolute inset-0 bg-[#0A0A0A]" />
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-[#ED03E9]/15 blur-[100px] animate-blob pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-[#6B00E8]/15 blur-[80px] animate-blob pointer-events-none" style={{ animationDelay:'6s' }} />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-[#ED03E9]/15 hidden md:block blur-[50px] md:blur-[100px] animate-blob pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-[#6B00E8]/15 hidden md:block blur-[40px] md:blur-[80px] animate-blob pointer-events-none" style={{ animationDelay:'6s' }} />
 
         <div className="relative max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-[#ED03E9]/15 border border-[#ED03E9]/25 text-[#FF80FD] text-[11px] font-bold px-4 py-2 rounded-full mb-8 uppercase tracking-[.15em]">
@@ -789,7 +789,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
       </footer>
 
       {/* Mobile sticky CTA */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-black/8 px-4 py-3 shadow-2xl">
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-black/8 px-4 py-3 shadow-2xl">
         <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} full />
       </div>
       <div className="sm:hidden h-20" aria-hidden />

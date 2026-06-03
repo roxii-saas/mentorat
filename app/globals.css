@@ -17,6 +17,19 @@
 
 html { scroll-behavior: smooth; }
 
+/* Elimina il delay 300ms di iOS su tutti i bottoni e link */
+a, button, [role="button"], summary, input[type="submit"], input[type="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Assicura che elementi fixed con z-50 siano sempre cliccabili su iOS */
+header[class*="fixed"], nav[class*="fixed"], div[class*="fixed z-50"] {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
 body {
   background: #F3EEFF;
   color: #0A0A0A;
@@ -80,40 +93,51 @@ input, select, textarea { font-size: 16px !important; }
   position: relative;
 }
 
-/* Glass card — componente base */
+/* Glass card — mobile: opaco solido, desktop: frosted glass */
 .g-card {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 4px 24px rgba(107,0,232,0.06), 0 1px 0 rgba(255,255,255,0.9) inset;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(220,210,240,0.5);
+  box-shadow: 0 2px 12px rgba(107,0,232,0.05);
+}
+@media (min-width: 768px) {
+  .g-card {
+    background: rgba(255,255,255,0.68);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.72);
+    box-shadow: 0 4px 24px rgba(107,0,232,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
 }
 
-/* Glass card — variante più opaca per tabelle/sezioni */
-.g-card-solid {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 8px 32px rgba(107,0,232,0.08), 0 1px 0 rgba(255,255,255,0.95) inset;
-}
-
-/* Sidebar glass */
+/* Sidebar — mobile: bianco solido, desktop: glass */
 .g-sidebar {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 4px 0 24px rgba(107,0,232,0.06);
+  background: #FFFFFF;
+  border-right: 1px solid rgba(220,210,240,0.5);
+}
+@media (min-width: 1024px) {
+  .g-sidebar {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border-right: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 4px 0 24px rgba(107,0,232,0.05);
+  }
 }
 
-/* Nav glass */
+/* Nav — mobile: bianco solido, desktop: glass */
 .g-nav {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 2px 16px rgba(107,0,232,0.06);
+  background: #FFFFFF;
+  border-bottom: 1px solid rgba(220,210,240,0.4);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+}
+@media (min-width: 768px) {
+  .g-nav {
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-bottom: 1px solid rgba(255,255,255,0.55);
+    box-shadow: 0 2px 16px rgba(107,0,232,0.05);
+  }
 }
 
 /* Bottone primario glass */

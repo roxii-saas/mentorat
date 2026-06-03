@@ -18,10 +18,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex h-screen overflow-hidden db-bg relative">
-      {/* Blobs di sfondo per dare profondità al glass */}
-      <div className="fixed top-[-120px] left-[-80px] w-[500px] h-[500px] rounded-full bg-[#ED03E9]/12 blur-[120px] pointer-events-none animate-blob" style={{ zIndex:0 }} />
-      <div className="fixed bottom-[-80px] right-[-60px] w-[400px] h-[400px] rounded-full bg-[#6B00E8]/10 blur-[100px] pointer-events-none animate-blob" style={{ animationDelay:'6s', zIndex:0 }} />
-      <div className="fixed top-1/2 left-1/3 w-[300px] h-[300px] rounded-full bg-[#ED03E9]/6 blur-[80px] pointer-events-none animate-blob" style={{ animationDelay:'3s', zIndex:0 }} />
+      {/* Blobs — solo desktop, blur ridotto */}
+      <div className="hidden md:block fixed top-[-120px] left-[-80px] w-[500px] h-[500px] rounded-full bg-[#ED03E9]/10 blur-[80px] pointer-events-none animate-blob" style={{ zIndex:0 }} />
+      <div className="hidden md:block fixed bottom-[-80px] right-[-60px] w-[400px] h-[400px] rounded-full bg-[#6B00E8]/8 blur-[70px] pointer-events-none animate-blob" style={{ animationDelay:'6s', zIndex:0 }} />
 
       <div className="relative z-10 flex w-full h-full">
         <Sidebar items={adminItems} role="admin" userName={profile?.full_name ?? undefined} userEmail={user.email}/>
