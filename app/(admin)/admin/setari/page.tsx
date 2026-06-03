@@ -61,25 +61,28 @@ export default function SetariPage() {
   return (
     <div className="space-y-4 sm:space-y-5 max-w-3xl">
       <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-bold db-text">Setări platformă</h1>
+        <h1 className="text-xl sm:text-2xl font-serif font-bold db-title">Setări platformă</h1>
         <p className="db-muted font-sans text-sm mt-0.5">Modifică prețul și configurarea mentorat-ului</p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-4">
-        <div className="db-card rounded-2xl p-5 sm:p-6">
-          <h2 className="font-serif font-bold db-text mb-4 text-base sm:text-lg">💰 Preț și produs</h2>
+        <div className="g-card rounded-2xl p-5 sm:p-6">
+          <h2 className="font-serif font-bold db-title mb-4 text-base sm:text-lg flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="2" className="w-5 h-5"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="10"/></svg>
+            Preț și produs
+          </h2>
           <div className="grid sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Preț</label>
               <input type="number" min="1" value={settings.price_amount}
                 onChange={e => setSettings(s => ({ ...s, price_amount: parseInt(e.target.value) || 0 }))}
-                className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40" />
+                className="g-input" />
             </div>
             <div>
               <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Monedă</label>
               <select value={settings.currency}
                 onChange={e => setSettings(s => ({ ...s, currency: e.target.value }))}
-                className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40">
+                className="g-input">
                 {currencies.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
@@ -88,17 +91,17 @@ export default function SetariPage() {
             <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Nume produs</label>
             <input type="text" value={settings.product_name}
               onChange={e => setSettings(s => ({ ...s, product_name: e.target.value }))}
-              className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40" />
+              className="g-input" />
           </div>
           <div>
             <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Descriere (apare în Stripe)</label>
             <textarea value={settings.product_description} rows={2}
               onChange={e => setSettings(s => ({ ...s, product_description: e.target.value }))}
-              className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 resize-none" />
+              className="g-input resize-none" />
           </div>
         </div>
 
-        <div className="db-card rounded-2xl p-5 sm:p-6">
+        <div className="g-card rounded-2xl p-5 sm:p-6">
           <h2 className="font-serif font-bold db-text mb-1 text-base sm:text-lg">🔘 Starea vânzărilor</h2>
           <p className="text-sm db-muted font-sans mb-4">Când sunt oprite, butonul devine "Lista de așteptare".</p>
           <div className="flex items-center gap-3">
@@ -120,7 +123,7 @@ export default function SetariPage() {
         {error && <p className="text-red-500 text-sm font-sans bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
 
         <button type="submit" disabled={saving}
-          className="w-full bg-gradient-to-r from-[#ED03E9] to-[#B800BA] text-white font-sans font-semibold py-3.5 rounded-xl transition-all disabled:opacity-60 shadow-lg hover:shadow-xl active:scale-95">
+          className="g-btn g-btn-md g-btn-full">
           {saved ? '✓ Salvat cu succes!' : saving ? 'Se salvează...' : 'Salvează setările'}
         </button>
       </form>

@@ -28,10 +28,10 @@ interface InitialData {
 
 function Badge({ status }: { status: string }) {
   const m: Record<string, [string, string]> = {
-    pending:   ['În așteptare', 'db-badge-pending'],
-    confirmed: ['Confirmată',   'db-badge-confirmed'],
-    completed: ['Finalizată',   'db-badge-completed'],
-    cancelled: ['Anulată',      'db-badge-cancelled'],
+    pending:   ['În așteptare', 'g-badge g-badge-pending'],
+    confirmed: ['Confirmată',   'g-badge g-badge-confirmed'],
+    completed: ['Finalizată',   'g-badge g-badge-completed'],
+    cancelled: ['Anulată',      'g-badge g-badge-cancelled'],
   }
   const [l, cls] = m[status] ?? [status, 'bg-gray-100 text-gray-500']
   return <span className={`${cls} text-[11px] font-bold font-sans px-2.5 py-1 rounded-full whitespace-nowrap`}>{l}</span>
@@ -170,7 +170,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
       </div>
 
       {/* Area 3D — Revenue */}
-      <div className="db-card rounded-2xl p-5 sm:p-6 shadow-sm">
+      <div className="g-card rounded-2xl p-5 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-serif font-bold db-text">Venit estimat — 6 luni</h3>
@@ -189,7 +189,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
       <div className="grid lg:grid-cols-5 gap-4">
 
         {/* 3D Bar Chart */}
-        <div className="lg:col-span-3 db-card rounded-2xl p-5 shadow-sm">
+        <div className="lg:col-span-3 g-card rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-serif font-bold db-text">Sesiuni & Cliente noi</h3>
@@ -205,7 +205,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
         </div>
 
         {/* Live Activity */}
-        <div className="lg:col-span-2 db-card rounded-2xl p-5 shadow-sm flex flex-col">
+        <div className="lg:col-span-2 g-card rounded-2xl p-5 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-serif font-bold db-text">Activitate Live</h3>
             {connected && (
@@ -250,7 +250,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
 
       {/* Sesiuni viitoare + Quick actions */}
       <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 db-card rounded-2xl shadow-sm overflow-hidden">
+        <div className="lg:col-span-2 g-card rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-black/[.05] flex items-center justify-between">
             <h2 className="font-serif font-semibold db-text">Sesiuni viitoare</h2>
             <Link href="/admin/calendar" className="text-xs font-semibold text-[#ED03E9] hover:underline font-sans">Calendar →</Link>
@@ -287,7 +287,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
             { href:'/admin/clienti', label:'Gestionează cliente', desc:`${data.totalClients} cliente totale`, d:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', c:'#6B00E8', bg:'rgba(107,0,232,0.08)' },
             { href:'/admin/setari', label:'Modifică prețul', desc:`Curent: ${data.priceAmount} ${data.currency.toUpperCase()}`, d:'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1', c:'#10B981', bg:'rgba(16,185,129,0.08)' },
           ].map(a => (
-            <Link key={a.href} href={a.href} className="flex items-center gap-3 db-card rounded-xl p-4 hover:shadow-md active:scale-[.99] transition-all group">
+            <Link key={a.href} href={a.href} className="flex items-center gap-3 g-card rounded-xl p-4 hover:shadow-md active:scale-[.99] transition-all group">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform" style={{ background:a.bg }}>
                 <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" className="w-5 h-5" style={{ stroke:a.c }}>
                   <path d={a.d} strokeLinecap="round" strokeLinejoin="round"/>

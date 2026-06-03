@@ -13,13 +13,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+
   return (
-    <div className="flex h-screen overflow-hidden db-bg">
-      <Sidebar items={clientItems} role="client" userName={profile?.full_name ?? undefined} userEmail={user.email}/>
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="max-w-5xl mx-auto w-full">{children}</div>
-        </main>
+    <div className="flex h-screen overflow-hidden db-bg relative">
+      <div className="fixed top-[-100px] right-[-80px] w-[450px] h-[450px] rounded-full bg-[#ED03E9]/12 blur-[120px] pointer-events-none animate-blob" style={{ zIndex:0 }} />
+      <div className="fixed bottom-[-60px] left-[-60px] w-[350px] h-[350px] rounded-full bg-[#6B00E8]/10 blur-[100px] pointer-events-none animate-blob" style={{ animationDelay:'5s', zIndex:0 }} />
+
+      <div className="relative z-10 flex w-full h-full">
+        <Sidebar items={clientItems} role="client" userName={profile?.full_name ?? undefined} userEmail={user.email}/>
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+            <div className="max-w-5xl mx-auto w-full">{children}</div>
+          </main>
+        </div>
       </div>
     </div>
   )

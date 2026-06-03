@@ -21,10 +21,10 @@ interface InitialData {
 
 function Badge({ status }: { status: string }) {
   const m: Record<string, [string, string]> = {
-    pending:   ['În așteptare', 'db-badge-pending'],
-    confirmed: ['Confirmată',   'db-badge-confirmed'],
-    completed: ['Finalizată',   'db-badge-completed'],
-    cancelled: ['Anulată',      'db-badge-cancelled'],
+    pending:   ['În așteptare', 'g-badge g-badge-pending'],
+    confirmed: ['Confirmată',   'g-badge g-badge-confirmed'],
+    completed: ['Finalizată',   'g-badge g-badge-completed'],
+    cancelled: ['Anulată',      'g-badge g-badge-cancelled'],
   }
   const [l, cls] = m[status] ?? [status, 'bg-gray-100 text-gray-500']
   return <span className={`${cls} text-[11px] font-bold font-sans px-2.5 py-1 rounded-full whitespace-nowrap`}>{l}</span>
@@ -119,7 +119,7 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
             {days > 0 ? `Membră de ${days} zile · progres: ${progress}%` : 'Bine ai venit în platformă!'}
           </p>
         </div>
-        <Link href="/dashboard/prenota" className="inline-flex items-center gap-2 bg-[#ED03E9] hover:bg-[#B800BA] text-white font-sans font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-[#ED03E9]/20 active:scale-[.98] transition-all text-sm">
+        <Link href="/dashboard/prenota" className="g-btn g-btn-sm">
           <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-4 h-4"><path d="M12 5v14M5 12h14" strokeLinecap="round"/></svg>
           Programează sesiune
         </Link>
@@ -176,7 +176,7 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
               </div>
             </div>
           ) : (
-            <div className="db-card rounded-2xl border-2 border-dashed border-[#ED03E9]/20 p-6 sm:p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
+            <div className="g-card rounded-2xl-2 border-dashed border-[#ED03E9]/20 p-6 sm:p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
               <div className="w-12 h-12 bg-[#ED03E9]/8 rounded-2xl flex items-center justify-center mb-4">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-6 h-6">
                   <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
@@ -193,7 +193,7 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
         </div>
 
         {/* Progress SVG */}
-        <div className="db-card rounded-2xl p-5 shadow-sm flex flex-col">
+        <div className="g-card rounded-2xl p-5 shadow-sm flex flex-col">
           <h3 className="font-serif font-semibold db-text mb-3">Progresul tău</h3>
           <div className="flex items-center justify-center flex-1 my-1">
             <div className="relative w-28 h-28">
@@ -222,7 +222,7 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
 
       {/* Storico */}
       {bookings.length > 0 && (
-        <div className="db-card rounded-2xl shadow-sm overflow-hidden">
+        <div className="g-card rounded-2xl shadow-sm overflow-hidden">
           <div className="px-4 sm:px-6 py-4 border-b border-black/[.05] flex items-center justify-between">
             <h2 className="font-serif font-semibold db-text">Istoricul sesiunilor</h2>
             <span className="text-[11px] db-muted font-sans">{bookings.length} total</span>

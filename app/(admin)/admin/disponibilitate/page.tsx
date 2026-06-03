@@ -74,11 +74,11 @@ export default function DisponibilitatePage() {
           <p className="db-muted font-sans text-sm mt-0.5">Setează slot-urile pentru sesiuni</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="db-card rounded-xl px-4 py-2 text-center border">
+          <div className="g-card rounded-xl px-4 py-2 text-center border">
             <p className="text-lg font-serif font-bold text-green-500">{totalFree}</p>
             <p className="text-xs db-muted font-sans">Libere</p>
           </div>
-          <div className="db-card rounded-xl px-4 py-2 text-center border">
+          <div className="g-card rounded-xl px-4 py-2 text-center border">
             <p className="text-lg font-serif font-bold text-[#ED03E9]">{totalBooked}</p>
             <p className="text-xs db-muted font-sans">Rezervate</p>
           </div>
@@ -86,7 +86,7 @@ export default function DisponibilitatePage() {
       </div>
 
       {/* Add form */}
-      <div className="db-card rounded-2xl p-5 sm:p-6">
+      <div className="g-card rounded-2xl p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-serif font-bold db-text text-base sm:text-lg">Adaugă slot nou</h2>
           <button type="button" onClick={() => { setBulkMode(!bulkMode); setBulkDays([]) }}
@@ -101,20 +101,20 @@ export default function DisponibilitatePage() {
               <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Data</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40" />
+                className="g-input" />
             </div>
           )}
           <div>
             <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Ora de start</label>
             <select value={startTime} onChange={e => setStartTime(e.target.value)}
-              className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40">
+              className="g-input">
               {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-semibold db-text2 mb-1.5 font-sans">Ora de final</label>
             <select value={endTime} onChange={e => setEndTime(e.target.value)}
-              className="db-input w-full rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40">
+              className="g-input">
               {TIMES.filter(t => t > startTime).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
@@ -142,7 +142,7 @@ export default function DisponibilitatePage() {
 
         <button type="button" onClick={addSlot}
           disabled={adding || (!bulkMode && !date) || (bulkMode && bulkDays.length === 0)}
-          className="flex items-center gap-2 bg-gradient-to-r from-[#ED03E9] to-[#B800BA] text-white font-sans font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50 shadow-md hover:shadow-lg active:scale-95 transition-all">
+          className="g-btn g-btn-sm">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
             <path d="M12 5v14M5 12h14" strokeLinecap="round"/>
           </svg>
@@ -156,13 +156,13 @@ export default function DisponibilitatePage() {
           <div className="w-8 h-8 border-2 border-[#ED03E9] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : Object.keys(slots).length === 0 ? (
-        <div className="db-card rounded-2xl p-10 text-center db-muted font-sans text-sm">
+        <div className="g-card rounded-2xl p-10 text-center db-muted font-sans text-sm">
           Nu există slot-uri. Adaugă unul mai sus.
         </div>
       ) : (
         <div className="space-y-3">
           {Object.entries(slots).map(([d, daySlots]) => (
-            <div key={d} className="db-card rounded-2xl p-4 sm:p-5">
+            <div key={d} className="g-card rounded-2xl p-4 sm:p-5">
               <h3 className="font-serif font-semibold db-text mb-3 text-sm sm:text-base capitalize">
                 {format(parseISO(d), "EEEE, d MMMM yyyy", { locale: ro })}
               </h3>
