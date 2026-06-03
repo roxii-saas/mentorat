@@ -5,44 +5,71 @@ import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generatePassword } from '@/lib/utils'
 
-// Fire-and-forget: non blocca il webhook, Stripe riceve 200 immediatamente
-function callEdgeFunction(
+async function callEdgeFunction(
   email: string, name: string, userId: string, password: string,
   amount?: number, currency?: string, phone?: string
-) {
-  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-welcome-email`
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-    },
-    body: JSON.stringify({ email, name, userId, password, amount, currency, phone }),
-  })
-    .then(async res => {
-      if (!res.ok) console.error('Edge Function error:', res.status, await res.text())
-      else console.log('Edge Function ok — email inviata a:', email)
+): Promise<void> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceKey) {
+    console.error('[Webhook] MANCANO variabili env: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY')
+    return
+  }
+
+  const url = `${supabaseUrl}/functions/v1/send-welcome-email`
+  console.log('[Webhook] Chiamata Edge Function:', url, '→ email:', email)
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ email, name, userId, password, amount, currency, phone }),
     })
-    .catch(e => console.error('Edge Function fetch failed:', e))
+    const text = await res.text()
+    if (!res.ok) {
+      console.error('[Webhook] Edge Function errore:', res.status, text)
+    } else {
+      console.log('[Webhook] Edge Function ok:', text)
+    }
+  } catch (e) {
+    console.error('[Webhook] Edge Function fetch fallita:', e)
+  }
 }
 
 export async function POST(req: Request) {
   const body = await req.text()
   const headersList = await headers()
-  const sig = headersList.get('stripe-signature')!
+  const sig = headersList.get('stripe-signature')
+
+  if (!sig) {
+    console.error('[Webhook] Nessuna stripe-signature')
+    return NextResponse.json({ error: 'No signature' }, { status: 400 })
+  }
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    console.error('[Webhook] STRIPE_WEBHOOK_SECRET mancante nelle env vars!')
+    return NextResponse.json({ error: 'Webhook secret missing' }, { status: 500 })
+  }
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
   } catch (err) {
-    console.error('Webhook signature failed:', err)
+    console.error('[Webhook] Firma non valida:', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  console.log('[Webhook] Evento ricevuto:', event.type)
+
   if (event.type === 'payment_intent.succeeded') {
     const pi = event.data.object as Stripe.PaymentIntent
+    console.log('[Webhook] PaymentIntent:', pi.id, '— amount:', pi.amount, pi.currency)
 
-    // Email / nome / telefono: da metadata → billing_details del payment method
     let email: string | null = pi.metadata?.customer_email || pi.receipt_email || null
     let fullName: string = pi.metadata?.customer_name || ''
     let phone: string = pi.metadata?.customer_phone || ''
@@ -54,36 +81,37 @@ export async function POST(req: Request) {
         if (!fullName && pm.billing_details.name) fullName = pm.billing_details.name
         if (!phone && pm.billing_details.phone) phone = pm.billing_details.phone
       } catch (e) {
-        console.error('Could not fetch payment method:', e)
+        console.error('[Webhook] Errore fetch PaymentMethod:', e)
       }
     }
 
     if (!email) {
-      console.error('No email found in payment intent:', pi.id)
-      return NextResponse.json({ received: true, warning: 'no email' })
+      console.error('[Webhook] Nessuna email trovata nel PaymentIntent:', pi.id)
+      return NextResponse.json({ received: true, warning: 'no_email' })
     }
 
-    const supabase = createAdminClient()
+    console.log('[Webhook] Email cliente:', email, '| Nome:', fullName)
 
-    // Utente già esistente → aggiorna profilo e reinvia email
+    const supabase = createAdminClient()
     const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 })
     const existingUser = users?.find(u => u.email === email)
 
     if (existingUser) {
-      await supabase.from('profiles').update({
-        purchased_at: new Date().toISOString(),
-        stripe_payment_intent_id: pi.id,
-        ...(phone && { phone }),
-      }).eq('id', existingUser.id)
-
-      // Genera nuova password temporanea e invia email
+      console.log('[Webhook] Utente esistente, aggiorno profilo:', existingUser.id)
       const tempPassword = generatePassword(14)
-      await supabase.auth.admin.updateUserById(existingUser.id, { password: tempPassword })
-      callEdgeFunction(email, fullName || email, existingUser.id, tempPassword, pi.amount / 100, pi.currency, phone)
+      await Promise.all([
+        supabase.from('profiles').update({
+          purchased_at: new Date().toISOString(),
+          stripe_payment_intent_id: pi.id,
+          ...(phone && { phone }),
+        }).eq('id', existingUser.id),
+        supabase.auth.admin.updateUserById(existingUser.id, { password: tempPassword }),
+      ])
+      await callEdgeFunction(email, fullName || email, existingUser.id, tempPassword, pi.amount / 100, pi.currency, phone)
       return NextResponse.json({ received: true })
     }
 
-    // Nuovo utente
+    console.log('[Webhook] Creo nuovo utente per:', email)
     const tempPassword = generatePassword(14)
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email,
@@ -93,7 +121,7 @@ export async function POST(req: Request) {
     })
 
     if (createError || !newUser.user) {
-      console.error('Error creating user:', createError)
+      console.error('[Webhook] Errore creazione utente:', createError)
       return NextResponse.json({ error: 'Could not create user' }, { status: 500 })
     }
 
@@ -104,8 +132,8 @@ export async function POST(req: Request) {
       ...(phone && { phone }),
     }).eq('id', newUser.user.id)
 
-    // Fire-and-forget: restituiamo 200 a Stripe subito
-    callEdgeFunction(email, fullName || email, newUser.user.id, tempPassword, pi.amount / 100, pi.currency, phone)
+    console.log('[Webhook] Utente creato:', newUser.user.id, '— invio email...')
+    await callEdgeFunction(email, fullName || email, newUser.user.id, tempPassword, pi.amount / 100, pi.currency, phone)
   }
 
   return NextResponse.json({ received: true })

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth'
 import { format } from 'date-fns'
 import { ro } from 'date-fns/locale'
+import ResendEmailBtn from '@/components/admin/ResendEmailBtn'
 
 export default async function ClientiPage() {
   await requireAdmin()
@@ -103,10 +104,13 @@ export default async function ClientiPage() {
                       {format(new Date(client.created_at), 'd MMM yyyy', { locale: ro })}
                     </td>
                     <td className="px-5 py-3.5">
-                      {hasPaid
-                        ? <span className="g-badge g-badge-confirmed text-[11px] font-bold font-sans px-2.5 py-1 rounded-full">✓ Plătit</span>
-                        : <span className="text-xs font-sans font-semibold px-2.5 py-1 rounded-full bg-black/5 db-muted">Fără plată</span>
-                      }
+                      <div className="flex items-center gap-2">
+                        {hasPaid
+                          ? <span className="g-badge g-badge-confirmed text-[11px] font-bold font-sans px-2.5 py-1 rounded-full">✓ Plătit</span>
+                          : <span className="text-xs font-sans font-semibold px-2.5 py-1 rounded-full bg-black/5 db-muted">Fără plată</span>
+                        }
+                        <ResendEmailBtn userId={client.id} email={client.email} />
+                      </div>
                     </td>
                   </tr>
                 )
