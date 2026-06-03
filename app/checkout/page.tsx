@@ -103,10 +103,14 @@ export default function CheckoutPage() {
     fetch('/api/stripe/payment-intent', { method: 'POST' })
       .then(r => r.json())
       .then(data => {
+        console.log('[Checkout] PaymentIntent response:', data)
         if (data.error) setError(data.error)
         else setOrder(data)
       })
-      .catch(() => setError('Eroare la inițializarea plății.'))
+      .catch(err => {
+        console.error('[Checkout] PaymentIntent fetch error:', err)
+        setError('Eroare la inițializarea plății.')
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -176,6 +180,7 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
       body: JSON.stringify({ clientSecret: order.clientSecret, name, email, phone }),
     })
 
+    console.log('[Checkout] Calling confirmPayment...')
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
@@ -185,6 +190,7 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
     })
 
     if (result.error) {
+      console.error('[Checkout] confirmPayment error:', result.error)
       setError(result.error.message ?? 'Eroare la procesarea plății.')
       setSubmitting(false)
     }
