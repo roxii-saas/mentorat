@@ -91,8 +91,8 @@ export async function POST(req: Request) {
       console.error('[Webhook] Errore DB:', e)
     }
 
-    // Invia email (fire-and-forget non blocca il 200 a Stripe)
-    callEdgeFunction(email, fullName || email, pi.amount / 100, pi.currency, phone)
+    // Invia email — await necessario su Vercel (altrimenti il processo viene killato prima)
+    await callEdgeFunction(email, fullName || email, pi.amount / 100, pi.currency, phone)
   }
 
   return NextResponse.json({ received: true })
