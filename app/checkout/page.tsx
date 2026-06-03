@@ -8,6 +8,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
+import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 
@@ -18,6 +19,79 @@ interface OrderInfo {
   amount: number
   currency: string
   productName: string
+}
+
+const stripeAppearance = {
+  theme: 'flat' as const,
+  variables: {
+    colorPrimary: '#ED03E9',
+    colorBackground: '#ffffff',
+    colorText: '#0A0A0A',
+    colorDanger: '#ef4444',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    spacingUnit: '4px',
+    borderRadius: '14px',
+    colorTextSecondary: '#737373',
+    colorTextPlaceholder: '#ABABAB',
+    colorIcon: '#737373',
+  },
+  rules: {
+    '.Input': {
+      backgroundColor: '#FAFAFA',
+      border: '1.5px solid rgba(0,0,0,0.09)',
+      boxShadow: 'none',
+      padding: '13px 16px',
+      fontSize: '15px',
+      transition: 'border 0.15s',
+    },
+    '.Input:focus': {
+      border: '1.5px solid #ED03E9',
+      boxShadow: '0 0 0 3px rgba(237,3,233,0.10)',
+      backgroundColor: '#fff',
+    },
+    '.Input::placeholder': {
+      color: '#ABABAB',
+    },
+    '.Label': {
+      fontWeight: '600',
+      fontSize: '11px',
+      color: '#737373',
+      textTransform: 'uppercase',
+      letterSpacing: '0.1em',
+      marginBottom: '8px',
+    },
+    '.Tab': {
+      border: '1.5px solid rgba(0,0,0,0.08)',
+      borderRadius: '14px',
+      backgroundColor: '#FAFAFA',
+      boxShadow: 'none',
+      padding: '12px',
+    },
+    '.Tab--selected': {
+      border: '1.5px solid #ED03E9',
+      backgroundColor: '#FDF0FD',
+      boxShadow: '0 0 0 1px #ED03E9',
+    },
+    '.Tab:hover': {
+      border: '1.5px solid rgba(237,3,233,0.35)',
+      backgroundColor: '#FDF8FD',
+    },
+    '.TabIcon--selected': { color: '#ED03E9' },
+    '.TabLabel--selected': { color: '#ED03E9' },
+    '.Block': {
+      backgroundColor: '#FAFAFA',
+      border: '1.5px solid rgba(0,0,0,0.07)',
+      borderRadius: '14px',
+    },
+    '.CheckboxInput': {
+      border: '1.5px solid rgba(0,0,0,0.12)',
+      borderRadius: '6px',
+    },
+    '.CheckboxInput--checked': {
+      backgroundColor: '#ED03E9',
+      border: '1.5px solid #ED03E9',
+    },
+  },
 }
 
 export default function CheckoutPage() {
@@ -37,27 +111,29 @@ export default function CheckoutPage() {
   }, [])
 
   if (loading) return (
-    <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-2 border-[#c97d4e] border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-500 font-sans text-sm">Se inițializează plata...</p>
+    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-full border-2 border-[#ED03E9]/20 border-t-[#ED03E9] animate-spin" />
+        <p className="text-[#737373] font-sans text-sm">Se inițializează plata...</p>
       </div>
     </div>
   )
 
   if (error) return (
-    <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" className="w-8 h-8">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 8v4M12 16h.01" strokeLinecap="round"/>
+        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-red-100">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" className="w-7 h-7">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01" strokeLinecap="round"/>
           </svg>
         </div>
-        <h2 className="font-serif font-bold text-xl text-gray-900 mb-2">Eroare</h2>
-        <p className="text-gray-600 font-sans text-sm mb-5">{error}</p>
-        <Link href="/" className="inline-flex items-center gap-2 text-[#c97d4e] hover:underline font-sans text-sm">
-          ← Înapoi la site
+        <h2 className="font-serif font-bold text-2xl text-[#0A0A0A] mb-2">Eroare</h2>
+        <p className="text-[#737373] font-sans text-sm mb-6 leading-relaxed">{error}</p>
+        <Link href="/" className="inline-flex items-center gap-2 text-[#ED03E9] hover:underline font-sans text-sm font-semibold">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+            <path d="M10 4L4 10l6 6M4 10h12" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Înapoi la site
         </Link>
       </div>
     </div>
@@ -65,47 +141,11 @@ export default function CheckoutPage() {
 
   if (!order) return null
 
-  const appearance = {
-    theme: 'stripe' as const,
-    variables: {
-      colorPrimary: "#ED03E9",
-      colorBackground: '#ffffff',
-      colorText: '#1a1a1a',
-      colorDanger: '#ef4444',
-      fontFamily: 'Inter, system-ui, sans-serif',
-      spacingUnit: '4px',
-      borderRadius: '12px',
-    },
-    rules: {
-      '.Input': {
-        border: '1.5px solid #e5e7eb',
-        boxShadow: 'none',
-        padding: '12px 16px',
-        fontSize: '16px',
-      },
-      '.Input:focus': {
-        border: '1.5px solid #c97d4e',
-        boxShadow: '0 0 0 3px rgba(201, 125, 78, 0.15)',
-      },
-      '.Label': {
-        fontWeight: '600',
-        fontSize: '14px',
-        color: '#374151',
-        marginBottom: '6px',
-      },
-      '.Tab': {
-        border: '1.5px solid #e5e7eb',
-        borderRadius: '12px',
-      },
-      '.Tab--selected': {
-        border: '1.5px solid #c97d4e',
-        backgroundColor: '#fff8f3',
-      },
-    },
-  }
-
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret: order.clientSecret, appearance, locale: 'ro' }}>
+    <Elements
+      stripe={stripePromise}
+      options={{ clientSecret: order.clientSecret, appearance: stripeAppearance, locale: 'ro' }}
+    >
       <CheckoutForm order={order} />
     </Elements>
   )
@@ -129,23 +169,17 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
     setSubmitting(true)
     setError('')
 
-    // Aggiorna PaymentIntent con email (per il webhook)
     await fetch('/api/stripe/update-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientSecret: order.clientSecret,
-        name, email,
-      }),
+      body: JSON.stringify({ clientSecret: order.clientSecret, name, email }),
     })
 
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/checkout/success`,
-        payment_method_data: {
-          billing_details: { name, email },
-        },
+        payment_method_data: { billing_details: { name, email } },
       },
     })
 
@@ -158,20 +192,18 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
   const price = formatPrice(order.amount, order.currency.toUpperCase())
 
   return (
-    <div className="min-h-screen bg-[#fdf8f3]">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#c97d4e] to-[#a85e35] rounded-lg flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-4 h-4">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="font-serif font-bold text-gray-900">Roxana<span className="text-[#c97d4e]">.</span></span>
+    <div className="min-h-screen bg-[#FAFAFA]">
+
+      {/* ── Header ── */}
+      <header className="bg-white border-b border-black/[.06] px-5 h-16 flex items-center">
+        <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
+          <Link href="/" className="flex items-center group">
+            <Image src="/logo.png" alt="Mentorat cu Roxana" width={140} height={46}
+              className="h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+              priority/>
           </Link>
-          <div className="flex items-center gap-2 text-sm text-gray-500 font-sans">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" className="w-4 h-4">
+          <div className="flex items-center gap-1.5 text-xs text-[#737373] font-sans">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
               <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             Plată securizată SSL
@@ -179,144 +211,171 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10">
-        <div className="grid lg:grid-cols-5 gap-6 sm:gap-8">
+      <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+        <div className="grid lg:grid-cols-5 gap-6 lg:gap-10 items-start">
 
-          {/* Order summary */}
-          <div className="lg:col-span-2 order-2 lg:order-1">
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm sticky top-6">
-              <h2 className="font-serif font-bold text-gray-900 text-lg mb-4">Rezumatul comenzii</h2>
+          {/* ── Form (left on desktop) ── */}
+          <div className="lg:col-span-3 order-1 lg:order-1">
+            <div className="bg-white rounded-3xl border border-black/[.06] p-6 sm:p-8 shadow-sm">
 
-              <div className="flex items-start gap-3 pb-4 border-b border-gray-100 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#c97d4e] to-[#a85e35] rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-6 h-6">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+              <h1 className="font-serif font-bold text-[#0A0A0A] text-2xl sm:text-3xl mb-2">Finalizează comanda</h1>
+              <p className="text-[#737373] font-sans text-sm mb-7">Completează datele de mai jos pentru a finaliza plata.</p>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+
+                {/* Date personale */}
                 <div>
-                  <p className="font-semibold text-gray-900 font-sans text-sm">{order.productName}</p>
-                  <p className="text-gray-500 font-sans text-xs mt-0.5">Sesiune 1:1 · Acces platformă</p>
-                </div>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                {['Sesiune 1:1 (60 min)', 'Strategie personalizată', 'Plan acțiune lunar', 'Suport post-sesiune'].map(item => (
-                  <div key={item} className="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#c97d4e" strokeWidth="2.5" className="w-3.5 h-3.5 flex-shrink-0">
-                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span className="text-gray-700 font-sans text-xs">{item}</span>
+                  <p className="text-[11px] font-bold text-[#ABABAB] font-sans uppercase tracking-[.12em] mb-3">Date personale</p>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#3D3D3D] mb-1.5 font-sans">
+                        Nume complet <span className="text-[#ED03E9]">*</span>
+                      </label>
+                      <input
+                        type="text" value={name} onChange={e => setName(e.target.value)}
+                        placeholder="Prenume Nume" required
+                        className="w-full bg-[#FAFAFA] border border-black/[.09] rounded-xl px-4 py-3 font-sans text-[15px] text-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/12 focus:border-[#ED03E9]/60 placeholder:text-[#ABABAB] transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#3D3D3D] mb-1.5 font-sans">
+                        Email <span className="text-[#ED03E9]">*</span>
+                      </label>
+                      <input
+                        type="email" value={email} onChange={e => setEmail(e.target.value)}
+                        placeholder="adresa@email.com" required
+                        className="w-full bg-[#FAFAFA] border border-black/[.09] rounded-xl px-4 py-3 font-sans text-[15px] text-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/12 focus:border-[#ED03E9]/60 placeholder:text-[#ABABAB] transition-colors"
+                      />
+                      <p className="text-[11px] text-[#ABABAB] font-sans mt-1">Datele de acces vor fi trimise pe acest email</p>
+                    </div>
                   </div>
-                ))}
-              </div>
-
-              <div className="border-t border-gray-100 pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-sans font-semibold text-gray-700">Total</span>
-                  <span className="font-serif font-bold text-2xl text-gray-900">{price}</span>
                 </div>
-                <p className="text-xs text-gray-400 font-sans mt-1">O singură plată · Fără abonament</p>
-              </div>
 
-              <div className="mt-4 flex items-center gap-2 bg-gray-50 rounded-xl p-3">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" className="w-4 h-4 flex-shrink-0">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" strokeLinecap="round"/>
-                </svg>
-                <p className="text-xs text-gray-500 font-sans">Plata este procesată securizat prin Stripe</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Checkout form */}
-          <div className="lg:col-span-3 order-1 lg:order-2">
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
-              <h1 className="font-serif font-bold text-gray-900 text-xl sm:text-2xl mb-6">
-                Finalizează comanda
-              </h1>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Dati personali */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">
-                      Nume complet <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      placeholder="Prenume Nume"
-                      required
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/30 focus:border-[#c97d4e] bg-white text-gray-900"
+                {/* Plată */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[11px] font-bold text-[#ABABAB] font-sans uppercase tracking-[.12em]">Metodă de plată</p>
+                    <div className="flex items-center gap-1.5">
+                      {/* Card logos */}
+                      {['V','M','A'].map((c,i) => (
+                        <div key={i} className="w-7 h-5 bg-[#FAFAFA] border border-black/[.08] rounded-md flex items-center justify-center">
+                          <span className="text-[9px] font-bold text-[#3D3D3D]">{c}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden border border-black/[.06] p-4 bg-[#FAFAFA]">
+                    <PaymentElement
+                      options={{
+                        layout: 'tabs',
+                        wallets: { applePay: 'auto', googlePay: 'auto' },
+                        fields: { billingDetails: 'never' },
+                        terms: { card: 'never' },
+                      }}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">
-                      Email <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="adresa@email.com"
-                      required
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:ring-2 focus:ring-[#c97d4e]/30 focus:border-[#c97d4e] bg-white text-gray-900"
-                    />
-                    <p className="text-xs text-gray-400 font-sans mt-1">Datele de acces vor fi trimise pe acest email</p>
-                  </div>
                 </div>
 
-                <div className="border-t border-gray-100 pt-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-3 font-sans">Detalii card</p>
-                  <PaymentElement
-                    options={{
-                      layout: 'tabs',
-                      fields: { billingDetails: 'never' },
-                    }}
-                  />
-                </div>
-
+                {/* Error */}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 font-sans flex items-start gap-2">
+                  <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3 font-sans flex items-start gap-2">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 flex-shrink-0 mt-0.5">
-                      <circle cx="12" cy="12" r="10"/>
-                      <path d="M12 8v4M12 16h.01" strokeLinecap="round"/>
+                      <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01" strokeLinecap="round"/>
                     </svg>
                     {error}
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={submitting || !stripe}
-                  className="w-full bg-gradient-to-r from-[#c97d4e] to-[#a85e35] text-white font-sans font-bold py-4 rounded-2xl transition-all shadow-xl hover:shadow-2xl active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 text-base sm:text-lg"
-                >
+                {/* Submit */}
+                <button type="submit" disabled={submitting || !stripe}
+                  className="group relative w-full bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white font-sans font-bold py-4 rounded-2xl transition-all shadow-xl shadow-[#ED03E9]/25 hover:shadow-[#ED03E9]/40 hover:shadow-2xl active:scale-[.99] disabled:opacity-60 flex items-center justify-center gap-2.5 text-base overflow-hidden">
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none" />
                   {submitting ? (
-                    <>
-                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                      </svg>
-                      Se procesează...
-                    </>
+                    <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Se procesează...</>
                   ) : (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                        <rect x="3" y="11" width="18" height="11" rx="2"/>
-                        <path d="M7 11V7a5 5 0 0110 0v4" strokeLinecap="round"/>
-                      </svg>
-                      Plătește {price}
-                    </>
+                    <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" strokeLinecap="round"/></svg>Plătește securizat · {price}</>
                   )}
                 </button>
 
-                <p className="text-center text-xs text-gray-400 font-sans">
-                  Prin finalizarea comenzii accepți{' '}
-                  <Link href="/" className="text-[#c97d4e] hover:underline">termenii și condițiile</Link>
+                <p className="text-center text-xs text-[#ABABAB] font-sans leading-relaxed">
+                  Plata este procesată securizat prin Stripe. Prin finalizarea comenzii accepți{' '}
+                  <Link href="/" className="text-[#ED03E9] hover:underline">termenii și condițiile</Link>.
                 </p>
+
               </form>
             </div>
           </div>
+
+          {/* ── Order summary (right on desktop) ── */}
+          <div className="lg:col-span-2 order-2 lg:order-2">
+            <div className="bg-white rounded-3xl border border-black/[.06] p-6 sm:p-7 shadow-sm lg:sticky lg:top-6">
+
+              {/* Product */}
+              <div className="flex items-start gap-4 pb-5 border-b border-black/[.05] mb-5">
+                <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center shadow-lg shadow-[#ED03E9]/25">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-6 h-6">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-serif font-bold text-[#0A0A0A] text-base leading-snug">{order.productName}</p>
+                  <p className="text-[#737373] font-sans text-xs mt-1">Sesiune 1:1 · Acces platformă</p>
+                  <div className="flex items-center gap-0.5 mt-1.5">
+                    {[...Array(5)].map((_,i) => (
+                      <svg key={i} viewBox="0 0 16 16" fill="#ED03E9" className="w-3 h-3">
+                        <path d="M8 1l1.854 3.756L14 5.528l-3 2.923.708 4.128L8 10.5l-3.708 2.079L5 8.45 2 5.528l4.146-.772L8 1z"/>
+                      </svg>
+                    ))}
+                    <span className="text-[10px] text-[#737373] font-sans ml-1">5.0 · 200+ recenzii</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-2.5 mb-5">
+                {[
+                  'Sesiune 1:1 cu Roxana (60 min)',
+                  'Strategie personalizată de promovare',
+                  'Plan acțiune lunar detaliat',
+                  'Scripturi pentru atragerea clientelor',
+                  'Suport prin platformă post-sesiune',
+                  'Acces imediat după plată',
+                ].map(item => (
+                  <div key={item} className="flex items-start gap-2.5">
+                    <div className="w-4.5 h-4.5 w-[18px] h-[18px] rounded-full bg-gradient-to-br from-[#ED03E9] to-[#6B00E8] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                      <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" className="w-2.5 h-2.5">
+                        <path d="M2 6l2.5 2.5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <span className="text-[#3D3D3D] font-sans text-xs leading-relaxed">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Price */}
+              <div className="border-t border-black/[.05] pt-5">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-sans font-semibold text-[#737373] text-sm">Total de plată</span>
+                  <span className="font-serif font-bold text-2xl text-[#0A0A0A]">{price}</span>
+                </div>
+                <p className="text-[11px] text-[#ABABAB] font-sans text-right">O singură plată · Fără abonament</p>
+              </div>
+
+              {/* Guarantee */}
+              <div className="mt-4 bg-[#ED03E9]/5 border border-[#ED03E9]/12 rounded-2xl p-3.5">
+                <div className="flex items-start gap-2.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-4.5 h-4.5 w-[18px] h-[18px] flex-shrink-0 mt-0.5">
+                    <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div>
+                    <p className="text-xs font-bold text-[#B800BA] font-sans">Garanție 100%</p>
+                    <p className="text-[11px] text-[#737373] font-sans mt-0.5 leading-relaxed">Dacă după prima sesiune nu ești mulțumită, returnăm integral suma — fără întrebări.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
