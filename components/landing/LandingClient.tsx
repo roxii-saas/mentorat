@@ -12,6 +12,9 @@ interface Settings {
   sales_active: boolean
   comparison_price: number
   cta_text: string
+  cta_show_price: boolean
+  secondary_cta_text: string
+  cta_badge_text: string
   hero_image_url: string | null
   mentor_image_url: string | null
 }
@@ -106,6 +109,9 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
   const comparisonPrice = settings.comparison_price ?? 1376
 
   const ctaText = settings.cta_text || 'Vreau să mă transform'
+  const ctaShowPrice = settings.cta_show_price ?? true
+  const secondaryCtaText = settings.secondary_cta_text || 'Cum funcționează'
+  const ctaBadgeText = settings.cta_badge_text || 'Mentorat exclusiv · Locuri limitate'
   const heroSrc = settings.hero_image_url || '/roxana.jpg'
   const mentorSrc = settings.mentor_image_url || '/roxana.jpg'
 
@@ -198,7 +204,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ED03E9] opacity-75"/>
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#ED03E9]"/>
             </span>
-            Mentorat exclusiv · Locuri limitate
+            {ctaBadgeText}
           </div>
 
           <h1 className="text-[clamp(2.6rem,7vw,5.5rem)] font-serif font-bold leading-[1.05] tracking-tight mb-6 text-[#0A0A0A]">
@@ -232,9 +238,9 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} large />
+            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} ctaShowPrice={ctaShowPrice} large />
             <a href="#proces" className="inline-flex items-center justify-center gap-2 text-sm font-sans font-semibold text-[#3D3D3D] px-7 py-4 rounded-2xl border border-black/10 hover:border-black/20 hover:bg-black/3 transition-all">
-              Cum funcționează
+              {secondaryCtaText}
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                 <path d="M10 4v12M4 10l6 6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -882,9 +888,9 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
   )
 }
 
-function BuyBtn({ onClick, loading, price, active, large, white, full, subtle, ctaText = 'Vreau să mă transform' }: {
+function BuyBtn({ onClick, loading, price, active, large, white, full, subtle, ctaText = 'Vreau să mă transform', ctaShowPrice = true }: {
   onClick: () => void; loading: boolean; price: string; active: boolean
-  large?: boolean; white?: boolean; full?: boolean; subtle?: boolean; ctaText?: string
+  large?: boolean; white?: boolean; full?: boolean; subtle?: boolean; ctaText?: string; ctaShowPrice?: boolean
 }) {
   if (!active) return (
     <button disabled className={`inline-flex items-center justify-center gap-2 font-sans font-semibold rounded-2xl bg-black/10 text-[#737373] cursor-not-allowed ${large?'px-10 py-5 text-lg':full?'w-full py-3.5 text-base':subtle?'px-4 py-2 text-xs':'px-7 py-3.5 text-sm'}`}>
@@ -907,7 +913,7 @@ function BuyBtn({ onClick, loading, price, active, large, white, full, subtle, c
         {loading ? (
           <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Se procesează...</>
         ) : (
-          <>{ctaText} — {price}<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>
+          <>{ctaText}{ctaShowPrice ? ` — ${price}` : ''}<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>
         )}
       </span>
     </button>

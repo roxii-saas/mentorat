@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const ALLOWED = ['comparison_price', 'cta_text', 'hero_image_url', 'mentor_image_url']
+const ALLOWED = [
+  'comparison_price', 'cta_text', 'cta_show_price',
+  'secondary_cta_text', 'cta_badge_text',
+  'hero_image_url', 'mentor_image_url',
+]
 
 export async function GET() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('platform_settings')
-    .select('comparison_price, cta_text, hero_image_url, mentor_image_url')
+    .select('comparison_price, cta_text, cta_show_price, secondary_cta_text, cta_badge_text, hero_image_url, mentor_image_url')
     .single()
   return NextResponse.json(data ?? {})
 }

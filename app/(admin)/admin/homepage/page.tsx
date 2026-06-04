@@ -6,6 +6,9 @@ import Image from 'next/image'
 interface HomeSettings {
   comparison_price: number
   cta_text: string
+  cta_show_price: boolean
+  secondary_cta_text: string
+  cta_badge_text: string
   hero_image_url: string | null
   mentor_image_url: string | null
 }
@@ -22,6 +25,9 @@ export default function HomepagePage() {
   const [settings, setSettings] = useState<HomeSettings>({
     comparison_price: 1376,
     cta_text: 'Vreau să mă transform',
+    cta_show_price: true,
+    secondary_cta_text: 'Cum funcționează',
+    cta_badge_text: 'Mentorat exclusiv · Locuri limitate',
     hero_image_url: null,
     mentor_image_url: null,
   })
@@ -183,43 +189,105 @@ export default function HomepagePage() {
           </div>
         </div>
 
-        {/* ── Text buton CTA ── */}
+        {/* ── Butoane CTA ── */}
         <div className="g-card rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background:'rgba(107,0,232,0.08)' }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="#6B00E8" strokeWidth="1.8" className="w-5 h-5">
-                <path d="M4 6h16M4 12h10M4 18h16" strokeLinecap="round"/>
+                <path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <div>
-              <h2 className="font-serif font-bold db-text">Text butoane CTA</h2>
-              <p className="db-muted text-xs font-sans mt-0.5">Text afișat pe butoanele principale</p>
+              <h2 className="font-serif font-bold db-text">Butoane CTA</h2>
+              <p className="db-muted text-xs font-sans mt-0.5">Configurează toate butoanele de acțiune</p>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">
-              Text buton principal
-            </label>
-            <input
-              type="text"
-              value={settings.cta_text}
-              onChange={e => setSettings(s => ({ ...s, cta_text: e.target.value }))}
-              placeholder="Vreau să mă transform"
-              className="w-full bg-black/[.03] border border-black/[.08] db-text rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
-            />
-            <p className="text-xs db-muted font-sans mt-1.5">
-              Ex: &ldquo;Vreau să mă transform&rdquo; · apare pe toate butoanele de cumpărare
-            </p>
+          <div className="space-y-5">
+
+            {/* Badge deasupra titlului hero */}
+            <div>
+              <label className="block text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">
+                Text badge hero (deasupra titlului)
+              </label>
+              <input
+                type="text"
+                value={settings.cta_badge_text}
+                onChange={e => setSettings(s => ({ ...s, cta_badge_text: e.target.value }))}
+                placeholder="Mentorat exclusiv · Locuri limitate"
+                className="w-full bg-black/[.03] border border-black/[.08] db-text rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
+              />
+              <div className="mt-2 inline-flex items-center gap-2 bg-[#ED03E9]/8 border border-[#ED03E9]/20 text-[#B800BA] text-[11px] font-bold px-3 py-1.5 rounded-full tracking-[.12em] uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#ED03E9]"/>
+                {settings.cta_badge_text || 'Mentorat exclusiv · Locuri limitate'}
+              </div>
+            </div>
+
+            {/* Text buton principal */}
+            <div>
+              <label className="block text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">
+                Text buton principal (CTA)
+              </label>
+              <input
+                type="text"
+                value={settings.cta_text}
+                onChange={e => setSettings(s => ({ ...s, cta_text: e.target.value }))}
+                placeholder="Vreau să mă transform"
+                className="w-full bg-black/[.03] border border-black/[.08] db-text rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
+              />
+            </div>
+
+            {/* Toggle preț pe buton */}
+            <div className="flex items-center justify-between p-4 bg-black/[.03] rounded-xl border border-black/[.06]">
+              <div>
+                <p className="text-sm font-semibold db-text font-sans">Afișează prețul pe buton</p>
+                <p className="text-xs db-muted font-sans mt-0.5">
+                  {settings.cta_show_price
+                    ? `Butonul va arăta: "${settings.cta_text || 'Vreau să mă transform'} — 297€"`
+                    : `Butonul va arăta: "${settings.cta_text || 'Vreau să mă transform'}"`
+                  }
+                </p>
+              </div>
+              <button
+                onClick={() => setSettings(s => ({ ...s, cta_show_price: !s.cta_show_price }))}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${settings.cta_show_price ? 'bg-[#ED03E9]' : 'bg-black/20'}`}>
+                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${settings.cta_show_price ? 'translate-x-5' : 'translate-x-0.5'}`}/>
+              </button>
+            </div>
+
+            {/* Text buton secundar */}
+            <div>
+              <label className="block text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">
+                Text buton secundar (lângă CTA principal)
+              </label>
+              <input
+                type="text"
+                value={settings.secondary_cta_text}
+                onChange={e => setSettings(s => ({ ...s, secondary_cta_text: e.target.value }))}
+                placeholder="Cum funcționează"
+                className="w-full bg-black/[.03] border border-black/[.08] db-text rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
+              />
+            </div>
+
           </div>
 
-          <div className="mt-5 pt-4 border-t border-black/[.05]">
-            <p className="text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">Previzualizare</p>
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white font-sans font-semibold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[#ED03E9]/20">
-              {settings.cta_text || 'Vreau să mă transform'} — 297€
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
-                <path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          {/* Previzualizare */}
+          <div className="mt-5 pt-5 border-t border-black/[.05]">
+            <p className="text-xs font-bold db-muted font-sans uppercase tracking-wider mb-3">Previzualizare</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white font-sans font-semibold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[#ED03E9]/20">
+                {settings.cta_text || 'Vreau să mă transform'}
+                {settings.cta_show_price && ' — 297€'}
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                  <path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="inline-flex items-center gap-2 text-sm font-sans font-semibold text-[#3D3D3D] px-5 py-2.5 rounded-xl border border-black/10">
+                {settings.secondary_cta_text || 'Cum funcționează'}
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                  <path d="M10 4v12M4 10l6 6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
