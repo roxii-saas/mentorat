@@ -15,6 +15,12 @@ interface Settings {
   cta_show_price: boolean
   secondary_cta_text: string
   cta_badge_text: string
+  header_cta_text: string
+  header_cta_show_price: boolean
+  instagram_url: string
+  instagram_visible: boolean
+  facebook_url: string
+  facebook_visible: boolean
   hero_image_url: string | null
   mentor_image_url: string | null
 }
@@ -112,6 +118,8 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
   const ctaShowPrice = settings.cta_show_price ?? true
   const secondaryCtaText = settings.secondary_cta_text || 'Cum funcționează'
   const ctaBadgeText = settings.cta_badge_text || 'Mentorat exclusiv · Locuri limitate'
+  const headerCtaText = settings.header_cta_text || 'Cumpără'
+  const headerCtaShowPrice = settings.header_cta_show_price ?? true
   const heroSrc = settings.hero_image_url || '/roxana.jpg'
   const mentorSrc = settings.mentor_image_url || '/roxana.jpg'
 
@@ -140,7 +148,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                 <path d="M10 11a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" strokeLinecap="round"/>
               </svg>
             </Link>
-            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} subtle />
+            <BuyBtn onClick={handleBuy} loading={buyLoading} price={price} active={settings.sales_active} ctaText={headerCtaText} ctaShowPrice={headerCtaShowPrice} subtle />
           </div>
 
           <button className="sm:hidden p-2.5 rounded-lg hover:bg-black/5 transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
@@ -185,7 +193,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
             </svg>
             Contul meu
           </Link>
-          <BuyBtn onClick={() => { setMenuOpen(false); handleBuy() }} loading={buyLoading} price={price} active={settings.sales_active} ctaText={ctaText} full />
+          <BuyBtn onClick={() => { setMenuOpen(false); handleBuy() }} loading={buyLoading} price={price} active={settings.sales_active} ctaText={headerCtaText} ctaShowPrice={headerCtaShowPrice} subtle full />
         </div>
       </div>
 
@@ -831,7 +839,30 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
                 <Image src="/logo.png" alt="Mentorat cu Roxana" width={170} height={58}
                   className="h-14 w-auto object-contain brightness-0 invert"/>
               </div>
-              <p className="text-white/55 text-sm font-sans leading-relaxed">Mentor & Coach de Business Online. Ajut femeile să construiască afaceri profitabile de la zero.</p>
+              <p className="text-white/55 text-sm font-sans leading-relaxed mb-5">Mentor & Coach de Business Online. Ajut femeile să construiască afaceri profitabile de la zero.</p>
+              {/* Social icons */}
+              {(settings.instagram_visible || settings.facebook_visible) && (
+                <div className="flex items-center gap-3">
+                  {settings.instagram_visible && (
+                    <a href={settings.instagram_url || '#'} target="_blank" rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-[#ED03E9]/30 hover:border-[#ED03E9]/40 transition-all">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4.5 h-4.5 w-[18px] h-[18px]">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                        <circle cx="12" cy="12" r="4"/>
+                        <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+                      </svg>
+                    </a>
+                  )}
+                  {settings.facebook_visible && (
+                    <a href={settings.facebook_url || '#'} target="_blank" rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-[#4267B2]/40 hover:border-[#4267B2]/40 transition-all">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-[18px] h-[18px]">
+                        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <p className="font-sans font-semibold text-white text-sm mb-4">Navigare</p>
@@ -900,7 +931,7 @@ function BuyBtn({ onClick, loading, price, active, large, white, full, subtle, c
   if (subtle) return (
     <button onClick={onClick} disabled={loading}
       className={`inline-flex items-center justify-center gap-2 font-sans font-semibold text-[#ED03E9] border border-[#ED03E9]/35 rounded-xl hover:bg-[#ED03E9]/6 hover:border-[#ED03E9]/60 transition-all active:scale-[.98] ${full ? 'w-full py-3 text-sm' : 'text-[12px] px-4 py-2.5'}`}>
-      {loading ? 'Se procesează...' : <>Cumpără · {price} <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
+      {loading ? 'Se procesează...' : <>{ctaText}{ctaShowPrice ? ` · ${price}` : ''} <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
     </button>
   )
   return (

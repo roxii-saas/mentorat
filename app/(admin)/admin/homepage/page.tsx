@@ -9,6 +9,12 @@ interface HomeSettings {
   cta_show_price: boolean
   secondary_cta_text: string
   cta_badge_text: string
+  header_cta_text: string
+  header_cta_show_price: boolean
+  instagram_url: string
+  instagram_visible: boolean
+  facebook_url: string
+  facebook_visible: boolean
   hero_image_url: string | null
   mentor_image_url: string | null
 }
@@ -28,6 +34,12 @@ export default function HomepagePage() {
     cta_show_price: true,
     secondary_cta_text: 'Cum funcționează',
     cta_badge_text: 'Mentorat exclusiv · Locuri limitate',
+    header_cta_text: 'Cumpără',
+    header_cta_show_price: true,
+    instagram_url: '',
+    instagram_visible: true,
+    facebook_url: '',
+    facebook_visible: true,
     hero_image_url: null,
     mentor_image_url: null,
   })
@@ -288,6 +300,167 @@ export default function HomepagePage() {
                   <path d="M10 4v12M4 10l6 6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Buton Header ── */}
+      <div className="g-card rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background:'rgba(237,3,233,0.08)' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-5 h-5">
+              <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className="font-serif font-bold db-text">Buton Header</h2>
+            <p className="db-muted text-xs font-sans mt-0.5">Butonul mic din bara de navigare (desktop)</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">
+              Text buton header
+            </label>
+            <input
+              type="text"
+              value={settings.header_cta_text}
+              onChange={e => setSettings(s => ({ ...s, header_cta_text: e.target.value }))}
+              placeholder="Cumpără"
+              className="w-full bg-black/[.03] border border-black/[.08] db-text rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-black/[.03] rounded-xl border border-black/[.06]">
+            <div>
+              <p className="text-sm font-semibold db-text font-sans">Afișează prețul pe butonul header</p>
+              <p className="text-xs db-muted font-sans mt-0.5">
+                {settings.header_cta_show_price
+                  ? `Va arăta: "${settings.header_cta_text || 'Cumpără'} · 297€"`
+                  : `Va arăta: "${settings.header_cta_text || 'Cumpără'}"`
+                }
+              </p>
+            </div>
+            <button
+              onClick={() => setSettings(s => ({ ...s, header_cta_show_price: !s.header_cta_show_price }))}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${settings.header_cta_show_price ? 'bg-[#ED03E9]' : 'bg-black/20'}`}>
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${settings.header_cta_show_price ? 'translate-x-5' : 'translate-x-0.5'}`}/>
+            </button>
+          </div>
+
+          {/* Previzualizare */}
+          <div className="pt-1">
+            <p className="text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">Previzualizare</p>
+            <div className="inline-flex items-center gap-2 text-[12px] font-sans font-semibold text-[#ED03E9] border border-[#ED03E9]/35 px-4 py-2.5 rounded-xl bg-[#ED03E9]/6">
+              {settings.header_cta_text || 'Cumpără'}
+              {settings.header_cta_show_price && ' · 297€'}
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                <path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Rețele sociale ── */}
+      <div className="g-card rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background:'rgba(16,185,129,0.08)' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.8" className="w-5 h-5">
+              <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.5 7-3.8 1.1 0 3-1.2 3-1.2z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className="font-serif font-bold db-text">Rețele sociale</h2>
+            <p className="db-muted text-xs font-sans mt-0.5">Iconițele din footer · link-uri și vizibilitate</p>
+          </div>
+        </div>
+
+        <div className="space-y-5">
+
+          {/* Instagram */}
+          <div className="p-4 bg-black/[.02] rounded-xl border border-black/[.06] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E1306C] to-[#833AB4] flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" className="w-4 h-4">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <circle cx="17.5" cy="6.5" r="0.5" fill="white"/>
+                  </svg>
+                </div>
+                <span className="font-semibold db-text font-sans text-sm">Instagram</span>
+              </div>
+              <button
+                onClick={() => setSettings(s => ({ ...s, instagram_visible: !s.instagram_visible }))}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${settings.instagram_visible ? 'bg-[#ED03E9]' : 'bg-black/20'}`}>
+                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${settings.instagram_visible ? 'translate-x-5' : 'translate-x-0.5'}`}/>
+              </button>
+            </div>
+            {settings.instagram_visible && (
+              <input
+                type="url"
+                value={settings.instagram_url}
+                onChange={e => setSettings(s => ({ ...s, instagram_url: e.target.value }))}
+                placeholder="https://www.instagram.com/roxana..."
+                className="w-full bg-white border border-black/[.09] db-text rounded-xl px-4 py-2.5 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
+              />
+            )}
+          </div>
+
+          {/* Facebook */}
+          <div className="p-4 bg-black/[.02] rounded-xl border border-black/[.06] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background:'#1877F2' }}>
+                  <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                  </svg>
+                </div>
+                <span className="font-semibold db-text font-sans text-sm">Facebook</span>
+              </div>
+              <button
+                onClick={() => setSettings(s => ({ ...s, facebook_visible: !s.facebook_visible }))}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${settings.facebook_visible ? 'bg-[#ED03E9]' : 'bg-black/20'}`}>
+                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${settings.facebook_visible ? 'translate-x-5' : 'translate-x-0.5'}`}/>
+              </button>
+            </div>
+            {settings.facebook_visible && (
+              <input
+                type="url"
+                value={settings.facebook_url}
+                onChange={e => setSettings(s => ({ ...s, facebook_url: e.target.value }))}
+                placeholder="https://www.facebook.com/roxana..."
+                className="w-full bg-white border border-black/[.09] db-text rounded-xl px-4 py-2.5 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/30 focus:border-[#ED03E9]/50 placeholder:text-[#ABABAB]"
+              />
+            )}
+          </div>
+
+          {/* Previzualizare footer */}
+          <div>
+            <p className="text-xs font-bold db-muted font-sans uppercase tracking-wider mb-2">Previzualizare footer</p>
+            <div className="flex items-center gap-2.5">
+              {settings.instagram_visible && (
+                <div className="w-9 h-9 rounded-xl bg-[#0A0A0A] border border-white/10 flex items-center justify-center text-white/50">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-[18px] h-[18px]">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+                  </svg>
+                </div>
+              )}
+              {settings.facebook_visible && (
+                <div className="w-9 h-9 rounded-xl bg-[#0A0A0A] border border-white/10 flex items-center justify-center text-white/50">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-[18px] h-[18px]">
+                    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                  </svg>
+                </div>
+              )}
+              {!settings.instagram_visible && !settings.facebook_visible && (
+                <p className="text-xs db-muted font-sans italic">Nicio rețea activată</p>
+              )}
             </div>
           </div>
         </div>

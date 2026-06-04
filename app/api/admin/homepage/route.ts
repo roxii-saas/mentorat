@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 const ALLOWED = [
-  'comparison_price', 'cta_text', 'cta_show_price',
-  'secondary_cta_text', 'cta_badge_text',
+  'comparison_price',
+  'cta_text', 'cta_show_price', 'secondary_cta_text', 'cta_badge_text',
+  'header_cta_text', 'header_cta_show_price',
+  'instagram_url', 'instagram_visible',
+  'facebook_url', 'facebook_visible',
   'hero_image_url', 'mentor_image_url',
 ]
 
@@ -11,7 +14,7 @@ export async function GET() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('platform_settings')
-    .select('comparison_price, cta_text, cta_show_price, secondary_cta_text, cta_badge_text, hero_image_url, mentor_image_url')
+    .select('comparison_price, cta_text, cta_show_price, secondary_cta_text, cta_badge_text, header_cta_text, header_cta_show_price, instagram_url, instagram_visible, facebook_url, facebook_visible, hero_image_url, mentor_image_url')
     .single()
   return NextResponse.json(data ?? {})
 }
