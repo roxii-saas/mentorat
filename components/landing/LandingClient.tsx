@@ -380,7 +380,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
         </div>
 
         <p className="text-center text-[#737373] font-sans italic mt-10 text-base">
-          "Non ești singură. Nu e vina ta. <strong className="text-[#0A0A0A] not-italic">Lipsește doar strategia."</strong>
+          "Nu ești singură. Nu e vina ta. <strong className="text-[#0A0A0A] not-italic">Lipsește doar strategia."</strong>
         </p>
       </section>
 
