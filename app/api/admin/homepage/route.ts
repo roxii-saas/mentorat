@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { SETTINGS_TAG } from '@/lib/settings'
 import { createClient } from '@/lib/supabase/server'
 
 const ALLOWED = [
@@ -39,5 +41,7 @@ export async function PUT(req: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 403 })
+  revalidateTag(SETTINGS_TAG, { expire: 0 })
+  revalidatePath('/')
   return NextResponse.json(data)
 }

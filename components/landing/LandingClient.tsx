@@ -283,7 +283,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
 
           <div className="relative rounded-[28px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.18)] border border-white/30">
             <div className="aspect-[3/4] relative">
-              <Image src={heroSrc} alt="Roxana Dinca" fill className="object-cover object-top" priority sizes="(max-width:768px)340px,400px" unoptimized={heroSrc.startsWith('http')}/>
+              <Image src={heroSrc} alt="Roxana Dinca" fill className="object-cover object-top" priority sizes="(max-width:768px) 340px, 400px" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"/>
             <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -592,7 +592,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               <div className="relative rounded-[28px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.18)] border border-white/30">
                 <div className="aspect-[3/4] relative">
                   <Image src={mentorSrc} alt="Roxana Dinca" fill className="object-cover object-top"
-                    sizes="(max-width:768px)340px,400px" unoptimized={mentorSrc.startsWith('http')}/>
+                    sizes="(max-width:768px) 340px, 400px" />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"/>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
