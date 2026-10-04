@@ -32,12 +32,14 @@ Sito: https://mentorat.roxii-dinca.com · Repo: github.com/roxii-saas/mentorat (
   Migration in `supabase/migrations/` (products + sicurezza ruoli). `supabase/schema.sql` è VECCHIO.
 
 ## Da sapere
+- Migration 2026-10-04 APPLICATE in produzione (products, fix ruoli admin, rimosse policy purchases aperte a tutti).
+- CLI Supabase: login via token (`SUPABASE_ACCESS_TOKEN`); il portachiavi macOS bloccava i comandi.
+  Lanciare i comandi CLI con `< /dev/null`, altrimenti restano in attesa.
 - Se il sito è lento o login/checkout/webhook falliscono: controllare PRIMA che il progetto Supabase
   (`sivrczlkoqtyjeiuvvvq`) non sia in pausa (piano gratuito). È stata questa la causa della lentezza.
 - Push: usa le credenziali di `gh` (account `roxii-saas`); nessun token nell'URL del remote.
 
 ## Da fare / da valutare
-- Applicare le migration del 2026-10-04 (`supabase db push`) PRIMA del deploy di /prompturi.
 - Sostituire testimonianze/numeri segnaposto di Stitch in `components/prompturi/content.ts`.
 - Caricare il PDF dei prompt (e il file dell'upgrade) da Admin → Produse.
 - Revocare il vecchio token GitHub (PAT) che era nell'URL del remote.
