@@ -1,6 +1,6 @@
 # Memory — Mentorat platform
 
-Aggiornato: 2026-09-20 · ultimo commit di codice: `cb07661`
+Aggiornato: 2026-10-04 · ultimo commit di codice: `cb07661`
 
 ## Progetto
 Landing + checkout Stripe + area cliente + admin per il mentorat di Roxana.
@@ -16,6 +16,11 @@ Sito: https://mentorat.roxii-dinca.com · Repo: github.com/roxii-saas/mentorat (
   (`unstable_cache`, tag `platform-settings`, client senza cookie, timeout 2,5s, fallback ai default);
   le API admin `settings`/`homepage` invalidano la cache al salvataggio; immagini hero/mentor
   ottimizzate da `next/image`. TTFB home: da 7-8s a ~0,2s.
+
+- Velocità software (2026-10-04): `vercel.json` → funzioni in `fra1` (Francoforte, stessa regione di
+  Supabase `eu-central-1`; prima giravano in `iad1` USA → ogni query attraversava l'Atlantico).
+  Auth: `getClaims()` (JWT ES256 verificato in locale) in `proxy.ts` e `lib/auth.ts` invece di `getUser()`;
+  `requireAdmin`/`requireAuth`/`getProfileName` con `React.cache` → layout e pagina condividono i dati.
 
 ## Da sapere
 - Se il sito è lento o login/checkout/webhook falliscono: controllare PRIMA che il progetto Supabase

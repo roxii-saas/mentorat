@@ -1,11 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireAuth } from '@/lib/auth'
 import ClientDashboard from '@/components/dashboard/ClientDashboard'
 
 export default async function DashboardPage() {
+  const user = await requireAuth()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
   const [{ data: profile }, { data: bookings }] = await Promise.all([
     supabase.from('profiles').select('full_name, purchased_at, email').eq('id', user.id).single(),

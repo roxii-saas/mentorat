@@ -21,7 +21,9 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // getClaims verifica il JWT in locale (ES256) e rinnova la sessione se scaduta → niente round-trip ad Auth
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims
   const path = request.nextUrl.pathname
 
   // Proteggi /dashboard e /admin
