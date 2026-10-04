@@ -24,9 +24,14 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/descarca/[id]'>)
     : product?.file_path
   if (!path) return new Response('Fișierul nu a fost găsit. Scrie-ne și te ajutăm imediat.', { status: 404 })
 
+  // Nome leggibile per la cliente, es. "Roxii-Dinca-prompturi.pdf"
+  const ext = path.split('.').pop()
+  const slug = path.split('/')[0]
+  const filename = `Roxii-Dinca-${slug}${wantsBonus ? '-bonus' : ''}.${ext}`
+
   const { data, error } = await supabase.storage
     .from(PRODUCT_FILES_BUCKET)
-    .createSignedUrl(path, 60 * 10, { download: true })
+    .createSignedUrl(path, 60 * 10, { download: filename })
   if (error || !data) return new Response('Eroare temporară, încearcă din nou.', { status: 500 })
 
   return Response.redirect(data.signedUrl, 302)

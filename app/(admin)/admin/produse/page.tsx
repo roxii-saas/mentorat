@@ -171,6 +171,12 @@ function FileSlot({ product, target, label, onUploaded }: {
   const current = target === 'bump' ? product.bump_file_path : product.file_path
 
   const upload = async (file: File) => {
+    // Limite Supabase (piano gratuito): 50 MB per file
+    if (file.size > 50 * 1024 * 1024) {
+      setState('error')
+      setMsg(`Fișierul are ${(file.size / 1048576).toFixed(0)} MB — limita este 50 MB. Comprimă PDF-ul (imaginile) și reîncearcă.`)
+      return
+    }
     setState('uploading')
     setMsg('')
     try {
