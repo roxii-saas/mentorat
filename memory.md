@@ -22,11 +22,23 @@ Sito: https://mentorat.roxii-dinca.com · Repo: github.com/roxii-saas/mentorat (
   Auth: `getClaims()` (JWT ES256 verificato in locale) in `proxy.ts` e `lib/auth.ts` invece di `getUser()`;
   `requireAdmin`/`requireAuth`/`getProfileName` con `React.cache` → layout e pagina condividono i dati.
 
+- Multi-prodotto + landing `/prompturi` (2026-10-04, design Stitch "Haute Editorial", token Tailwind `ed-*`):
+  tabella `products` (mentorat + prodotti digitali), `purchases.product_id` + `bump_included`.
+  Checkout `/prompturi/checkout` (Stripe deferred intent, prezzo dal DB in `/api/stripe/product-intent`, order bump).
+  Webhook: se `metadata.product_slug` → salva + email Resend personalizzata (`lib/delivery.ts`) + notifica admin.
+  Download: `/descarca/<purchaseId>[?f=bonus]` → link firmato dal bucket privato `product-files`.
+  Admin: pagina "Produse" (prezzo, bump, file, testo email con {nume}); Overview/Clienti filtrano con `?p=<slug>`.
+  Nuovo prodotto = riga in `products` + pagina landing; checkout/email/admin già pronti.
+  Migration in `supabase/migrations/` (products + sicurezza ruoli). `supabase/schema.sql` è VECCHIO.
+
 ## Da sapere
 - Se il sito è lento o login/checkout/webhook falliscono: controllare PRIMA che il progetto Supabase
   (`sivrczlkoqtyjeiuvvvq`) non sia in pausa (piano gratuito). È stata questa la causa della lentezza.
 - Push: usa le credenziali di `gh` (account `roxii-saas`); nessun token nell'URL del remote.
 
 ## Da fare / da valutare
+- Applicare le migration del 2026-10-04 (`supabase db push`) PRIMA del deploy di /prompturi.
+- Sostituire testimonianze/numeri segnaposto di Stitch in `components/prompturi/content.ts`.
+- Caricare il PDF dei prompt (e il file dell'upgrade) da Admin → Produse.
 - Revocare il vecchio token GitHub (PAT) che era nell'URL del remote.
 - Valutare piano Supabase Pro per evitare nuove pause.

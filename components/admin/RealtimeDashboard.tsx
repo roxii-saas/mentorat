@@ -28,7 +28,15 @@ type Period = '3m' | '6m' | '12m'
 const PERIOD_LABELS: Record<Period, string> = { '3m': '3 luni', '6m': '6 luni', '12m': '12 luni' }
 const PERIOD_MONTHS: Record<Period, number> = { '3m': 3, '6m': 6, '12m': 12 }
 
-export default function RealtimeDashboard({ initial }: { initial: InitialData }) {
+export default function RealtimeDashboard({ initial, productId, productSlug, kind = 'mentorat' }: {
+  initial: InitialData; productId?: string; productSlug?: string; kind?: 'mentorat' | 'digital'
+}) {
+  const clientiHref = `/admin/clienti${productSlug ? `?p=${productSlug}` : ''}`
+  // Testi: il mentorat vende "rezervări", i prodotti digitali "vânzări"
+  const t = kind === 'mentorat'
+    ? { total: 'Rezervări totale', many: 'Rezervări', recent: 'Rezervări recente', none: 'Nicio rezervare încă.', item: 'Rezervare nouă', sub: 'Număr de clienți care au rezervat', confirmed: 'Rezervări confirmate prin Stripe' }
+    : { total: 'Vânzări totale', many: 'Vânzări', recent: 'Vânzări recente', none: 'Nicio vânzare încă.', item: 'Vânzare nouă', sub: 'Număr de clienți care au cumpărat', confirmed: 'Vânzări confirmate prin Stripe' }
+  const cur = initial.currency.toUpperCase()
   const [data, setData] = useState(initial)
   const [connected, setConnected] = useState(false)
   const [activity, setActivity] = useState<{ id: string; msg: string; time: Date }[]>([])
@@ -47,10 +55,12 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
 
   const refresh = useCallback(async () => {
     const supabase = createClient()
-    const { data: purchases } = await supabase
+    let q = supabase
       .from('purchases')
       .select('id, name, email, phone, amount, currency, created_at')
       .order('created_at', { ascending: false })
+    if (productId) q = q.eq('product_id', productId)
+    const { data: purchases } = await q
 
     if (!purchases) return
     const totalPurchases = purchases.length
@@ -65,22 +75,25 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
       created_at: p.created_at,
     }))
     setData(d => ({ ...d, totalPurchases, totalRevenue, recentPurchases }))
-  }, [])
+  }, [productId])
 
   useEffect(() => {
     const supabase = createClient()
-    const channel = supabase.channel('admin-purchases')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'purchases' }, payload => {
+    const channel = supabase.channel(`admin-purchases-${productId ?? 'all'}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'purchases',
+        ...(productId ? { filter: `product_id=eq.${productId}` } : {}),
+      }, payload => {
         refresh()
         setActivity(a => [{
           id: payload.new.id,
-          msg: `Rezervare nouă: ${payload.new.name || payload.new.email} — ${payload.new.amount} ${(payload.new.currency ?? 'eur').toUpperCase()}`,
+          msg: `${t.item}: ${payload.new.name || payload.new.email} — ${payload.new.amount} ${(payload.new.currency ?? 'eur').toUpperCase()}`,
           time: new Date(),
         }, ...a.slice(0, 9)])
       })
       .subscribe(s => setConnected(s === 'SUBSCRIBED'))
     return () => { supabase.removeChannel(channel) }
-  }, [refresh])
+  }, [refresh, productId, t.item])
 
   const filtered = data.monthlyData.slice(-PERIOD_MONTHS[period])
   const revenueData = filtered.map(m => ({ label: m.label, value: m.revenue }))
@@ -134,7 +147,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KPICard label="Rezervări totale" value={data.totalPurchases}
+        <KPICard label={t.total} value={data.totalPurchases}
           icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
           color="#ED03E9" bg="rgba(237,3,233,0.08)" sparkline={sparkPurchases} live={connected}/>
         <KPICard label="Venit total" value={data.totalRevenue}
@@ -160,7 +173,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-serif font-bold db-text">Venit — {PERIOD_LABELS[period]}</h3>
-              <p className="db-muted text-xs font-sans mt-0.5">Rezervări confirmate prin Stripe</p>
+              <p className="db-muted text-xs font-sans mt-0.5">{t.confirmed}</p>
             </div>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background:'rgba(237,3,233,0.08)' }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-5 h-5">
@@ -171,7 +184,7 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
           <LineChart3D
             data={revenueData}
             color="#ED03E9"
-            formatValue={v => `${v}€`}
+            formatValue={v => `${v} ${cur}`}
             height={180}
           />
         </div>
@@ -180,8 +193,8 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
         <div className="g-card rounded-2xl p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="font-serif font-bold db-text">Rezervări — {PERIOD_LABELS[period]}</h3>
-              <p className="db-muted text-xs font-sans mt-0.5">Număr de clienți care au rezervat</p>
+              <h3 className="font-serif font-bold db-text">{t.many} — {PERIOD_LABELS[period]}</h3>
+              <p className="db-muted text-xs font-sans mt-0.5">{t.sub}</p>
             </div>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background:'rgba(107,0,232,0.08)' }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="#6B00E8" strokeWidth="1.8" className="w-5 h-5">
@@ -204,13 +217,13 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
         {/* Rezervări recente */}
         <div className="lg:col-span-2 g-card rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-black/[.05] flex items-center justify-between">
-            <h2 className="font-serif font-semibold db-text">Rezervări recente</h2>
-            <Link href="/admin/clienti" className="text-xs font-semibold text-[#ED03E9] hover:underline font-sans">
+            <h2 className="font-serif font-semibold db-text">{t.recent}</h2>
+            <Link href={clientiHref} className="text-xs font-semibold text-[#ED03E9] hover:underline font-sans">
               Toate →
             </Link>
           </div>
           {!data.recentPurchases?.length ? (
-            <div className="py-10 text-center db-muted text-sm font-sans">Nicio rezervare încă.</div>
+            <div className="py-10 text-center db-muted text-sm font-sans">{t.none}</div>
           ) : (
             <div className="divide-y divide-black/[.04]">
               {data.recentPurchases.map(p => (
@@ -270,8 +283,10 @@ export default function RealtimeDashboard({ initial }: { initial: InitialData })
           {/* Actions */}
           <div className="space-y-2">
             {[
-              { href:'/admin/clienti', label:'Gestionează clienți', desc:`${data.totalPurchases} rezervări totale`, d:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', c:'#6B00E8', bg:'rgba(107,0,232,0.08)' },
-              { href:'/admin/setari', label:'Modifică prețul', desc:`Curent: ${data.priceAmount} ${data.currency.toUpperCase()}`, d:'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1', c:'#10B981', bg:'rgba(16,185,129,0.08)' },
+              { href:clientiHref, label:'Gestionează clienți', desc:`${data.totalPurchases} ${t.many.toLowerCase()} totale`, d:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', c:'#6B00E8', bg:'rgba(107,0,232,0.08)' },
+              kind === 'mentorat'
+                ? { href:'/admin/setari', label:'Modifică prețul', desc:`Curent: ${data.priceAmount} ${cur}`, d:'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1', c:'#10B981', bg:'rgba(16,185,129,0.08)' }
+                : { href:'/admin/produse', label:'Editează produsul', desc:'Preț, fișier, email', d:'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z', c:'#10B981', bg:'rgba(16,185,129,0.08)' },
               { href:'/admin/homepage', label:'Editează Home page', desc:'Imagini, prețuri, CTA', d:'M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9', c:'#ED03E9', bg:'rgba(237,3,233,0.08)' },
             ].map(a => (
               <Link key={a.href} href={a.href} className="flex items-center gap-3 g-card rounded-xl p-3.5 hover:shadow-md active:scale-[.99] transition-all group">

@@ -3,15 +3,22 @@ import { requireAdmin } from '@/lib/auth'
 import { format } from 'date-fns'
 import { ro } from 'date-fns/locale'
 import ResendEmailBtn from '@/components/admin/ResendEmailBtn'
+import ProductTabs from '@/components/admin/ProductTabs'
+import { loadProductStats } from '@/lib/admin-products'
 
-export default async function ClientiPage() {
+export default async function ClientiPage({ searchParams }: PageProps<'/admin/clienti'>) {
   await requireAdmin()
   const supabase = await createClient()
+  const { p: selected } = await searchParams
 
-  const { data: purchases } = await supabase
+  const { data: allPurchases } = await supabase
     .from('purchases')
     .select('*')
     .order('created_at', { ascending: false })
+
+  const { products, active } = await loadProductStats(supabase, allPurchases ?? [], typeof selected === 'string' ? selected : undefined)
+  const purchases = active ? (allPurchases ?? []).filter(x => x.product_id === active.id) : allPurchases
+  const word = !active || active.kind === 'mentorat' ? 'rezervări' : 'vânzări'
 
   const total = purchases?.length ?? 0
   const withPhone = purchases?.filter(p => p.phone)?.length ?? 0
@@ -27,14 +34,16 @@ export default async function ClientiPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-serif font-bold db-text">Clienți</h1>
-          <p className="db-muted font-sans text-sm mt-0.5">{total} rezervări înregistrate</p>
+          <p className="db-muted font-sans text-sm mt-0.5">{total} {word} înregistrate{active ? ` · /${active.slug}` : ''}</p>
         </div>
       </div>
+
+      <ProductTabs products={products} active={active?.slug ?? ''} basePath="/admin/clienti" />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {[
-          { label: 'Total rezervări', value: total, color: '#ED03E9', bg: 'rgba(237,3,233,0.08)', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+          { label: `Total ${word}`, value: total, color: '#ED03E9', bg: 'rgba(237,3,233,0.08)', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
           { label: 'Luna aceasta', value: thisMonth, color: '#10B981', bg: 'rgba(16,185,129,0.08)', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
           { label: 'Cu telefon', value: withPhone, color: '#6B00E8', bg: 'rgba(107,0,232,0.08)', icon: 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z' },
         ].map(s => (
@@ -94,6 +103,7 @@ export default async function ClientiPage() {
                     <span className="text-sm font-bold font-sans" style={{ color:'#ED03E9' }}>
                       {p.amount} {(p.currency ?? 'eur').toUpperCase()}
                     </span>
+                    {p.bump_included && <span className="ml-1.5 text-[10px] font-bold font-sans px-1.5 py-0.5 rounded bg-[#6B00E8]/10 text-[#6B00E8]">+ upgrade</span>}
                   </td>
                   <td className="px-5 py-3.5 text-sm db-muted font-sans">
                     {format(new Date(p.created_at), 'd MMM yyyy, HH:mm', { locale: ro })}
@@ -140,7 +150,7 @@ export default async function ClientiPage() {
         </div>
 
         {!purchases?.length && (
-          <div className="text-center py-12 db-muted font-sans text-sm">Nicio rezervare înregistrată încă.</div>
+          <div className="text-center py-12 db-muted font-sans text-sm">Nicio înregistrare încă.</div>
         )}
       </div>
     </div>

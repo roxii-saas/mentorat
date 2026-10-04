@@ -3,6 +3,8 @@ import { headers } from 'next/headers'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendAdminSaleEmail, sendDeliveryEmail } from '@/lib/delivery'
+import type { Product } from '@/lib/products'
 
 async function callEdgeFunction(
   email: string, name: string,
@@ -26,6 +28,53 @@ async function callEdgeFunction(
   } catch (e) {
     console.error('[Webhook] Edge Function fetch fallita:', e)
   }
+}
+
+async function handleDigitalPurchase(
+  pi: Stripe.PaymentIntent, slug: string,
+  c: { email: string; fullName: string; phone: string }
+) {
+  const supabase = createAdminClient()
+  const { data: product } = await supabase.from('products').select('*').eq('slug', slug).single<Product>()
+  if (!product) {
+    console.error('[Webhook] Prodotto non trovato:', slug)
+    return
+  }
+
+  // Stripe può reinviare lo stesso evento: email solo la prima volta
+  const { data: existing } = await supabase
+    .from('purchases').select('id').eq('stripe_payment_intent_id', pi.id).maybeSingle()
+  if (existing) {
+    console.log('[Webhook] Acquisto già registrato:', pi.id)
+    return
+  }
+
+  const { data: purchase, error } = await supabase.from('purchases').insert({
+    name: c.fullName || null,
+    email: c.email,
+    phone: c.phone || null,
+    amount: Math.round(pi.amount / 100),
+    currency: pi.currency,
+    stripe_payment_intent_id: pi.id,
+    product_id: product.id,
+    bump_included: pi.metadata?.bump === '1',
+  }).select('id, name, email, phone, amount, currency, bump_included').single()
+
+  if (error || !purchase) {
+    console.error('[Webhook] Errore salvataggio acquisto digitale:', error)
+    return
+  }
+
+  // await necessario su Vercel (altrimenti il processo viene chiuso prima dell'invio)
+  const results = await Promise.allSettled([
+    sendDeliveryEmail(purchase, product),
+    sendAdminSaleEmail(purchase, product),
+  ])
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') console.error(`[Webhook] Email ${i ? 'admin' : 'cliente'} fallita:`, r.reason)
+    else if (r.value.error) console.error(`[Webhook] Resend ${i ? 'admin' : 'cliente'}:`, r.value.error)
+  })
+  console.log('[Webhook] Prodotto digitale consegnato:', slug, c.email)
 }
 
 export async function POST(req: Request) {
@@ -74,9 +123,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true, warning: 'no_email' })
     }
 
+    // Prodotto digitale (es. /prompturi): salva + email di consegna
+    const productSlug = pi.metadata?.product_slug
+    if (productSlug) {
+      await handleDigitalPurchase(pi, productSlug, { email, fullName, phone })
+      return NextResponse.json({ received: true })
+    }
+
     // Salva acquisto nel database
     try {
       const supabase = createAdminClient()
+      const { data: mentorat } = await supabase.from('products').select('id').eq('slug', 'mentorat').single()
       const { error: dbError } = await supabase.from('purchases').upsert({
         name: fullName || null,
         email,
@@ -84,6 +141,7 @@ export async function POST(req: Request) {
         amount: Math.round(pi.amount / 100),
         currency: pi.currency,
         stripe_payment_intent_id: pi.id,
+        ...(mentorat ? { product_id: mentorat.id } : {}),
       }, { onConflict: 'stripe_payment_intent_id' })
       if (dbError) console.error('[Webhook] Errore salvataggio DB:', dbError)
       else console.log('[Webhook] Acquisto salvato nel DB per:', email)

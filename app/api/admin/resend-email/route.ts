@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendDeliveryEmail } from '@/lib/delivery'
+import type { Product } from '@/lib/products'
 
 export async function POST(req: Request) {
   const supabase = await createClient()
@@ -15,11 +17,19 @@ export async function POST(req: Request) {
   const admin = createAdminClient()
   const { data: purchase, error } = await admin
     .from('purchases')
-    .select('email, name, phone, amount, currency')
+    .select('id, email, name, phone, amount, currency, bump_included, products(*)')
     .eq('id', purchaseId)
     .single()
 
   if (error || !purchase?.email) return NextResponse.json({ error: 'Acquisto non trovato' }, { status: 404 })
+
+  // Prodotto digitale → rimanda l'email di consegna con i link di download
+  const product = purchase.products as unknown as Product | null
+  if (product?.kind === 'digital') {
+    const { error: sendError } = await sendDeliveryEmail(purchase, product)
+    if (sendError) return NextResponse.json({ error: 'Resend fallito', details: sendError }, { status: 500 })
+    return NextResponse.json({ ok: true, message: `Email reinviata a ${purchase.email}` })
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY

@@ -3,25 +3,33 @@ import { requireAdmin } from '@/lib/auth'
 import { format } from 'date-fns'
 import { ro } from 'date-fns/locale'
 import RealtimeDashboard from '@/components/admin/RealtimeDashboard'
+import ProductTabs from '@/components/admin/ProductTabs'
+import { loadProductStats } from '@/lib/admin-products'
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: PageProps<'/admin'>) {
   await requireAdmin()
   const supabase = await createClient()
+  const { p } = await searchParams
 
   const [
-    { data: purchases },
+    { data: allPurchases },
     { data: settings },
   ] = await Promise.all([
+    // select('*'): funziona anche prima della migration products (colonna product_id assente)
     supabase.from('purchases')
-      .select('id, name, email, phone, amount, currency, created_at, stripe_payment_intent_id')
+      .select('*')
       .order('created_at', { ascending: false }),
     supabase.from('platform_settings')
       .select('price_amount, currency, sales_active')
       .single(),
   ])
 
-  const priceAmount = settings?.price_amount ?? 297
-  const currency = settings?.currency ?? 'eur'
+  const { products, active } = await loadProductStats(supabase, allPurchases ?? [], typeof p === 'string' ? p : undefined)
+  const purchases = active ? (allPurchases ?? []).filter(x => x.product_id === active.id) : allPurchases
+  const isMentorat = !active || active.kind === 'mentorat'
+
+  const priceAmount = isMentorat ? (settings?.price_amount ?? 297) : 0
+  const currency = active?.currency ?? settings?.currency ?? 'eur'
 
   // Build monthly data (ultimi 12 mesi) dalla tabella purchases
   const months = Array.from({ length: 12 }, (_, i) => {
@@ -61,14 +69,17 @@ export default async function AdminPage() {
   }))
 
   return (
-    <RealtimeDashboard initial={{
+    <div className="space-y-4 sm:space-y-5">
+    <ProductTabs products={products} active={active?.slug ?? ''} basePath="/admin" />
+    <RealtimeDashboard key={active?.id ?? 'all'} productId={active?.id} productSlug={active?.slug} kind={isMentorat ? 'mentorat' : 'digital'} initial={{
       totalPurchases,
       totalRevenue,
       currency,
-      salesActive: settings?.sales_active ?? true,
+      salesActive: isMentorat ? (settings?.sales_active ?? true) : !!active?.sales_active,
       priceAmount,
       monthlyData: months,
       recentPurchases,
     }}/>
+    </div>
   )
 }

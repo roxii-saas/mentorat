@@ -34,6 +34,12 @@ export async function requireAdmin() {
   return user
 }
 
+// Per le API route: true solo se la richiesta viene da un admin
+export async function isAdminRequest() {
+  const user = await getSessionUser()
+  return !!user && (await isAdmin())
+}
+
 export async function requireAuth() {
   const user = await getSessionUser()
   if (!user) redirect('/login')
