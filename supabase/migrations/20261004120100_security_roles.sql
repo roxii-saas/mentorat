@@ -36,10 +36,38 @@ begin
 end;
 $$;
 
+-- Vale anche in INSERT: nessuno può crearsi un profilo già admin
+create or replace function public.protect_profile_role_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.role is distinct from 'client'
+     and auth.uid() is not null
+     and not public.is_admin() then
+    raise exception 'Non è permesso assegnare questo ruolo';
+  end if;
+  return new;
+end;
+$$;
+
 drop trigger if exists protect_profile_role on public.profiles;
 create trigger protect_profile_role
   before update on public.profiles
   for each row execute function public.protect_profile_role();
 
+drop trigger if exists protect_profile_role_insert on public.profiles;
+create trigger protect_profile_role_insert
+  before insert on public.profiles
+  for each row execute function public.protect_profile_role_insert();
+
 -- 3. La policy di insert aperta a tutti non serve (service role e trigger bypassano RLS).
 drop policy if exists "Service role insert" on public.profiles;
+
+-- 4. purchases: le policy "Service role …" erano in realtà aperte a TUTTI (ruolo public, condizione true):
+--    chiunque con la chiave anon poteva inserire/modificare acquisti. La service role (webhook) bypassa RLS
+--    e non ne ha bisogno → si eliminano. Resta solo la lettura per l'admin.
+drop policy if exists "Service role inserisce purchases" on public.purchases;
+drop policy if exists "Service role aggiorna purchases" on public.purchases;
