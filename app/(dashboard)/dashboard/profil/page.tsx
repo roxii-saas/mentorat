@@ -55,12 +55,12 @@ export default function ProfilPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-bold font-serif">Profilul meu</h1>
+        <h1 className="text-2xl font-bold">Profilul meu</h1>
         <p className="text-gray-500 font-sans mt-1">Actualizează datele tale personale</p>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h2 className="font-bold font-serif mb-4">Date personale</h2>
+        <h2 className="font-bold mb-4">Date personale</h2>
         <form onSubmit={saveProfile} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Nume complet</label>
@@ -75,17 +75,17 @@ export default function ProfilPage() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Email</label>
             <input type="email" value={profile?.email || ''} disabled
-              className="w-full border border-gray-100 rounded-xl px-4 py-3 font-sans text-sm bg-gray-50 text-gray-400 cursor-not-allowed" />
+              className="w-full border border-gray-100 rounded-xl px-4 py-3 font-sans text-sm bg-gray-50 text-[#6C6C80] cursor-not-allowed" />
           </div>
           <button type="submit" disabled={saving}
-            className="w-full bg-[#ED03E9] hover:bg-[#a85e35] text-white font-sans font-semibold py-3 rounded-xl transition-colors disabled:opacity-60">
+            className="w-full bg-[#B800BA] hover:bg-[#96009A] text-white font-sans font-semibold py-3 rounded-xl transition-colors disabled:opacity-60">
             {saved ? '✓ Salvat!' : saving ? 'Se salvează...' : 'Salvează modificările'}
           </button>
         </form>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h2 className="font-bold font-serif mb-4">Schimbă parola</h2>
+        <h2 className="font-bold mb-4">Schimbă parola</h2>
         <form onSubmit={changePassword} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-sans">Parolă nouă</label>
@@ -93,7 +93,7 @@ export default function ProfilPage() {
               className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sans text-sm focus:outline-none focus:ring-2 focus:ring-[#ED03E9]/40 focus:border-[#ED03E9]" />
           </div>
           {pwMsg && (
-            <p className={`text-sm font-sans ${pwMsg.includes('succes') ? 'text-green-600' : 'text-red-600'}`}>{pwMsg}</p>
+            <p className={`text-sm font-sans ${pwMsg.includes('succes') ? 'text-[#0B6B49]' : 'text-[#B42318]'}`}>{pwMsg}</p>
           )}
           <button type="submit" disabled={pwSaving}
             className="w-full bg-gray-800 hover:bg-gray-700 text-white font-sans font-semibold py-3 rounded-xl transition-colors disabled:opacity-60">

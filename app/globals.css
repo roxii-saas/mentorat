@@ -83,229 +83,141 @@ input, select, textarea { font-size: 16px !important; }
 .reveal.visible { opacity:1;transform:none; }
 
 /* ════════════════════════════════════════
-   GLASS DESIGN SYSTEM — BACKEND
+   DESIGN SYSTEM — BACKEND (admin + cont client)
+   Plat și lizibil: Inter, text minim 12px, contrast minim 4,5:1,
+   fără blur / străluciri / degradeuri. Referință: Claude Design "Backend Roxii".
    ════════════════════════════════════════ */
 
-/* Background con gradiente — fa vedere l'effetto glass */
 .db-bg {
-  background: linear-gradient(135deg, #F0E8FF 0%, #EEF0FF 40%, #FDE8FF 80%, #F0F0FF 100%);
+  background: #F6F6FA;
   min-height: 100vh;
   position: relative;
+  font-family: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #34343F;
 }
+.db-bg :focus-visible { outline: 3px solid rgba(184,0,186,.45); outline-offset: 2px; }
+.tnum { font-variant-numeric: tabular-nums; }
 
-/* Glass card — mobile: opaco solido, desktop: frosted glass */
+/* Card: alb, bordură de 1px, o singură umbră discretă */
 .g-card {
-  background: rgba(255,255,255,0.96);
-  border: 1px solid rgba(220,210,240,0.5);
-  box-shadow: 0 2px 12px rgba(107,0,232,0.05);
-}
-@media (min-width: 768px) {
-  .g-card {
-    background: rgba(255,255,255,0.68);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255,255,255,0.72);
-    box-shadow: 0 4px 24px rgba(107,0,232,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
-  }
-}
-
-/* Sidebar — mobile: bianco solido, desktop: glass */
-.g-sidebar {
   background: #FFFFFF;
-  border-right: 1px solid rgba(220,210,240,0.5);
-}
-@media (min-width: 1024px) {
-  .g-sidebar {
-    background: rgba(255,255,255,0.82);
-    backdrop-filter: blur(28px) saturate(190%);
-    -webkit-backdrop-filter: blur(28px) saturate(190%);
-    border-right: 1px solid rgba(255,255,255,0.6);
-    box-shadow: 4px 0 24px rgba(107,0,232,0.05);
-  }
+  border: 1px solid #E4E4EC;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16,16,32,.04);
 }
 
-/* Nav — mobile: bianco solido, desktop: glass */
-.g-nav {
-  background: #FFFFFF;
-  border-bottom: 1px solid rgba(220,210,240,0.4);
-  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-}
-@media (min-width: 768px) {
-  .g-nav {
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border-bottom: 1px solid rgba(255,255,255,0.55);
-    box-shadow: 0 2px 16px rgba(107,0,232,0.05);
-  }
-}
+.g-sidebar { background: #FFFFFF; border-right: 1px solid #E4E4EC; }
+.g-nav { background: #FFFFFF; border-bottom: 1px solid #E4E4EC; }
 
-/* Bottone primario glass */
+/* Buton principal: culoare plată, text alb 5,6:1 */
 .g-btn {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #ED03E9, #B800BA);
-  color: white;
-  font-family: Inter, sans-serif;
+  background: #B800BA;
+  color: #FFFFFF;
+  font-family: inherit;
   font-weight: 600;
-  border-radius: 14px;
-  border: 1px solid rgba(237,3,233,0.3);
-  box-shadow: 0 4px 20px rgba(237,3,233,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-  overflow: hidden;
-  transition: all .2s;
+  line-height: 1.3;
+  border-radius: 10px;
+  border: 0;
   cursor: pointer;
+  transition: background-color .15s;
 }
-.g-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-  pointer-events: none;
-}
-.g-btn:hover {
-  box-shadow: 0 6px 28px rgba(237,3,233,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
-  transform: translateY(-1px);
-}
-.g-btn:active { transform:scale(.98); }
-
-.g-btn-sm   { padding: 9px 18px;  font-size: 13px; border-radius: 12px; }
-.g-btn-md   { padding: 11px 22px; font-size: 14px; }
-.g-btn-lg   { padding: 14px 32px; font-size: 16px; border-radius: 16px; }
+.g-btn:hover { background: #96009A; }
+.g-btn:active { background: #7A007D; }
+.g-btn:disabled { background: #EEEEF4; color: #6C6C80; cursor: not-allowed; }
+.g-btn-sm   { padding: 8px 14px;  font-size: 14px; border-radius: 8px; }
+.g-btn-md   { padding: 11px 20px; font-size: 15px; }
+.g-btn-lg   { padding: 14px 28px; font-size: 16px; border-radius: 12px; }
 .g-btn-full { width: 100%; }
 
-/* Bottone ghost glass */
+/* Buton secundar: alb cu bordură */
 .g-btn-ghost {
-  background: rgba(237,3,233,0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #B800BA;
-  border: 1px solid rgba(237,3,233,0.2);
-  font-family: Inter, sans-serif;
+  background: #FFFFFF;
+  color: #15151C;
+  border: 1px solid #D3D3DF;
+  font-family: inherit;
   font-weight: 600;
-  border-radius: 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-  transition: all .2s;
+  border-radius: 10px;
   cursor: pointer;
+  transition: background-color .15s, border-color .15s;
 }
-.g-btn-ghost:hover {
-  background: rgba(237,3,233,0.14);
-  border-color: rgba(237,3,233,0.35);
-  box-shadow: 0 4px 16px rgba(237,3,233,0.18), inset 0 1px 0 rgba(255,255,255,0.7);
-  transform: translateY(-1px);
-}
+.g-btn-ghost:hover { background: #F6F6FA; border-color: #B9B9C9; }
 
-/* Input glass */
-.g-input {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 8px rgba(107,0,232,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
-  border-radius: 12px;
-  padding: 11px 16px;
+/* Câmpuri: bordură 3:1 față de fundal, text de 15px */
+.g-input,
+.g-select {
   width: 100%;
-  color: #0A0A0A;
-  font-family: Inter, sans-serif;
+  min-height: 44px;
+  background: #FFFFFF;
+  border: 1px solid #8A8AA0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #15151C;
+  font-family: inherit;
+  font-size: 16px !important;
   transition: border-color .15s, box-shadow .15s;
 }
-.g-input:focus {
-  outline: none;
-  border-color: rgba(237,3,233,0.6);
-  box-shadow: 0 0 0 3px rgba(237,3,233,0.12), 0 2px 8px rgba(107,0,232,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.85);
+@media (min-width: 640px) {
+  .g-input, .g-select { font-size: 15px !important; }
 }
-.g-input::placeholder { color: #A0A0B0; }
-
-/* Select glass */
-.g-select {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 8px rgba(107,0,232,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
-  border-radius: 12px;
-  padding: 11px 16px;
-  width: 100%;
-  color: #0A0A0A;
-  font-family: Inter, sans-serif;
-  cursor: pointer;
-  transition: border-color .15s;
-}
+.g-input:focus,
 .g-select:focus {
   outline: none;
-  border-color: rgba(237,3,233,0.5);
-  box-shadow: 0 0 0 3px rgba(237,3,233,0.12);
+  border-color: #B800BA;
+  box-shadow: 0 0 0 4px rgba(184,0,186,.18);
 }
+.g-input::placeholder { color: #6C6C80; }
+.g-input:disabled, .g-select:disabled { background: #F6F6FA; color: #6C6C80; cursor: not-allowed; }
+.g-select { cursor: pointer; }
 
-/* Badge glass status */
+/* Etichete de stare: mereu cu text, nu doar culoare */
 .g-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 3px 11px;
   border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: Inter, sans-serif;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid transparent;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  font-family: inherit;
   white-space: nowrap;
 }
-.g-badge-pending   { background:rgba(245,158,11,0.12); color:#92400E; border-color:rgba(245,158,11,0.2); }
-.g-badge-confirmed { background:rgba(16,185,129,0.12); color:#065F46; border-color:rgba(16,185,129,0.2); }
-.g-badge-completed { background:rgba(107,0,232,0.10);  color:#4C00A8; border-color:rgba(107,0,232,0.18); }
-.g-badge-cancelled { background:rgba(239,68,68,0.10);  color:#991B1B; border-color:rgba(239,68,68,0.18); }
+.g-badge-pending   { background: #FDF1DC; color: #8A5300; }
+.g-badge-confirmed { background: #E3F6EE; color: #0B6B49; }
+.g-badge-completed { background: #EFE6FE; color: #5A00C2; }
+.g-badge-cancelled { background: #FDE8E6; color: #B42318; }
 
-/* Nav item */
+/* Meniu lateral */
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 12px;
-  font-size: 13.5px;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 22px;
   font-weight: 500;
-  color: #4A4A6A;
-  transition: all .18s;
+  color: #34343F;
+  transition: background-color .15s, color .15s;
   cursor: pointer;
   text-decoration: none;
-  position: relative;
-  border: 1px solid transparent;
 }
-.nav-item:hover {
-  background: rgba(237,3,233,0.07);
-  color: #B800BA;
-  border-color: rgba(237,3,233,0.12);
-  backdrop-filter: blur(8px);
-}
-.nav-item.active {
-  background: rgba(237,3,233,0.1);
-  color: #B800BA;
-  font-weight: 600;
-  border-color: rgba(237,3,233,0.2);
-  box-shadow: 0 2px 8px rgba(237,3,233,0.1);
-}
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: linear-gradient(180deg, #ED03E9, #6B00E8);
-  border-radius: 0 3px 3px 0;
-}
+.nav-item:hover { background: #F6F6FA; color: #15151C; }
+.nav-item.active { background: #FBEBFB; color: #8A008D; font-weight: 600; }
 
-/* Testi backend */
-.db-title  { color: #0A0A0A; font-weight: 700; }
-.db-label  { color: #2A2A3A; font-weight: 600; }
-.db-body   { color: #3A3A4A; }
-.db-muted  { color: #6A6A7E; }
-.db-subtle { color: #9090A8; }
+/* Texte backend */
+.db-title  { color: #15151C; font-weight: 700; }
+.db-text   { color: #15151C; }
+.db-text2  { color: #34343F; }
+.db-label  { color: #15151C; font-weight: 600; }
+.db-body   { color: #34343F; }
+.db-muted  { color: #5A5A6C; }
+.db-subtle { color: #6C6C80; }
 
 /* ── HAUTE EDITORIAL (landing prodotti digitali, es. /prompturi) ── */
 @theme inline {

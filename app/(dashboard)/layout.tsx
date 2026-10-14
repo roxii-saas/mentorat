@@ -12,17 +12,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const userName = await getProfileName(user.id)
 
   return (
-    <div className="flex h-screen overflow-hidden db-bg relative">
-      <div className="hidden md:block fixed top-[-100px] right-[-80px] w-[400px] h-[400px] rounded-full bg-[#ED03E9]/10 blur-[70px] pointer-events-none animate-blob" style={{ zIndex:0 }} />
-      <div className="hidden md:block fixed bottom-[-60px] left-[-60px] w-[300px] h-[300px] rounded-full bg-[#6B00E8]/8 blur-[60px] pointer-events-none animate-blob" style={{ animationDelay:'5s', zIndex:0 }} />
-
-      <div className="relative z-10 flex w-full h-full">
-        <Sidebar items={clientItems} role="client" userName={userName} userEmail={user.email}/>
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-            <div className="max-w-5xl mx-auto w-full">{children}</div>
-          </main>
-        </div>
+    <div className="flex h-screen overflow-hidden db-bg">
+      <Sidebar items={clientItems} role="client" userName={userName} userEmail={user.email}/>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <main className="flex-1 overflow-y-auto pt-[76px] lg:pt-8 px-4 sm:px-6 lg:px-9 pb-10 lg:pb-12">
+          <div className="max-w-5xl mx-auto w-full">{children}</div>
+        </main>
       </div>
     </div>
   )

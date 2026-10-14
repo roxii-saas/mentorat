@@ -6,7 +6,7 @@ import { format, differenceInDays, differenceInHours, differenceInMinutes, diffe
 import { ro } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
 import KPICard from '@/components/charts/KPICard'
-import Area3D from '@/components/charts/Area3D'
+import BarChart from '@/components/admin/BarChart'
 
 interface Booking {
   id: string; scheduled_at: string; status: string
@@ -27,7 +27,7 @@ function Badge({ status }: { status: string }) {
     cancelled: ['Anulată',      'g-badge g-badge-cancelled'],
   }
   const [l, cls] = m[status] ?? [status, 'bg-gray-100 text-gray-500']
-  return <span className={`${cls} text-[11px] font-bold font-sans px-2.5 py-1 rounded-full whitespace-nowrap`}>{l}</span>
+  return <span className={`${cls} text-xs font-bold font-sans px-2.5 py-1 rounded-full whitespace-nowrap`}>{l}</span>
 }
 
 function Countdown({ target }: { target: Date }) {
@@ -55,9 +55,9 @@ function Countdown({ target }: { target: Date }) {
         [left.mins, 'min'],
         [left.secs, 'sec'],
       ].filter(([v]) => (v as number) > 0 || left.days === 0).map(([v, l]) => (
-        <div key={String(l)} className="flex flex-col items-center bg-white/20 backdrop-blur-sm rounded-xl px-3 py-1.5 min-w-[48px]">
-          <span className="text-white font-serif font-bold text-lg leading-none">{String(v).padStart(2,'0')}</span>
-          <span className="text-white/60 text-[9px] font-sans uppercase tracking-wider">{l}</span>
+        <div key={String(l)} className="flex flex-col items-center bg-white/10 rounded-[10px] px-3 py-1.5 min-w-[52px]">
+          <span className="text-white font-bold text-xl leading-6 tnum">{String(v).padStart(2,'0')}</span>
+          <span className="text-[#C9C9D6] text-xs font-medium uppercase tracking-wider">{l}</span>
         </div>
       ))}
     </div>
@@ -114,7 +114,7 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold db-text">Bună, {firstName}!</h1>
+          <h1 className="text-xl sm:text-2xl font-bold db-text">Bună, {firstName}!</h1>
           <p className="db-muted text-sm font-sans mt-0.5">
             {days > 0 ? `Membră de ${days} zile · progres: ${progress}%` : 'Bine ai venit în platformă!'}
           </p>
@@ -146,27 +146,22 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
         {/* Prossima sessione */}
         <div className="lg:col-span-2">
           {nextBooking ? (
-            <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ background:'linear-gradient(135deg,#ED03E9,#6B00E8)' }}>
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-bl-full pointer-events-none"/>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-tr-full pointer-events-none"/>
-              <div className="relative p-5 sm:p-6">
+            <div className="rounded-[14px] bg-[#15151C] shadow-[0_1px_2px_rgba(16,16,32,.12)]">
+              <div className="p-5 sm:p-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-60"/>
-                    <span className="relative rounded-full h-2 w-2 bg-white inline-flex"/>
-                  </span>
-                  <span className="text-white/70 text-[11px] font-sans font-bold uppercase tracking-widest">Următoarea sesiune</span>
+                  <span className="w-2 h-2 rounded-full bg-[#E9A8EC]"/>
+                  <span className="text-[#C9C9D6] text-xs font-bold uppercase tracking-widest">Următoarea sesiune</span>
                 </div>
-                <p className="text-white font-serif font-bold text-xl sm:text-2xl capitalize">
+                <p className="text-white font-bold text-xl sm:text-2xl capitalize">
                   {format(new Date(nextBooking.scheduled_at), "EEEE, d MMMM", { locale: ro })}
                 </p>
-                <p className="text-white/70 font-sans text-sm mt-0.5 mb-3">
+                <p className="text-[#C9C9D6] text-[15px] leading-6 mt-0.5 mb-3">
                   {format(new Date(nextBooking.scheduled_at), "HH:mm")} · {nextBooking.duration_minutes ?? 60} min
                 </p>
                 <Countdown target={new Date(nextBooking.scheduled_at)}/>
                 {nextBooking.meet_link && (
                   <a href={nextBooking.meet_link} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-white text-[#ED03E9] font-sans font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-gray-50 active:scale-[.98] transition-all shadow-lg mt-4">
+                    className="inline-flex items-center gap-2 bg-white text-[#8A008D] font-semibold text-[15px] px-5 min-h-11 rounded-[10px] hover:bg-[#F6F6FA] transition-colors mt-4">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
                       <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -176,15 +171,15 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
               </div>
             </div>
           ) : (
-            <div className="g-card rounded-2xl-2 border-dashed border-[#ED03E9]/20 p-6 sm:p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
-              <div className="w-12 h-12 bg-[#ED03E9]/8 rounded-2xl flex items-center justify-center mb-4">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-6 h-6">
+            <div className="g-card !border-dashed !border-[#B9B9C9] p-6 sm:p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
+              <div className="w-12 h-12 bg-[#FBEBFB] rounded-xl flex items-center justify-center mb-4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#B800BA" strokeWidth="1.8" className="w-6 h-6">
                   <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <p className="font-serif font-bold db-text mb-1">Nicio sesiune programată</p>
+              <p className="font-bold db-text mb-1">Nicio sesiune programată</p>
               <p className="db-muted text-sm font-sans mb-4">Rezervă primul tău slot cu Roxana!</p>
-              <Link href="/dashboard/prenota" className="inline-flex items-center gap-2 bg-[#ED03E9] text-white font-sans font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-[#B800BA] active:scale-[.98] transition-all shadow-md shadow-[#ED03E9]/20">
+              <Link href="/dashboard/prenota" className="inline-flex items-center gap-2 bg-[#B800BA] text-white font-sans font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-[#96009A] active:scale-[.98] transition-all shadow-md">
                 Programează acum
                 <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-4 h-4"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Link>
@@ -193,54 +188,50 @@ export default function ClientDashboard({ initial }: { initial: InitialData }) {
         </div>
 
         {/* Progress SVG */}
-        <div className="g-card rounded-2xl p-5 shadow-sm flex flex-col">
-          <h3 className="font-serif font-semibold db-text mb-3">Progresul tău</h3>
+        <div className="g-card p-5 flex flex-col">
+          <h3 className="text-base font-semibold db-text mb-3">Progresul tău</h3>
           <div className="flex items-center justify-center flex-1 my-1">
             <div className="relative w-28 h-28">
               <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="#F0F0F2" strokeWidth="10"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#EEEEF4" strokeWidth="10"/>
                 <circle cx="60" cy="60" r="50" fill="none" strokeWidth="10" strokeLinecap="round"
-                  stroke="url(#pg2)" strokeDasharray={`${(progress/100)*circ} ${circ}`}
-                  style={{ transition:'stroke-dasharray 1.2s ease' }}/>
-                <defs>
-                  <linearGradient id="pg2" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#ED03E9"/><stop offset="100%" stopColor="#6B00E8"/>
-                  </linearGradient>
-                </defs>
+                  stroke="#B800BA" strokeDasharray={`${(progress/100)*circ} ${circ}`}/>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-serif font-bold db-text">{progress}%</span>
-                <span className="text-[10px] db-muted font-sans">completat</span>
+                <span className="text-2xl font-bold db-text">{progress}%</span>
+                <span className="text-[13px] db-muted">completat</span>
               </div>
             </div>
           </div>
-          <div className="mt-2">
-            <Area3D data={monthlyProgress} color="#ED03E9" height={70}/>
+          <div className="mt-3">
+            <p className="text-[13px] leading-5 font-semibold db-muted mb-2">Sesiuni finalizate pe lună</p>
+            <BarChart color="#B800BA" height={72} ariaLabel="Sesiuni finalizate în ultimele 4 luni"
+              bars={monthlyProgress.map(m => ({ value: m.value, label: m.label, tip: `${m.label}: ${m.value}`, showLabel: true }))}/>
           </div>
         </div>
       </div>
 
       {/* Storico */}
       {bookings.length > 0 && (
-        <div className="g-card rounded-2xl shadow-sm overflow-hidden">
+        <div className="g-card overflow-hidden">
           <div className="px-4 sm:px-6 py-4 border-b border-black/[.05] flex items-center justify-between">
-            <h2 className="font-serif font-semibold db-text">Istoricul sesiunilor</h2>
-            <span className="text-[11px] db-muted font-sans">{bookings.length} total</span>
+            <h2 className="text-lg font-semibold db-title">Istoricul sesiunilor</h2>
+            <span className="text-sm db-muted">{bookings.length} total</span>
           </div>
           <div className="divide-y divide-black/[.04]">
             {bookings.slice(0, 6).map(b => (
-              <div key={b.id} className="flex items-center gap-3 px-4 sm:px-6 py-3 hover:bg-black/[.02] transition-colors">
-                <div className="w-8 h-8 bg-[#ED03E9]/8 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#ED03E9" strokeWidth="2" className="w-4 h-4">
+              <div key={b.id} className="flex items-center gap-3 px-4 sm:px-6 py-3 hover:bg-[#FAFAFD] transition-colors">
+                <div className="w-9 h-9 bg-[#FBEBFB] rounded-[10px] flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#8A008D" strokeWidth="2" className="w-[18px] h-[18px]">
                     <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold db-text font-sans">{format(new Date(b.scheduled_at), "d MMM yyyy", { locale: ro })}</p>
-                  <p className="text-xs db-muted font-sans">{format(new Date(b.scheduled_at), "HH:mm")} · {b.duration_minutes ?? 60} min</p>
+                  <p className="text-[15px] leading-[22px] font-semibold db-text">{format(new Date(b.scheduled_at), "d MMM yyyy", { locale: ro })}</p>
+                  <p className="text-[13px] leading-[18px] db-muted">{format(new Date(b.scheduled_at), "HH:mm")} · {b.duration_minutes ?? 60} min</p>
                 </div>
                 {b.meet_link && b.status === 'confirmed' && (
-                  <a href={b.meet_link} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#ED03E9] hover:underline hidden sm:block font-sans">Intră →</a>
+                  <a href={b.meet_link} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#8A008D] hover:underline hidden sm:block font-sans">Intră →</a>
                 )}
                 <Badge status={b.status}/>
               </div>

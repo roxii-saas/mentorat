@@ -1,6 +1,6 @@
 # Memory — Mentorat platform (Roxii Dincă)
 
-Aggiornato: 2026-10-15 · ultimo commit di codice: `649b490` (Meta Pixel, online)
+Aggiornato: 2026-10-15 · ultimo commit di codice: `1e2dfb8` · REDESIGN BACKEND pronto ma NON ancora committato/pushato (vedi sezione dedicata; controllare `git status`)
 
 ## Progetto
 Piattaforma multi-prodotto di Roxana (Roxii Dincă): landing mentorat + landing prodotti digitali,
@@ -16,7 +16,7 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
 - `/prompturi` landing pacchetto 50+ prompt (design Stitch "Haute Editorial", token Tailwind `ed-*`
   in `globals.css`, font Bodoni Moda + Plus Jakarta Sans, icone Material Symbols in sottoinsieme).
 - `/prompturi/checkout` → `/prompturi/multumim`. `/descarca/<purchaseId>[?f=bonus]` = download.
-- Admin: Overview, Clienti (filtro `?p=<slug>`), Calendar, Disponibilitate, **Produse**, Home page, Setări.
+- Admin: Overview (analisi zi cu zi, filtro prodotto/periodo), Clienti (`?p=<slug>&q=&page=`), Calendar, Disponibilitate, **Produse**, Home page, Setări.
 
 ## Architettura multi-prodotto (2026-10-04)
 - Tabella `products` (slug, kind `mentorat|digital`, prezzo, compare_price, valuta, sales_active,
@@ -52,6 +52,29 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
   (serve un acquisto di prova con `META_TEST_EVENT_CODE`). Chrome headless viene ignorato da Meta: per i test usare UA normale.
 - Pagine legali aggiornate (cookie + privacy: Meta come destinatario, base giuridica = consenso). Da far rivedere a Roxana/consulente.
 
+## Redesign backend + Overview analitica (2026-10-15, pronto in locale, da pushare)
+- Design di riferimento in Claude Design (privato): https://claude.ai/artifact/8XgTC9bryM2YNYvNajN29H (Overview desktop interattiva,
+  Overview mobile, Clienți, Sistem de design). Sistema: Inter ovunque, testo minimo 12px, contrasto ≥4,5:1 (calcolato), card bianche con
+  bordo 1px, niente blur/glow/gradienti/blob. Accento `#B800BA` (bottoni, testo bianco 5,6:1), testo accento `#8A008D`, sfondo `#F6F6FA`,
+  bordo campi `#8A8AA0` (3:1). Vecchi: grigio chiaro 3,1:1 e bianco su `#ED03E9` 3,6:1 (sotto AA).
+- Stili condivisi in `app/globals.css` (classi `g-card`, `g-btn`, `g-input`, `g-badge`, `nav-item`, `db-*`, `tnum`): stessi nomi di prima,
+  quindi le pagine li ereditano. `font-serif` rimosso da tutto il backend. Sidebar, KPICard, layout, ProductTabs, ResendEmailBtn riscritti.
+  Interruttori: aggiunto `left-0` alla pallina (prima usciva dal bordo) e `role="switch"`. Eliminati 6 componenti morti (Area3D, Bars3D,
+  LineChart3D, AdminCharts, AdminNav, DashboardNav). Dashboard cliente: riquadro "Următoarea sesiune" piatto scuro, mini grafico = `BarChart`.
+- **Overview** (`app/(admin)/admin/page.tsx` + `components/admin/OverviewDashboard.tsx`): filtri Produs (Toate/uno per prodotto), Perioadă
+  (7/30/90 zile, 12 luni, intervallo personalizzato), Detaliu (zi/săptămână/lună); KPI (venit per valuta, vânzări con ↑↓% vs periodo prima,
+  comandă medie, miglior periodo), grafici a barre per valuta + vendite, tabella "zi cu zi" con riga espandibile (ordini del giorno, caricati
+  al click), vendite recenti, realtime → `router.refresh()`. EUR e RON non si sommano mai (una riga/grafico per valuta).
+- Dati: funzioni SQL `admin_sales_by_day(p_from,p_to)` e `admin_orders(p_from,p_to,p_product,p_limit)` (jsonb, SECURITY INVOKER, giorno in
+  ora di Bucarest) in `supabase/migrations/20261015120000_admin_sales_analytics.sql`. PERCHÉ: PostgREST taglia a 1000 righe → leggere tutti gli
+  acquisti avrebbe troncato i totali in silenzio. `lib/admin-sales.ts` usa le RPC e, se mancano, RIPIEGA su lettura paginata + aggregazione in JS
+  (identica: testata su 600 acquisti casuali con cambi ora legale) → il sito funziona anche prima di applicare la migration.
+  Logica pura e testabile in `lib/admin-analytics.ts` (date come stringhe 'YYYY-MM-DD', mai fusi del browser).
+- **Clienti**: `ClientiView` (grafica) + page (dati): tile "Toate" + prodotti con totali veri (da RPC), ricerca `?q=`, paginazione 25/pagina
+  (prima si fermava a 1000 righe), chip prodotto e "+ upgrade". Default ora = tutti i prodotti (prima mentorat).
+- Stato: migration NON applicata (la CLI Supabase risultava loggata su un altro account → 403: rifare `supabase login` con l'account del
+  progetto, poi `supabase db push --linked < /dev/null`, che richiede conferma esplicita). Test eseguiti con Postgres reale (PGlite) in scratchpad.
+
 ## Performance (fatto)
 - `vercel.json` → funzioni in `fra1`, vicino a Supabase (prima `iad1` USA: era la causa principale della lentezza).
 - Auth con `getClaims()` (JWT ES256 verificato in locale) in `proxy.ts` e `lib/auth.ts`; `React.cache`
@@ -76,6 +99,7 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
 - Nel DB il prezzo mentorat risulta 60 EUR (verificare con Roxana se è voluto).
 
 ## Da fare
+00. Pushare il redesign backend e applicare la migration `20261015120000` (dopo `supabase login` sull'account giusto). Poi controllare online Overview (filtri, riga espansa) e Clienti.
 0. Meta: (a-c) FATTO: Pixel ID su Vercel + deploy; verificare che `META_CAPI_TOKEN` sia impostato (Sensitive, senza prefisso pubblico); (d) provare con `META_TEST_EVENT_CODE`
    in Events Manager → Test events (acquisto di prova: deve comparire UN Purchase, "Deduplicato"); (e) verificare il dominio
    in Business Manager e impostare Purchase come evento a priorità più alta (Aggregated Event Measurement); (f) togliere il test code.

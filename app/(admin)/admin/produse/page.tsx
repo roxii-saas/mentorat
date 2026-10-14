@@ -28,12 +28,12 @@ export default function ProdusePage() {
   return (
     <div className="space-y-4 sm:space-y-5 max-w-3xl">
       <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-bold db-title">Produse digitale</h1>
+        <h1 className="text-xl sm:text-2xl font-bold db-title">Produse digitale</h1>
         <p className="db-muted font-sans text-sm mt-0.5">
           Preț, upgrade la checkout, fișierul trimis clientei și emailul personalizat. Prețul mentoratului rămâne în Setări.
         </p>
       </div>
-      {error && <p className="text-red-500 text-sm font-sans bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
+      {error && <p className="text-[#B42318] text-sm font-sans bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
       {products.map(p => (
         <ProductEditor key={p.id} initial={p} onSaved={np => setProducts(ps => ps.map(x => (x.id === np.id ? np : x)))} />
       ))}
@@ -74,8 +74,8 @@ function ProductEditor({ initial, onSaved }: { initial: Product; onSaved: (p: Pr
       <div className="g-card rounded-2xl p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <h2 className="font-serif font-bold db-title text-base sm:text-lg">{p.name}</h2>
-            <a href={`/${p.slug}`} target="_blank" className="text-xs font-sans text-[#ED03E9] hover:underline">/{p.slug} ↗</a>
+            <h2 className="font-bold db-title text-base sm:text-lg">{p.name}</h2>
+            <a href={`/${p.slug}`} target="_blank" className="text-xs font-sans text-[#8A008D] hover:underline">/{p.slug} ↗</a>
           </div>
           <Toggle on={p.sales_active} onClick={() => set('sales_active', !p.sales_active)} labels={['Vânzări active ✓', 'Vânzări oprite']} />
         </div>
@@ -102,7 +102,7 @@ function ProductEditor({ initial, onSaved }: { initial: Product; onSaved: (p: Pr
       </div>
 
       <div className="g-card rounded-2xl p-5 sm:p-6">
-        <h3 className="font-serif font-bold db-text text-base mb-1">📎 Fișiere livrate</h3>
+        <h3 className="font-bold db-text text-base mb-1">Fișiere livrate</h3>
         <p className="text-sm db-muted font-sans mb-4">Clienta primește pe email un link permanent; fișierul rămâne privat.</p>
         <FileSlot product={p} target="main" label="Colecția principală (PDF)" onUploaded={np => { setP(np); onSaved(np) }} />
         {p.bump_active && (
@@ -115,7 +115,7 @@ function ProductEditor({ initial, onSaved }: { initial: Product; onSaved: (p: Pr
       <div className="g-card rounded-2xl p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <h3 className="font-serif font-bold db-text text-base">⬆️ Upgrade la checkout</h3>
+            <h3 className="font-bold db-text text-base">Upgrade la checkout</h3>
             <p className="text-sm db-muted font-sans">Bifă opțională care se adaugă la total.</p>
           </div>
           <Toggle on={p.bump_active} onClick={() => set('bump_active', !p.bump_active)} labels={['Activ', 'Oprit']} />
@@ -141,7 +141,7 @@ function ProductEditor({ initial, onSaved }: { initial: Product; onSaved: (p: Pr
       </div>
 
       <div className="g-card rounded-2xl p-5 sm:p-6">
-        <h3 className="font-serif font-bold db-text text-base mb-1">✉️ Email trimis clientei</h3>
+        <h3 className="font-bold db-text text-base mb-1">Email trimis clientei</h3>
         <p className="text-sm db-muted font-sans mb-4">
           Scrie <code className="bg-black/5 px-1 rounded">{'{nume}'}</code> pentru prenumele clientei. Butoanele de descărcare se adaugă automat.
         </p>
@@ -155,7 +155,7 @@ function ProductEditor({ initial, onSaved }: { initial: Product; onSaved: (p: Pr
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-sm font-sans bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
+      {error && <p className="text-[#B42318] text-sm font-sans bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
       <button type="submit" disabled={saving} className="g-btn g-btn-md g-btn-full">
         {saved ? '✓ Salvat cu succes!' : saving ? 'Se salvează...' : 'Salvează produsul'}
       </button>
@@ -210,10 +210,10 @@ function FileSlot({ product, target, label, onUploaded }: {
     <div className="rounded-xl border border-black/[.08] p-3.5 flex flex-col sm:flex-row sm:items-center gap-3">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold db-text font-sans">{label}</p>
-        <p className={`text-xs font-sans truncate ${current ? 'db-muted' : 'text-amber-600 font-semibold'}`}>
-          {current ? current.split('/').pop() : '⚠️ Niciun fișier — clientele nu vor primi nimic!'}
+        <p className={`text-xs font-sans truncate ${current ? 'db-muted' : 'text-[#8A5300] font-semibold'}`}>
+          {current ? current.split('/').pop() : 'Niciun fișier — clientele nu vor primi nimic!'}
         </p>
-        {msg && <p className={`text-xs font-sans mt-0.5 ${state === 'error' ? 'text-red-500' : 'text-green-600'}`}>{msg}</p>}
+        {msg && <p className={`text-xs font-sans mt-0.5 ${state === 'error' ? 'text-[#B42318]' : 'text-[#0B6B49]'}`}>{msg}</p>}
       </div>
       <label className={`g-btn g-btn-md cursor-pointer text-center ${state === 'uploading' ? 'opacity-60 pointer-events-none' : ''}`}>
         {state === 'uploading' ? 'Se încarcă…' : current ? 'Înlocuiește' : 'Încarcă fișier'}
@@ -231,9 +231,9 @@ function Label({ children }: { children: React.ReactNode }) {
 function Toggle({ on, onClick, labels }: { on: boolean; onClick: () => void; labels: [string, string] }) {
   return (
     <div className="flex items-center gap-2 shrink-0">
-      <span className={`font-sans font-semibold text-xs ${on ? 'text-green-600' : 'db-muted'}`}>{on ? labels[0] : labels[1]}</span>
-      <button type="button" onClick={onClick}
-        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${on ? 'bg-[#ED03E9]' : 'bg-gray-300'}`}>
+      <span className={`font-sans font-semibold text-xs ${on ? 'text-[#0B6B49]' : 'db-muted'}`}>{on ? labels[0] : labels[1]}</span>
+      <button type="button" role="switch" aria-checked={on} onClick={onClick}
+        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${on ? 'bg-[#B800BA]' : 'bg-[#8A8AA0]'}`}>
         <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
     </div>

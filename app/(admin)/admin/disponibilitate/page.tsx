@@ -70,16 +70,16 @@ export default function DisponibilitatePage() {
     <div className="space-y-4 sm:space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold db-text">Disponibilitate</h1>
+          <h1 className="text-xl sm:text-2xl font-bold db-text">Disponibilitate</h1>
           <p className="db-muted font-sans text-sm mt-0.5">Setează slot-urile pentru sesiuni</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="g-card rounded-xl px-4 py-2 text-center border">
-            <p className="text-lg font-serif font-bold text-green-500">{totalFree}</p>
+            <p className="text-lg font-bold text-[#0B6B49]">{totalFree}</p>
             <p className="text-xs db-muted font-sans">Libere</p>
           </div>
           <div className="g-card rounded-xl px-4 py-2 text-center border">
-            <p className="text-lg font-serif font-bold text-[#ED03E9]">{totalBooked}</p>
+            <p className="text-lg font-bold text-[#8A008D]">{totalBooked}</p>
             <p className="text-xs db-muted font-sans">Rezervate</p>
           </div>
         </div>
@@ -88,9 +88,9 @@ export default function DisponibilitatePage() {
       {/* Add form */}
       <div className="g-card rounded-2xl p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif font-bold db-text text-base sm:text-lg">Adaugă slot nou</h2>
+          <h2 className="font-bold db-text text-base sm:text-lg">Adaugă slot nou</h2>
           <button type="button" onClick={() => { setBulkMode(!bulkMode); setBulkDays([]) }}
-            className="text-xs font-sans text-[#ED03E9] hover:underline">
+            className="text-xs font-sans text-[#8A008D] hover:underline">
             {bulkMode ? 'Mod simplu' : 'Mai multe zile'}
           </button>
         </div>
@@ -128,7 +128,7 @@ export default function DisponibilitatePage() {
                 <button key={day} type="button" onClick={() => toggleDay(day)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-sans font-semibold border-2 transition-all active:scale-95 ${
                     bulkDays.includes(day)
-                      ? 'border-[#ED03E9] bg-[#ED03E9] text-white'
+                      ? 'border-[#ED03E9] bg-[#B800BA] text-white'
                       : 'border-gray-200 border-gray-200 db-text2 hover:border-[#ED03E9]/50'
                   }`}>
                   {format(parseISO(day), 'EEE d MMM', { locale: ro })}
@@ -138,7 +138,7 @@ export default function DisponibilitatePage() {
           </div>
         )}
 
-        {error && <p className="text-red-500 text-sm font-sans mb-3 bg-red-50 bg-red-50 px-4 py-2 rounded-xl">{error}</p>}
+        {error && <p className="text-[#B42318] text-sm font-sans mb-3 bg-red-50 bg-red-50 px-4 py-2 rounded-xl">{error}</p>}
 
         <button type="button" onClick={addSlot}
           disabled={adding || (!bulkMode && !date) || (bulkMode && bulkDays.length === 0)}
@@ -163,7 +163,7 @@ export default function DisponibilitatePage() {
         <div className="space-y-3">
           {Object.entries(slots).map(([d, daySlots]) => (
             <div key={d} className="g-card rounded-2xl p-4 sm:p-5">
-              <h3 className="font-serif font-semibold db-text mb-3 text-sm sm:text-base capitalize">
+              <h3 className="font-semibold db-text mb-3 text-sm sm:text-base capitalize">
                 {format(parseISO(d), "EEEE, d MMMM yyyy", { locale: ro })}
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -178,9 +178,9 @@ export default function DisponibilitatePage() {
                     </svg>
                     <span className="font-semibold">{slot.start_time}–{slot.end_time}</span>
                     {slot.is_booked
-                      ? <span className="text-xs font-bold text-green-600">✓ Rezervat</span>
+                      ? <span className="text-xs font-bold text-[#0B6B49]">✓ Rezervat</span>
                       : <button type="button" onClick={() => deleteSlot(slot.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors ml-1">
+                          className="text-[#6C6C80] hover:text-[#B42318] transition-colors ml-1">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
                             <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round"/>
                           </svg>

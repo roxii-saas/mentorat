@@ -1,36 +1,41 @@
 import Link from 'next/link'
+import { money, nf, productLabel } from '@/lib/admin-analytics'
 
 export type ProductStat = {
   id: string; slug: string; name: string; kind: string; currency: string; sales_active: boolean
   sales: number; revenue: number
 }
 
-// Selettore prodotto (server component): i link cambiano ?p=<slug>
-export default function ProductTabs({ products, active, basePath }: {
+// Selettore prodotto (server component): "Toate" + un riquadro per prodotto con vendite e incassi di sempre.
+// I link cambiano ?p=<slug>; active = '' significa tutti.
+export default function ProductTabs({ products, active, basePath, allSales, allRevenue, keep }: {
   products: ProductStat[]; active: string; basePath: string
+  allSales: number; allRevenue: Record<string, number>
+  keep?: Record<string, string>   // altri parametri da mantenere nel link (es. ricerca)
 }) {
   if (products.length < 2) return null
+  const href = (slug: string) => {
+    const q = new URLSearchParams({ ...(keep ?? {}), ...(slug ? { p: slug } : {}) }).toString()
+    return q ? `${basePath}?${q}` : basePath
+  }
+  const allRev = Object.entries(allRevenue).filter(([, v]) => v > 0).map(([c, v]) => money(v, c)).join(' + ') || '0'
+  const tiles = [
+    { key: '', label: 'Toate produsele', sales: allSales, rev: allRev },
+    ...products.map(p => ({ key: p.slug, label: productLabel(p), sales: p.sales, rev: money(p.revenue, p.currency) })),
+  ]
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 sm:gap-3">
-      {products.map(p => {
-        const on = p.slug === active
+    <nav aria-label="Produs" className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 sm:gap-4">
+      {tiles.map((t, i) => {
+        const on = t.key === active
         return (
-          <Link key={p.id} href={`${basePath}?p=${p.slug}`} scroll={false}
-            className={`g-card rounded-2xl p-3.5 sm:p-4 transition-all ${on ? 'ring-2 ring-[#ED03E9] shadow-md' : 'opacity-75 hover:opacity-100'}`}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-bold font-sans uppercase tracking-wider db-muted">
-                {p.kind === 'mentorat' ? 'Mentorat' : 'Produs digital'}
-              </span>
-              {on && <span className="w-1.5 h-1.5 rounded-full bg-[#ED03E9]" />}
-            </div>
-            <p className="text-sm font-semibold db-text font-sans truncate mt-0.5">/{p.slug}</p>
-            <p className="font-serif font-bold text-lg sm:text-xl mt-1" style={{ color: on ? '#ED03E9' : undefined }}>
-              {p.revenue.toLocaleString('ro-RO')} {p.currency.toUpperCase()}
-            </p>
-            <p className="text-xs db-muted font-sans">{p.sales} {p.kind === 'mentorat' ? 'rezervări' : 'vânzări'}</p>
+          <Link key={t.key || 'all'} href={href(t.key)} scroll={false} aria-current={on ? 'page' : undefined}
+            className={`g-card block px-4 sm:px-[18px] py-4 transition-colors ${i === 0 ? 'col-span-2 sm:col-span-1' : ''} ${on ? '!border-[#B800BA] ring-1 ring-[#B800BA]' : 'hover:bg-[#FAFAFD]'}`}>
+            <div className={`text-[13px] leading-[18px] font-semibold ${on ? 'text-[#8A008D]' : 'text-[#5A5A6C]'}`}>{t.label}</div>
+            <div className="text-[26px] leading-[34px] font-bold tnum text-[#15151C] mt-0.5">{nf(t.sales)}</div>
+            <div className="text-[13px] leading-5 text-[#5A5A6C]">{t.rev}</div>
           </Link>
         )
       })}
-    </div>
+    </nav>
   )
 }
