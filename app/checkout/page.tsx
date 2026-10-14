@@ -11,6 +11,8 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
+import MetaEvent from '@/components/meta/MetaEvent'
+import { getMetaContext, trackMeta } from '@/lib/meta/pixel'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -174,10 +176,13 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
     setSubmitting(true)
     setError('')
 
+    trackMeta('AddPaymentInfo', {
+      value: order.amount, currency: order.currency.toUpperCase(), content_ids: ['mentorat'], content_type: 'product',
+    })
     await fetch('/api/stripe/update-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientSecret: order.clientSecret, name, email, phone }),
+      body: JSON.stringify({ clientSecret: order.clientSecret, name, email, phone, meta: getMetaContext() }),
     })
 
     console.log('[Checkout] Calling confirmPayment...')
@@ -200,6 +205,9 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
+      <MetaEvent name="InitiateCheckout" params={{
+        value: order.amount, currency: order.currency.toUpperCase(), content_ids: ['mentorat'], content_type: 'product', num_items: 1,
+      }} />
 
       {/* ── Header ── */}
       <header className="bg-white border-b border-black/[.06] px-5 h-16 flex items-center">

@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAdminSaleEmail, sendDeliveryEmail } from '@/lib/delivery'
+import { sendMetaPurchase } from '@/lib/meta/capi'
 import type { Product } from '@/lib/products'
 
 async function callEdgeFunction(
@@ -69,10 +70,12 @@ async function handleDigitalPurchase(
   const results = await Promise.allSettled([
     sendDeliveryEmail(purchase, product),
     sendAdminSaleEmail(purchase, product),
+    sendMetaPurchase(pi, { name: c.fullName, email: c.email, phone: c.phone, contentId: slug }),
   ])
   results.forEach((r, i) => {
-    if (r.status === 'rejected') console.error(`[Webhook] Email ${i ? 'admin' : 'cliente'} fallita:`, r.reason)
-    else if (r.value.error) console.error(`[Webhook] Resend ${i ? 'admin' : 'cliente'}:`, r.value.error)
+    const who = ['cliente', 'admin', 'meta'][i]
+    if (r.status === 'rejected') console.error(`[Webhook] Invio ${who} fallito:`, r.reason)
+    else if (i < 2 && (r.value as { error?: unknown } | undefined)?.error) console.error(`[Webhook] Resend ${who}:`, (r.value as { error: unknown }).error)
   })
   console.log('[Webhook] Prodotto digitale consegnato:', slug, c.email)
 }
@@ -150,7 +153,11 @@ export async function POST(req: Request) {
     }
 
     // Invia email — await necessario su Vercel (altrimenti il processo viene killato prima)
-    await callEdgeFunction(email, fullName || email, pi.amount / 100, pi.currency, phone)
+    // In parallelo: Meta CAPI non lancia mai errori, quindi non può bloccare l'email
+    await Promise.all([
+      callEdgeFunction(email, fullName || email, pi.amount / 100, pi.currency, phone),
+      sendMetaPurchase(pi, { name: fullName, email, phone, contentId: 'mentorat' }),
+    ])
   }
 
   return NextResponse.json({ received: true })

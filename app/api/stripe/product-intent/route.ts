@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { metaMetadataFromRequest } from '@/lib/meta/capi'
 
 // Crea il PaymentIntent per un prodotto digitale. Il prezzo arriva SEMPRE dal DB, mai dal client.
 export async function POST(req: Request) {
-  const { slug, bump, name, email, phone } = await req.json()
+  const { slug, bump, name, email, phone, meta } = await req.json()
   if (!slug || !email || !name) {
     return NextResponse.json({ error: 'Completează numele și emailul.' }, { status: 400 })
   }
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
       customer_name: String(name).slice(0, 200),
       customer_email: String(email).slice(0, 200),
       customer_phone: String(phone ?? '').slice(0, 50),
+      ...metaMetadataFromRequest(req, meta ?? {}),
     },
   })
 

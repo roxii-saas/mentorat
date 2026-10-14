@@ -4,7 +4,7 @@ export default function PoliticaConfidentialitate() {
   return (
     <article className="prose prose-sm sm:prose max-w-none text-[#3D3D3D]">
       <h1 className="font-serif text-[#0A0A0A]">Politica de Confidențialitate</h1>
-      <p className="text-[#737373] text-sm">Ultima actualizare: iunie 2025</p>
+      <p className="text-[#737373] text-sm">Ultima actualizare: octombrie 2026</p>
 
       <p>
         Prezenta Politică de Confidențialitate descrie modul în care <strong>Roxana Dinca</strong>
@@ -30,13 +30,14 @@ export default function PoliticaConfidentialitate() {
         <li>Comunicarea cu clienta privind pașii următori în program</li>
         <li>Respectarea obligațiilor legale (contabilitate, fiscalitate)</li>
         <li>Trimiterea de comunicări legate de serviciul achiziționat</li>
+        <li>Măsurarea eficienței reclamelor noastre (Meta Pixel și API-ul de conversii Meta) — doar dacă accepți cookie-urile de marketing</li>
       </ul>
 
       <h2 className="font-serif text-[#0A0A0A]">3. Temeiul juridic al prelucrării</h2>
       <ul>
         <li><strong>Executarea contractului</strong> (art. 6 alin. 1 lit. b GDPR) — pentru rezervare și mentorat</li>
         <li><strong>Obligație legală</strong> (art. 6 alin. 1 lit. c GDPR) — pentru documente contabile</li>
-        <li><strong>Consimțământ</strong> (art. 6 alin. 1 lit. a GDPR) — pentru cookie-uri ne-esențiale</li>
+        <li><strong>Consimțământ</strong> (art. 6 alin. 1 lit. a GDPR) — pentru cookie-uri ne-esențiale și pentru măsurarea reclamelor Meta; îl poți retrage oricând din „Setări cookie” din subsolul site-ului</li>
         <li><strong>Interes legitim</strong> (art. 6 alin. 1 lit. f GDPR) — pentru securitatea platformei</li>
       </ul>
 
@@ -57,9 +58,10 @@ export default function PoliticaConfidentialitate() {
         <li><strong>Supabase, Inc.</strong> — stocare date (bază de date securizată, UE)</li>
         <li><strong>Resend, Inc.</strong> — trimitere email-uri tranzacționale</li>
         <li><strong>Vercel, Inc.</strong> — hosting platformă</li>
+        <li><strong>Meta Platforms Ireland Ltd.</strong> — măsurarea reclamelor, doar cu consimțământul tău: date tehnice (identificatori cookie, adresă IP, browser) și, la achiziție, email, telefon și nume în formă criptată (hash), plus valoarea comenzii. Politica Meta: facebook.com/privacy/policy</li>
       </ul>
       <p>
-        Nu vindem, nu închiriem și nu transmitem datele tale către terți în scop comercial.
+        Nu vindem și nu închiriem datele tale. Singura transmitere în scop de marketing este cea către Meta, descrisă mai sus și realizată exclusiv pe baza consimțământului tău.
         Toți furnizorii de mai sus sunt conformi GDPR și asigură protecția adecvată a datelor.
       </p>
 
@@ -84,7 +86,7 @@ export default function PoliticaConfidentialitate() {
 
       <h2 className="font-serif text-[#0A0A0A]">8. Transferuri internaționale</h2>
       <p>
-        Unii furnizori de servicii (Stripe, Supabase, Resend) pot prelucra date în SUA.
+        Unii furnizori de servicii (Stripe, Supabase, Resend, Meta) pot prelucra date în SUA.
         Transferurile se realizează pe baza Deciziei de adecvare UE-SUA (Data Privacy Framework)
         sau a clauzelor contractuale standard adoptate de Comisia Europeană.
       </p>

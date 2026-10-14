@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Playfair_Display, Inter } from "next/font/google"
 import "./globals.css"
+import MetaPixel from "@/components/meta/MetaPixel"
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -54,7 +55,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://js.stripe.com"/>
         <link rel="dns-prefetch" href="https://api.resend.com"/>
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        {children}
+        <MetaPixel />
+      </body>
     </html>
   )
 }

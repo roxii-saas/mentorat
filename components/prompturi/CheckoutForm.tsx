@@ -6,6 +6,8 @@ import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import type { PublicProduct } from '@/lib/products'
 import { Icon } from './Icon'
+import MetaEvent from '@/components/meta/MetaEvent'
+import { getMetaContext, trackMeta } from '@/lib/meta/pixel'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -18,6 +20,12 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
 
   return (
     <div className="min-h-screen bg-ed-canvas">
+      {product.sales_active && (
+        <MetaEvent name="InitiateCheckout" params={{
+          value: product.price_amount, currency: product.currency.toUpperCase(),
+          content_ids: [product.slug], content_type: 'product', num_items: 1,
+        }} />
+      )}
       <header className="sticky top-0 z-50 bg-ed-canvas/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
         <div className="h-16 max-w-[1080px] mx-auto px-5 flex items-center justify-between">
           <div className="flex items-center gap-1">
@@ -130,7 +138,7 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
                   rules: { '.Input': { border: '1px solid #e8e2d9', boxShadow: 'none' }, '.Input:focus': { border: '1px solid #111113', boxShadow: '0 0 0 2px rgba(185,12,85,0.1)' } },
                 },
               }}>
-              <PayForm slug={product.slug} bump={bump && hasBump} totalLabel={fmt(total, product.currency)} />
+              <PayForm slug={product.slug} bump={bump && hasBump} total={total} currency={product.currency} totalLabel={fmt(total, product.currency)} />
             </Elements>
             <Guarantee className="lg:hidden mt-4" />
           </div>
@@ -183,7 +191,7 @@ function Guarantee({ className = '' }: { className?: string }) {
 
 const inputCls = 'w-full bg-ed-white border border-ed-line text-ed-ink placeholder:text-ed-soft px-3.5 py-2.5 rounded focus:outline-none focus:border-ed-black focus:ring-2 focus:ring-ed-berry/10 transition-all'
 
-function PayForm({ slug, bump, totalLabel }: { slug: string; bump: boolean; totalLabel: string }) {
+function PayForm({ slug, bump, total, currency, totalLabel }: { slug: string; bump: boolean; total: number; currency: string; totalLabel: string }) {
   const stripe = useStripe()
   const elements = useElements()
   const [name, setName] = useState('')
@@ -205,10 +213,13 @@ function PayForm({ slug, bump, totalLabel }: { slug: string; bump: boolean; tota
       return
     }
 
+    trackMeta('AddPaymentInfo', {
+      value: total, currency: currency.toUpperCase(), content_ids: [slug], content_type: 'product',
+    })
     const res = await fetch('/api/stripe/product-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, bump, name, email, phone }),
+      body: JSON.stringify({ slug, bump, name, email, phone, meta: getMetaContext() }),
     })
     const data = await res.json()
     if (!res.ok || !data.clientSecret) {

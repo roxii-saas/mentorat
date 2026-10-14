@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import { getPublicProduct, formatMoney } from '@/lib/products'
 import { Icon } from '@/components/prompturi/Icon'
+import MetaEvent from '@/components/meta/MetaEvent'
+import CookieSettingsLink from '@/components/meta/CookieSettingsLink'
 import { BeforeAfter, CopyPrompt, SectionNav } from '@/components/prompturi/Interactive'
 import {
   AI_TOOLS, BONUSES, BUNDLE_VALUE, CASES, COMPARISON, FAQ, METRICS, MODULES, PILLARS, SHOWCASE_PROMPT,
@@ -23,6 +25,10 @@ export default async function PrompturiPage() {
 
   return (
     <>
+      <MetaEvent name="ViewContent" params={{
+        content_ids: [product.slug], content_type: 'product', content_name: product.name,
+        value: product.price_amount, currency: cur,
+      }} />
       <SectionNav priceLabel={price} checkoutHref={CHECKOUT} />
 
       <main className="pt-16 pb-36 md:pb-0">
@@ -489,6 +495,7 @@ export default async function PrompturiPage() {
               <a href="/termeni-si-conditii" className="hover:text-ed-ink">Termeni și condiții</a>
               <a href="/politica-de-confidentialitate" className="hover:text-ed-ink">Confidențialitate</a>
               <a href="/politica-de-cookie" className="hover:text-ed-ink">Cookie</a>
+              <CookieSettingsLink className="hover:text-ed-ink" />
             </div>
           </div>
         </footer>

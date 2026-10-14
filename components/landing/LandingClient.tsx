@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
+import CookieSettingsLink from '@/components/meta/CookieSettingsLink'
 
 interface Settings {
   price_amount: number
@@ -899,6 +900,7 @@ export default function LandingClient({ initialSettings }: { initialSettings: Se
               <Link href="/termeni-si-conditii" className="text-xs text-white/30 hover:text-white/60 font-sans transition-colors">Termeni</Link>
               <span className="text-white/15 text-xs">·</span>
               <Link href="/politica-de-cookie" className="text-xs text-white/30 hover:text-white/60 font-sans transition-colors">Cookie</Link>
+              <CookieSettingsLink separatorClassName="text-white/15 text-xs" className="text-xs text-white/30 hover:text-white/60 font-sans transition-colors" />
               <span className="text-white/15 text-xs">·</span>
               <div className="flex items-center gap-1 text-xs text-white/30 font-sans">
                 <svg viewBox="0 0 16 16" fill="none" stroke="#ED03E9" strokeWidth="1.8" className="w-3 h-3"><path d="M8 1.5l1.56 3.16L13 5.25l-2.5 2.44.59 3.44L8 9.5l-3.09 1.63.59-3.44L3 5.25l3.44-.59L8 1.5z" strokeLinecap="round" strokeLinejoin="round"/></svg>

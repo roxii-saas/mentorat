@@ -4,7 +4,7 @@ export default function PoliticaCookie() {
   return (
     <article className="prose prose-sm sm:prose max-w-none text-[#3D3D3D]">
       <h1 className="font-serif text-[#0A0A0A]">Politica de Cookie</h1>
-      <p className="text-[#737373] text-sm">Ultima actualizare: iunie 2025</p>
+      <p className="text-[#737373] text-sm">Ultima actualizare: octombrie 2026</p>
 
       <p>
         Platforma <strong>mentorat.roxii-dinca.com</strong> utilizează cookie-uri și tehnologii similare
@@ -64,7 +64,27 @@ export default function PoliticaCookie() {
 
       <h3 className="font-serif text-[#0A0A0A]">d) Cookie-uri de marketing / publicitate</h3>
       <p>
-        <strong>Nu utilizăm</strong> cookie-uri de marketing sau retargetare publicitar pe această platformă.
+        Folosim <strong>Meta Pixel</strong> și <strong>API-ul de conversii Meta</strong> (Meta Platforms Ireland Ltd.)
+        pentru a măsura câte persoane ajung pe site, încep și finalizează o comandă după ce au văzut reclamele noastre
+        și pentru a le optimiza. Aceste instrumente se activează <strong>doar dacă apeși „Accept”</strong> în
+        bannerul de cookie-uri; până atunci nu se încarcă și nu se trimite nimic către Meta.
+        Nu sunt folosite în zonele private ale platformei (cont de client, administrare).
+      </p>
+      <table>
+        <thead>
+          <tr><th>Nume</th><th>Scop</th><th>Durată</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>_fbp</code></td><td>Identifică browserul pentru măsurarea reclamelor Meta</td><td>3 luni</td></tr>
+          <tr><td><code>_fbc</code></td><td>Reține clicul pe o reclamă Meta (dacă ai venit dintr-una)</td><td>3 luni</td></tr>
+          <tr><td><code>meta_consent</code></td><td>Reține alegerea ta privind cookie-urile (localStorage, nu e transmis)</td><td>6 luni</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Dacă ai acceptat, la achiziție trimitem către Meta, pe cale securizată, valoarea comenzii și date de contact
+        (email, telefon, nume) <strong>criptate irreversibil (hash)</strong>, împreună cu adresa IP și browserul,
+        pentru a asocia achiziția cu reclama. Poți retrage consimțământul oricând din linkul <strong>„Setări cookie”</strong>
+        din subsolul paginii; retragerea oprește trimiterea de date pentru vizitele următoare.
       </p>
 
       <h2 className="font-serif text-[#0A0A0A]">3. Cookie-uri ale terților</h2>
@@ -76,6 +96,10 @@ export default function PoliticaCookie() {
           <strong>Stripe</strong> — procesarea plăților securizate.
           Cookie-urile Stripe sunt necesare pentru protecția anti-fraudă și nu pot fi dezactivate
           în contextul efectuării plăților. Politica Stripe: <strong>stripe.com/privacy</strong>
+        </li>
+        <li>
+          <strong>Meta Platforms Ireland Ltd.</strong> — măsurarea reclamelor (Meta Pixel), doar cu consimțământul tău.
+          Politica Meta: <strong>facebook.com/privacy/policy</strong>
         </li>
       </ul>
 
@@ -100,13 +124,13 @@ export default function PoliticaCookie() {
 
       <h2 className="font-serif text-[#0A0A0A]">5. Consimțământul tău</h2>
       <p>
-        Prin continuarea navigării pe platforma noastră după ce ai luat la cunoștință prezenta
-        Politică de Cookie, îți exprimi acordul pentru utilizarea cookie-urilor esențiale și
-        funcționale descrise mai sus.
+        <strong>Cookie-urile esențiale și funcționale</strong> nu necesită consimțământ, deoarece sunt strict necesare
+        pentru funcționarea serviciului solicitat (art. 5 alin. 3 din Directiva ePrivacy).
       </p>
       <p>
-        Cookie-urile esențiale nu necesită consimțământ, deoarece sunt strict necesare pentru
-        funcționarea serviciului solicitat (art. 5 alin. 3 din Directiva ePrivacy).
+        <strong>Cookie-urile de marketing (Meta)</strong> se folosesc doar cu acordul tău explicit, exprimat prin
+        butonul „Accept” din banner. Poți refuza fără nicio consecință asupra utilizării site-ului sau a
+        posibilității de a cumpăra, iar alegerea o poți schimba oricând din „Setări cookie”.
       </p>
 
       <h2 className="font-serif text-[#0A0A0A]">6. Actualizarea politicii</h2>
