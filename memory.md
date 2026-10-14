@@ -1,6 +1,6 @@
 # Memory — Mentorat platform (Roxii Dincă)
 
-Aggiornato: 2026-10-14 · ultimo commit di codice: `9362aeb` (Meta Pixel: vedi sezione dedicata, verificare con `git log` se è stato pushato)
+Aggiornato: 2026-10-15 · ultimo commit di codice: `649b490` (Meta Pixel, online)
 
 ## Progetto
 Piattaforma multi-prodotto di Roxana (Roxii Dincă): landing mentorat + landing prodotti digitali,
@@ -30,8 +30,8 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
 - Nuovo prodotto = riga in `products` + pagina landing (copiare `app/prompturi`); checkout/email/admin già pronti.
 - Migration in `supabase/migrations/` (APPLICATE in produzione). `supabase/schema.sql` è VECCHIO, non usarlo.
 
-## Meta Pixel + Conversions API (2026-10-14, implementato e collaudato in locale)
-- Tutto è **spento finché non si impostano le env su Vercel**: `NEXT_PUBLIC_META_PIXEL_ID` (solo cifre; è inlinata
+## Meta Pixel + Conversions API (2026-10-15, ONLINE)
+- Pixel ID in produzione: `1843386920148695` (pubblico, tipo **Config** su Vercel). Tutto è **spento se manca l'env**: `NEXT_PUBLIC_META_PIXEL_ID` (solo cifre; è inlinata
   al build → serve un redeploy), `META_CAPI_TOKEN` (segreto, solo server), opzionali `META_TEST_EVENT_CODE`
   (per Events Manager → Test events) e `META_GRAPH_VERSION` (default v23.0). Senza ID: nessun banner, nessuna richiesta a Meta.
 - Consenso GDPR: banner Accept/Refuz (stesso peso) in `components/meta/MetaPixel.tsx`; scelta in localStorage
@@ -47,7 +47,9 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
   `content_ids`: `mentorat` (EUR) e `prompturi` (RON).
 - Collaudo fatto: unit test CAPI (hash, telefoni RO, payload, no-consenso, errore di rete) + 27 controlli E2E con Chrome
   (nessuna richiesta a Facebook prima/senza consenso, eventi e valori, once, aree private, revoca, mobile).
-  NON testato: invio reale a Meta (serve Pixel ID + token veri).
+  Verificato anche sul sito online con Chrome: banner, nessuna richiesta prima del consenso, dopo Accept lo script reale di Meta
+  invia PageView + ViewContent (149 RON, `prompturi`) col Pixel ID giusto. NON testato: Purchase server-side con `META_CAPI_TOKEN` reale
+  (serve un acquisto di prova con `META_TEST_EVENT_CODE`). Chrome headless viene ignorato da Meta: per i test usare UA normale.
 - Pagine legali aggiornate (cookie + privacy: Meta come destinatario, base giuridica = consenso). Da far rivedere a Roxana/consulente.
 
 ## Performance (fatto)
@@ -66,15 +68,15 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
 - CLI Supabase (v2.119): lanciare i comandi con `< /dev/null`, altrimenti restano in attesa.
   Se compare la richiesta del portachiavi macOS → password del Mac + "Sempre"
   (alternativa: `SUPABASE_ACCESS_TOKEN` in `~/.zshrc`). Query: `supabase db query --linked -f file.sql`.
-- Push: credenziali di `gh` (account `roxii-saas`).
+- Push: credenziali di `gh` account `roxii-saas`. Sul Mac ci sono 7 account gh e l'attivo cambia con gli altri progetti:
+  se il push dà 403 → `gh auth switch -u roxii-saas`.
 - PDF prompt: originale 55 MB (troppo grande) → versione compressa pronta in
   `Desktop/Clienti/Rx/prodotto digitale prompt/AI-Brand-Prompts-Roxii-Dinca (web 7MB).pdf`
   (compressione solo delle foto con pikepdf, testo intatto).
 - Nel DB il prezzo mentorat risulta 60 EUR (verificare con Roxana se è voluto).
 
 ## Da fare
-0. Meta: (a) creare Pixel in Events Manager e copiare l'ID; (b) generare il token Conversions API (Impostazioni → Conversions API);
-   (c) metterli su Vercel → Settings → Environment Variables (ID + token) e fare redeploy; (d) provare con `META_TEST_EVENT_CODE`
+0. Meta: (a-c) FATTO: Pixel ID su Vercel + deploy; verificare che `META_CAPI_TOKEN` sia impostato (Sensitive, senza prefisso pubblico); (d) provare con `META_TEST_EVENT_CODE`
    in Events Manager → Test events (acquisto di prova: deve comparire UN Purchase, "Deduplicato"); (e) verificare il dominio
    in Business Manager e impostare Purchase come evento a priorità più alta (Aggregated Event Measurement); (f) togliere il test code.
 1. Caricare il PDF `(web 7MB)` in Admin → Produse → prompturi, salvare.
