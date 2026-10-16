@@ -27,7 +27,10 @@ export async function POST(req: Request) {
   const product = purchase.products as unknown as Product | null
   if (product?.kind === 'digital') {
     const { error: sendError } = await sendDeliveryEmail(purchase, product)
-    if (sendError) return NextResponse.json({ error: 'Resend fallito', details: sendError }, { status: 500 })
+    if (sendError) {
+      console.error('[Resend] Reinvio fallito:', sendError)
+      return NextResponse.json({ error: 'Resend fallito', message: `${sendError.message} (mittente: ${process.env.DELIVERY_FROM_EMAIL || 'noreply@roxii-dinca.com'})`, details: sendError }, { status: 500 })
+    }
     return NextResponse.json({ ok: true, message: `Email reinviata a ${purchase.email}` })
   }
 

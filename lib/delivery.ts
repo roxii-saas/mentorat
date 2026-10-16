@@ -2,7 +2,8 @@ import { resend } from '@/lib/resend'
 import { formatMoney, type Product } from '@/lib/products'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mentorat.roxii-dinca.com'
-const FROM = 'Roxii Dincă <noreply@roxii-dinca.com>'
+// Mittente: deve essere un indirizzo del dominio verificato in Resend per la chiave in uso. Si può cambiare da Vercel (DELIVERY_FROM_EMAIL)
+const FROM = process.env.DELIVERY_FROM_EMAIL || 'Roxii Dincă <noreply@roxii-dinca.com>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'roxiiprogramari@gmail.com'
 
 type DeliveryPurchase = {

@@ -14,6 +14,11 @@ export default function ResendEmailBtn({ purchaseId, email }: { purchaseId: stri
       body: JSON.stringify({ purchaseId }),
     })
     setState(res.ok ? 'ok' : 'error')
+    if (!res.ok) {
+      // Mostra il motivo reale (es. chiave Resend non valida) invece del solo "Eroare"
+      const d = await res.json().catch(() => null)
+      alert(`Emailul nu a putut fi trimis.\n\n${d?.message ?? d?.error ?? `Eroare ${res.status}`}`)
+    }
     setTimeout(() => setState('idle'), 4000)
   }
 

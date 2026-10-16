@@ -1,6 +1,6 @@
 # Memory — Mentorat platform (Roxii Dincă)
 
-Aggiornato: 2026-10-15 · ultimo commit di codice: `1e2dfb8` · REDESIGN BACKEND pronto ma NON ancora committato/pushato (vedi sezione dedicata; controllare `git status`)
+Aggiornato: 2026-10-16 · ultimo commit di codice: vedi `git log -1` · tutto pushato; DB e deploy allineati
 
 ## Progetto
 Piattaforma multi-prodotto di Roxana (Roxii Dincă): landing mentorat + landing prodotti digitali,
@@ -52,7 +52,7 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
   (serve un acquisto di prova con `META_TEST_EVENT_CODE`). Chrome headless viene ignorato da Meta: per i test usare UA normale.
 - Pagine legali aggiornate (cookie + privacy: Meta come destinatario, base giuridica = consenso). Da far rivedere a Roxana/consulente.
 
-## Redesign backend + Overview analitica (2026-10-15, pronto in locale, da pushare)
+## Redesign backend + Overview analitica (2026-10-15, ONLINE dal commit 6d7a2bb; migration SQL APPLICATA il 2026-10-15)
 - Design di riferimento in Claude Design (privato): https://claude.ai/artifact/8XgTC9bryM2YNYvNajN29H (Overview desktop interattiva,
   Overview mobile, Clienți, Sistem de design). Sistema: Inter ovunque, testo minimo 12px, contrasto ≥4,5:1 (calcolato), card bianche con
   bordo 1px, niente blur/glow/gradienti/blob. Accento `#B800BA` (bottoni, testo bianco 5,6:1), testo accento `#8A008D`, sfondo `#F6F6FA`,
@@ -72,8 +72,35 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
   Logica pura e testabile in `lib/admin-analytics.ts` (date come stringhe 'YYYY-MM-DD', mai fusi del browser).
 - **Clienti**: `ClientiView` (grafica) + page (dati): tile "Toate" + prodotti con totali veri (da RPC), ricerca `?q=`, paginazione 25/pagina
   (prima si fermava a 1000 righe), chip prodotto e "+ upgrade". Default ora = tutti i prodotti (prima mentorat).
-- Stato: migration NON applicata (la CLI Supabase risultava loggata su un altro account → 403: rifare `supabase login` con l'account del
-  progetto, poi `supabase db push --linked < /dev/null`, che richiede conferma esplicita). Test eseguiti con Postgres reale (PGlite) in scratchpad.
+- Stato: migration APPLICATA in produzione il 2026-10-15 e verificata (funzioni security invoker, anon senza permesso, totali = conteggio diretto). Test con Postgres reale (PGlite).
+
+## Email (cosa è successo il 2026-10-15)
+- Due percorsi di invio: **mentorat** → Edge Function Supabase `send-welcome-email` (chiave Resend nei secret di Supabase);
+  **prodotti digitali** → `lib/delivery.ts` direttamente da Vercel con `RESEND_API_KEY` (mittente `DELIVERY_FROM_EMAIL`, default `noreply@roxii-dinca.com`).
+- Il 2026-10-15 le mail dei Prompturi non partivano: Resend rispondeva "The associated domain with your API key is not verified".
+  CAUSA: il dominio `roxii-dinca.com` era stato spostato a un altro provider DNS (nameserver `apollo/athena.dns-parking.com`) e mancavano i record
+  Resend (`resend._domainkey`, `send` MX/SPF). Rimessi i record e cliccato "Verify" in Resend → tutto funzionante (testato dall'utente).
+  Quindi anche le mail del mentorat e la notifica admin erano ferme in quel periodo. Posta in arrivo: MX verso `mail.register.it` (non toccare).
+- Se le mail smettono di nuovo: 1) Resend → Domains deve essere Verified; 2) `dig TXT resend._domainkey.roxii-dinca.com` deve rispondere.
+- Il pulsante "Email" in Clienți mostra il motivo vero dell'errore (alert) e il mittente è configurabile con `DELIVERY_FROM_EMAIL` (opzionale).
+- Le email di consegna NON hanno ancora `reply-to`: partono da `noreply@` e la FAQ dice "rispondi all'email" → da risolvere (vedi pre-lancio).
+
+## STATO PRE-LANCIO prompturi (verifica del 2026-10-16) — leggere prima di sponsorizzare
+Funziona: pagamento Stripe live → ordine in `purchases` → email Resend con PDF (7 MB già caricato, prova OK dopo il fix DNS) → link
+`/descarca/<id>`; Overview/Clienti con totali veri; Pixel Meta dopo consenso; migration SQL applicate. Velocità mobile (4G lento, CPU x4):
+landing LCP ~3,0 s, checkout ~3,1 s, CLS < 0,09, ~530 KB.
+**BLOCCANTI (non fare partire pubblicità finché non sono risolti):**
+1. **Prezzo nel DB = 5 RON** (con 399 barrato): impostato per il test e mai ripristinato. Ripristinare 149 in Admin → Produse → Prompturi
+   (il salvataggio aggiorna la landing subito) e rimborsare da Stripe l'ordine di prova (è il 1° ordine `prompturi`).
+2. **Testimonianze e numeri FINTI ancora online** su `/prompturi` (Elena M., Andreea C., Simona D., "+184%", "Economie 1.800 Lei/lună",
+   "10x mesaje", confronto Înainte/După con immagini Stitch, "Best seller"): in `components/prompturi/content.ts` (CASES, METRICS) e in
+   `app/prompturi/page.tsx`. Rischio rifiuto annunci Meta + recensioni inventate (illegale). Toglierle o sostituirle con dati/consensi reali.
+**Da sistemare presto:** a) dati venditore (CUI/registro/indirizzo) assenti in Termeni e informativa; i Termeni coprono solo il mentorat, niente
+clausola sui contenuti digitali; manca al checkout la casella di consenso alla consegna immediata con rinuncia al recesso (da far rivedere a un
+consulente; la casella la posso aggiungere io); b) nessun contatto visibile su `/prompturi` e nessun `reply-to` nelle email (proposto
+`roxana@roxii-dinca.com`); c) prezzo barrato 399 e "valori" dei bonus (99/149/79/322) = prezzi di riferimento che devono essere stati davvero
+applicati negli ultimi 30 giorni, altrimenti toglierli; d) test Meta: acquisto con `META_CAPI_TOKEN` + `META_TEST_EVENT_CODE` → un solo
+Purchase "Deduplicato"; verifica dominio in Business Manager e priorità Purchase (AEM).
 
 ## Performance (fatto)
 - `vercel.json` → funzioni in `fra1`, vicino a Supabase (prima `iad1` USA: era la causa principale della lentezza).
@@ -98,15 +125,12 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
   (compressione solo delle foto con pikepdf, testo intatto).
 - Nel DB il prezzo mentorat risulta 60 EUR (verificare con Roxana se è voluto).
 
-## Da fare
-00. Pushare il redesign backend e applicare la migration `20261015120000` (dopo `supabase login` sull'account giusto). Poi controllare online Overview (filtri, riga espansa) e Clienti.
-0. Meta: (a-c) FATTO: Pixel ID su Vercel + deploy; verificare che `META_CAPI_TOKEN` sia impostato (Sensitive, senza prefisso pubblico); (d) provare con `META_TEST_EVENT_CODE`
-   in Events Manager → Test events (acquisto di prova: deve comparire UN Purchase, "Deduplicato"); (e) verificare il dominio
-   in Business Manager e impostare Purchase come evento a priorità più alta (Aggregated Event Measurement); (f) togliere il test code.
-1. Caricare il PDF `(web 7MB)` in Admin → Produse → prompturi, salvare.
-2. Acquisto di prova su `/prompturi` (email, download, vendita in Admin → Prompturi), poi rimborso da Stripe.
-3. Sostituire testimonianze e numeri segnaposto di Stitch in `components/prompturi/content.ts`
-   (Elena M., Andreea C., Simona D., "3.000+ cursante", "+184%"…) con dati reali, o togliere le sezioni.
-4. Order bump (+49 RON) ora DISATTIVATO: attivarlo solo dopo aver caricato il file dell'upgrade.
-5. Revocare il vecchio token GitHub (PAT) che era nell'URL del remote.
-6. Valutare piano Supabase Pro (niente pause, file > 50 MB).
+## Da fare (in ordine di priorità)
+1. Pre-lancio: ripristinare prezzo 149 + rimborso ordine di prova; togliere/sostituire testimonianze finte (vedi sezione sopra).
+2. Reply-to + contatto su `/prompturi` + casella consenso contenuto digitale + dati venditore (con consulente).
+3. Test Meta CAPI con acquisto di prova (token e codice di test su Vercel), poi togliere il codice di test.
+4. Controllare online, dopo il login admin, Overview (filtri, riga espansa) e Clienti (ricerca, paginazione).
+5. Order bump (+49 RON) DISATTIVATO: attivarlo solo dopo aver caricato il file dell'upgrade in Admin → Produse.
+6. Revocare il vecchio token GitHub (PAT) che era nell'URL del remote.
+7. Valutare piano Supabase Pro (niente pause, file > 50 MB).
+8. Opzionale: Playfair (font landing) viene precaricato anche nelle pagine backend; spostarlo solo sulle landing per risparmiare ~30 KB.
