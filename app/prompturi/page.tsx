@@ -6,7 +6,7 @@ import MetaEvent from '@/components/meta/MetaEvent'
 import CookieSettingsLink from '@/components/meta/CookieSettingsLink'
 import { BeforeAfter, CopyPrompt, SectionNav } from '@/components/prompturi/Interactive'
 import {
-  AI_TOOLS, BONUSES, BUNDLE_VALUE, CASES, COMPARISON, FAQ, METRICS, MODULES, PILLARS, SHOWCASE_PROMPT,
+  AI_TOOLS, BONUSES, BUNDLE_VALUE, COMPARISON, FAQ, MODULES, PILLARS, SHOWCASE_PROMPT,
 } from '@/components/prompturi/content'
 
 // ISR: rigenera ogni 5 min e subito quando l'admin salva il prodotto
@@ -349,27 +349,19 @@ export default async function PrompturiPage() {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ed-berry/10 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-ed-berry" />
-                <span className="ed-eyebrow text-ed-berry">Rezultate reale & transformare vizuală</span>
+                <span className="ed-eyebrow text-ed-berry">Transformare vizuală</span>
               </div>
               <h2 className="font-bodoni text-[32px] leading-10 lg:text-[48px] lg:leading-[56px] tracking-tight">
                 De la imagini plictisitoare la ședințe foto <em className="italic">de revistă</em>
               </h2>
               <p className="text-[15px] leading-6 text-ed-muted font-light mt-2">
-                Descoperă cum profesionistele din beauty creează imagini de copertă fără costuri exorbitante de studio foto.
+                Vezi cum poți ajunge de la o poză simplă la imagini de copertă, fără costurile unui studio foto.
               </p>
             </div>
 
-            <div className="mt-8 lg:grid lg:grid-cols-12 lg:gap-12 lg:items-start">
-              <div className="lg:col-span-5">
-                <div className="grid grid-cols-3 gap-1 bg-ed-low p-1 rounded-lg ed-shadow">
-                  {METRICS.map(m => (
-                    <div key={m.label} className="flex flex-col items-center justify-center p-2 bg-ed-white rounded text-center">
-                      <span className={`font-bodoni text-[26px] leading-9 tracking-tight ${m.accent ? 'text-ed-berry' : ''}`}>{m.value}</span>
-                      <span className="text-[11px] text-ed-muted mt-1 leading-tight">{m.label}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-8">
+            <div className="mt-8 flex justify-center">
+              <div className="w-full max-w-[520px]">
+                <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-1.5">
                       <Icon name="auto_fix_high" className="text-ed-berry text-[20px]" />
@@ -381,48 +373,6 @@ export default async function PrompturiPage() {
                 </div>
               </div>
 
-              <div className="lg:col-span-7 mt-10 lg:mt-0 flex flex-col gap-5">
-                <div>
-                  <span className="ed-eyebrow text-ed-berry block mb-1">Povești de succes</span>
-                  <h3 className="font-bodoni text-[26px] leading-[34px]">Experiențe din comunitate</h3>
-                </div>
-                {CASES.map(c => (
-                  <article key={c.name} className="bg-ed-white p-5 rounded-lg ed-shadow border border-ed-line/60 flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-ed-mid">
-                          <Image src={c.avatar} alt={c.name} fill sizes="48px" className="object-cover" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[14px] font-semibold">{c.name}</span>
-                          <span className="text-[12px] font-semibold text-ed-muted">{c.role}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center text-ed-berry">
-                        {[...Array(5)].map((_, i) => <Icon key={i} name="star" fill className="text-[16px]" />)}
-                      </div>
-                    </div>
-                    <div className={`grid gap-1 rounded overflow-hidden ${c.images.length > 1 ? 'grid-cols-2' : ''}`}>
-                      {c.images.map(img => (
-                        <div key={img.src} className={`relative bg-ed-mid ${c.images.length > 1 ? 'aspect-square' : 'aspect-[16/10]'}`}>
-                          <Image src={img.src} alt={img.tag || c.name} fill sizes="(max-width:1024px) 100vw, 640px" className="object-cover" />
-                          {img.tag && <span className="absolute top-2 left-2 bg-ed-white/90 px-1.5 py-0.5 rounded ed-eyebrow !text-[9px]">{img.tag}</span>}
-                        </div>
-                      ))}
-                    </div>
-                    <blockquote className="text-[15px] leading-6 italic font-light">„{c.quote}”</blockquote>
-                    {c.result && (
-                      <div className="flex items-center justify-between bg-ed-low px-4 py-2 rounded">
-                        <span className="text-[12px] font-semibold text-ed-muted">{c.result.label}</span>
-                        <span className="flex items-center gap-1 text-[14px] font-bold text-ed-berry">
-                          {c.result.icon && <Icon name={c.result.icon} className="text-[18px]" />}
-                          {c.result.value}
-                        </span>
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -545,10 +495,6 @@ function Cover({ className = '' }: { className?: string }) {
       <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-ed-mid">
         <Image src="/prompturi/cover.jpg" alt="Coperta ghidului 50+ Prompturi AI — Roxii Dincă" fill priority
           sizes="(max-width:1024px) 100vw, 560px" className="object-cover" />
-        <div className="absolute top-3 left-3 bg-ed-berry text-white px-3 py-1 rounded-sm ed-shadow-md flex items-center gap-1.5">
-          <Icon name="auto_awesome" className="text-[14px]" />
-          <span className="ed-eyebrow !text-[10px]">Best seller</span>
-        </div>
         <div className="absolute bottom-3 right-3 bg-ed-white/90 backdrop-blur-md px-2.5 py-1 rounded-sm ed-shadow">
           <span className="text-[12px] font-semibold uppercase tracking-wider">Ghid digital PDF</span>
         </div>

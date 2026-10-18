@@ -168,3 +168,13 @@ Purchase "Deduplicato"; verifica dominio in Business Manager e priorità Purchas
   Da restringere (colonne/vista pubblica).
 - Idee non fatte: più promozioni programmate in lista per prodotto; promo/codici per il Mentorat; editor dei testi della landing Prompturi da admin;
   heatmap dei click sulla pagina (se per "mappa termica" intendeva quella).
+
+## Messa a punto con pubblicità attive (2026-10-22) — commit locale, da pushare + migration `20261022120000` da applicare
+- Prezzo prompturi ripristinato a 149 (verificato online via `/api/checkout/quote`). Sito OK (200 su tutte le pagine pubbliche).
+- Tolti da `/prompturi`: testimonianze finte (Elena/Andreea/Simona), metriche inventate (0 Lei, 5 Min, 10x), badge "Best seller", "Rezultate reale".
+  Restano: slider Înainte/După (le immagini vanno confermate come reali: "before" sembra una foto stock), tabella confronto, bonus con "valore".
+- `reply-to` sulle email di consegna (env `DELIVERY_REPLY_TO`, default ADMIN_EMAIL).
+- Migration `20261022120000_products_public_columns.sql`: `anon` legge solo le colonne pubbliche di `products` (file_path, email_body, notify_* riservati).
+  Nuove colonne pubbliche → aggiungere grant nella migration E in `PUBLIC_COLUMNS` di `lib/products.ts`. Testata su PGlite, non ancora in produzione.
+- Ancora da decidere con Roxana: prezzo barrato 399 (legge UE: deve essere il prezzo più basso degli ultimi 30 giorni → se il 5 RON era pubblico, togliere
+  `compare_price`), contatto visibile, casella consenso contenuto digitale, dati venditore, test Meta CAPI.

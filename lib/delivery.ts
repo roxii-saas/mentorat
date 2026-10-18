@@ -5,6 +5,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mentorat.roxii-din
 // Mittente: deve essere un indirizzo del dominio verificato in Resend per la chiave in uso. Si può cambiare da Vercel (DELIVERY_FROM_EMAIL)
 const FROM = process.env.DELIVERY_FROM_EMAIL || 'Roxii Dincă <noreply@roxii-dinca.com>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'roxiiprogramari@gmail.com'
+// Se il cliente risponde all'email di consegna, la risposta arriva a Roxana (cambiabile da Vercel con DELIVERY_REPLY_TO)
+const REPLY_TO = process.env.DELIVERY_REPLY_TO || ADMIN_EMAIL
 
 type DeliveryPurchase = {
   id: string
@@ -73,7 +75,7 @@ function buildDeliveryEmail(p: DeliveryPurchase, product: Product) {
 // Email di consegna al cliente: testo personalizzato dall'admin + link di download permanenti
 export async function sendDeliveryEmail(p: DeliveryPurchase, product: Product) {
   const { subject, html } = buildDeliveryEmail(p, product)
-  return resend.emails.send({ from: FROM, to: p.email, subject, html })
+  return resend.emails.send({ from: FROM, to: p.email, replyTo: REPLY_TO, subject, html })
 }
 
 // Seconda notifica (opzionale): copia identica dell'email ricevuta dal cliente, per vedere esattamente cosa ha ricevuto

@@ -62,34 +62,6 @@ export const AI_TOOLS = [
 export const SHOWCASE_PROMPT =
   'Macro close-up beauty portrait of a woman holding a luxury gold mascara, flawless porcelain skin texture, soft dewy glow, editorial softbox lighting, 85mm lens, Vogue style --ar 4:5'
 
-// ⚠️ SEGNAPOSTO — sostituire con dati reali
-export const METRICS = [
-  { value: '0 Lei', label: 'Cheltuiți pe studio', accent: true },
-  { value: '5 Min', label: 'Compoziție gata', accent: false },
-  { value: '10x', label: 'Mesaje pe Instagram', accent: true },
-]
-
-// ⚠️ SEGNAPOSTO — sostituire con recensioni reali (con il consenso delle clienti)
-export const CASES = [
-  {
-    name: 'Elena M.', role: 'Lash & Brow Pro • București', avatar: '/prompturi/case1-avatar.jpg',
-    images: [{ src: '/prompturi/case1-a.jpg', tag: 'Creat cu Prompt #12' }, { src: '/prompturi/case1-b.jpg', tag: 'Creat cu Prompt #19' }],
-    quote: 'Nu aveam timp și nici buget pentru modele și fotografi în fiecare lună. Cu aceste prompturi creez imagini hiper-realiste pentru reclame în câteva minute!',
-    result: { label: 'Impact financiar:', value: 'Economie 1.800 Lei / lună', icon: 'trending_down' },
-  },
-  {
-    name: 'Andreea C.', role: 'Atelier Beauty Studio • Cluj', avatar: '/prompturi/case2-avatar.jpg',
-    images: [{ src: '/prompturi/case2.jpg', tag: '' }],
-    quote: 'Pozițiile generate arată atât de naturale încât clientele mă întreabă cine îmi face pozele de promovare!',
-  },
-  {
-    name: 'Simona D.', role: 'Fashion & Lifestyle • Timișoara', avatar: '/prompturi/case3-avatar.jpg',
-    images: [{ src: '/prompturi/case3.jpg', tag: "Colecția 'Café Chic Parisien'" }],
-    quote: 'Am economisit sute de euro pe decoruri și locații. Prompturile de compoziție sunt aur curat.',
-    result: { label: 'Rată de interacțiune:', value: '+184% saves & shares' },
-  },
-]
-
 export const COMPARISON = [
   { without: ['1.500 - 3.000 Lei', 'Per ședință foto lunară'], with: ['{price} O Singură Dată', 'Acces pe viață la colecție'] },
   { without: ['Zile întregi', 'Organizare, locație, retuș'], with: ['Sub 5 Minute', 'Copiezi & generezi direct'] },
