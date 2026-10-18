@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { slugError, slugify } from '@/lib/product-slug'
 import { createClient } from '@/lib/supabase/client'
-import type { Product } from '@/lib/products'
+import type { Landing, Product } from '@/lib/products'
 import BarChart from '@/components/admin/BarChart'
 import { buildBuckets, daysBetween, indexDaily, money, nf, sumBuckets, type DailyRow } from '@/lib/admin-analytics'
 import SetariPage from '@/app/(admin)/admin/setari/page'
@@ -15,7 +17,7 @@ export type Tab = 'previzualizare' | 'analiza' | 'detalii' | 'upgrade' | 'livrar
 export type OrderLite = { id: string; name: string | null; email: string; amount: number | null; currency: string; created_at: string; bump_included: boolean }
 
 const TABS_DIGITAL: { key: Tab; label: string }[] = [
-  { key: 'previzualizare', label: 'Previzualizare' }, { key: 'analiza', label: 'Analiză' },
+  { key: 'previzualizare', label: 'Previzualizare' }, { key: 'landing', label: 'Conținut pagină' }, { key: 'analiza', label: 'Analiză' },
   { key: 'detalii', label: 'Detalii și preț' }, { key: 'upgrade', label: 'Upgrade' }, { key: 'livrare', label: 'Livrare (fișiere + email)' },
 ]
 const TABS_MENTORAT: { key: Tab; label: string }[] = [
@@ -53,7 +55,7 @@ export default function ProductWorkspace({ products, activeSlug, initialTab, dai
         <p className="db-muted font-sans text-sm mt-0.5">Alege produsul, apoi vezi pagina lui, analizează vânzările și modifică-l. Fiecare produs are secțiunea lui.</p>
       </div>
 
-      <nav aria-label="Alege produsul" className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3">
+      <nav aria-label="Alege produsul" className="grid items-start grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3">
         {list.map(p => {
           const on = p.id === product.id
           return (
@@ -70,6 +72,7 @@ export default function ProductWorkspace({ products, activeSlug, initialTab, dai
             </Link>
           )
         })}
+        <NewProduct />
       </nav>
 
       {/* Banda care spune clar ce produs editezi */}
@@ -95,7 +98,7 @@ export default function ProductWorkspace({ products, activeSlug, initialTab, dai
             {tab === 'landing' && <HomepagePage />}
           </>
         ) : (
-          <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'upgrade' || tab === 'livrare')}>
+          <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'upgrade' || tab === 'livrare' || tab === 'landing')}>
             <ProductForm initial={product} tab={tab} onSaved={np => { setList(ps => ps.map(x => (x.id === np.id ? np : x))); setVersion(v => v + 1) }} />
           </div>
         )}
@@ -201,6 +204,10 @@ function ProductForm({ initial, tab, onSaved }: { initial: Product; tab: Tab; on
 
   return (
     <form onSubmit={save} className="space-y-4">
+      <div hidden={tab !== 'landing'}>
+        <LandingEditor p={p} patch={x => setP(s => ({ ...s, ...x }))} />
+      </div>
+
       <div className="g-card rounded-2xl p-5 sm:p-6" hidden={tab !== 'detalii'}>
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
@@ -366,6 +373,169 @@ function Toggle({ on, onClick, labels }: { on: boolean; onClick: () => void; lab
         className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${on ? 'bg-[#B800BA]' : 'bg-[#8A8AA0]'}`}>
         <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
+    </div>
+  )
+}
+
+
+// ───────── Produs nou: numele + prețul → pagina lui există imediat pe /<slug> ─────────
+function NewProduct() {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
+  const [touched, setTouched] = useState(false)
+  const [price, setPrice] = useState('')
+  const [currency, setCurrency] = useState('ron')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const slugErr = slug ? slugError(slug) : null
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setBusy(true); setError('')
+    const r = await fetch('/api/admin/products', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create', name, slug, price_amount: Number(price), currency }),
+    })
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok) { setError(d.error || 'Nu s-a putut crea produsul.'); setBusy(false); return }
+    router.push(`/admin/produse?p=${d.slug}&t=landing`)
+    router.refresh()
+  }
+
+  if (!open) return (
+    <button onClick={() => setOpen(true)} className="g-card px-4 py-3.5 text-left border-dashed hover:bg-[#FAFAFD] flex items-center gap-2 text-[15px] font-bold text-[#8A008D]">
+      <span aria-hidden className="text-xl leading-none">＋</span> Produs nou
+    </button>
+  )
+  return (
+    <form onSubmit={create} className="g-card p-4 space-y-3 sm:col-span-2">
+      <h2 className="font-bold db-text text-base">Produs digital nou</h2>
+      <div>
+        <Label>Nume produs</Label>
+        <input className="g-input" value={name} required placeholder="ex: Ghid Social Media"
+          onChange={e => { setName(e.target.value); if (!touched) setSlug(slugify(e.target.value)) }} />
+      </div>
+      <div>
+        <Label>Slug — adresa paginii lui</Label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm db-muted whitespace-nowrap">mentorat.roxii-dinca.com/</span>
+          <input className="g-input" value={slug} required onChange={e => { setTouched(true); setSlug(e.target.value.toLowerCase()) }} />
+        </div>
+        {slugErr && <p className="text-xs text-[#B42318] mt-1">{slugErr}</p>}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div><Label>Preț</Label><input type="number" min="1" required className="g-input" value={price} onChange={e => setPrice(e.target.value)} /></div>
+        <div><Label>Monedă</Label>
+          <select className="g-input" value={currency} onChange={e => setCurrency(e.target.value)}><option value="ron">RON</option><option value="eur">EUR</option></select></div>
+      </div>
+      <p className="text-xs db-muted">Produsul pornește cu vânzările oprite. Completezi pagina, încarci fișierul, apoi activezi vânzările.</p>
+      {error && <p className="text-[#B42318] text-sm bg-red-50 px-3 py-2 rounded-xl" role="alert">{error}</p>}
+      <div className="flex gap-2">
+        <button type="submit" disabled={busy || !!slugErr || !slug} className="g-btn g-btn-md">{busy ? 'Se creează…' : 'Creează produsul'}</button>
+        <button type="button" onClick={() => setOpen(false)} className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF]">Renunță</button>
+      </div>
+    </form>
+  )
+}
+
+// ───────── Conținutul paginii dedicate ─────────
+function LandingEditor({ p, patch }: { p: Product; patch: (x: Partial<Product>) => void }) {
+  const L: Landing = p.landing ?? {}
+  const setL = (x: Partial<Landing>) => patch({ landing: { ...L, ...x } })
+  const [upErr, setUpErr] = useState('')
+  const [uploading, setUploading] = useState(false)
+
+  if (p.slug === 'prompturi') {
+    return (
+      <div className="g-card rounded-2xl p-5 sm:p-6">
+        <h2 className="font-bold db-title text-base sm:text-lg">Pagina Prompturi</h2>
+        <p className="text-sm db-muted mt-1">Această pagină are un design special (rezultate înainte/după, module, comparație) și conținutul ei este în cod. Prețul, upgrade-ul, fișierele și emailul se modifică din celelalte secțiuni. Produsele noi folosesc un șablon pe care îl completezi chiar aici.</p>
+      </div>
+    )
+  }
+
+  const upload = async (file: File) => {
+    setUploading(true); setUpErr('')
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const r = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      patch({ cover_url: d.url })
+    } catch (e) { setUpErr(e instanceof Error ? e.message : 'Eroare la încărcare') }
+    setUploading(false)
+  }
+  const benefits = L.benefits ?? [], faq = L.faq ?? []
+
+  return (
+    <div className="space-y-4">
+      <div className="g-card rounded-2xl p-5 sm:p-6 space-y-3">
+        <h2 className="font-bold db-title text-base sm:text-lg">Început de pagină</h2>
+        <p className="text-sm db-muted">Ce văd clienții când deschid <strong>/{p.slug}</strong>. Ce lași gol primește o valoare implicită.</p>
+        <div><Label>Mesaj mic deasupra titlului</Label><input className="g-input" value={L.eyebrow ?? ''} placeholder="Produs digital" onChange={e => setL({ eyebrow: e.target.value })} /></div>
+        <div><Label>Titlu principal</Label><input className="g-input" value={L.headline ?? ''} placeholder={p.name} onChange={e => setL({ headline: e.target.value })} /></div>
+        <div><Label>Descriere scurtă</Label><textarea rows={2} className="g-input" value={L.subheadline ?? ''} onChange={e => setL({ subheadline: e.target.value })} /></div>
+        <div><Label>Etichetă pe copertă (opțional)</Label><input className="g-input" value={L.badge ?? ''} placeholder="ex: Best seller" onChange={e => setL({ badge: e.target.value })} /></div>
+        <div>
+          <Label>Imagine / copertă (pătrată)</Label>
+          <div className="flex items-center gap-3">
+            {p.cover_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.cover_url} alt="Coperta curentă" className="w-20 h-20 rounded-lg object-cover border border-[#D3D3DF]" />
+            )}
+            <label className={`g-btn g-btn-md cursor-pointer ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+              {uploading ? 'Se încarcă…' : p.cover_url ? 'Schimbă imaginea' : 'Încarcă imagine'}
+              <input type="file" accept=".jpg,.jpeg,.png,.webp,.avif" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
+            </label>
+            {p.cover_url && <button type="button" className="text-sm underline db-muted" onClick={() => patch({ cover_url: null })}>Șterge</button>}
+          </div>
+          {upErr && <p className="text-xs text-[#B42318] mt-1">{upErr}</p>}
+        </div>
+      </div>
+
+      <div className="g-card rounded-2xl p-5 sm:p-6 space-y-3">
+        <h2 className="font-bold db-title text-base sm:text-lg">Beneficii („Ce primești”)</h2>
+        {benefits.map((b, i) => (
+          <div key={i} className="rounded-xl border border-black/[.08] p-3 space-y-2">
+            <input className="g-input" aria-label={`Titlu beneficiu ${i + 1}`} placeholder="Titlu" value={b.title} onChange={e => setL({ benefits: benefits.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)) })} />
+            <textarea rows={2} className="g-input" aria-label={`Text beneficiu ${i + 1}`} placeholder="Explicație scurtă" value={b.text} onChange={e => setL({ benefits: benefits.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)) })} />
+            <button type="button" className="text-sm underline text-[#B42318]" onClick={() => setL({ benefits: benefits.filter((_, j) => j !== i) })}>Șterge</button>
+          </div>
+        ))}
+        <button type="button" className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF]" onClick={() => setL({ benefits: [...benefits, { title: '', text: '' }] })}>＋ Adaugă beneficiu</button>
+      </div>
+
+      <div className="g-card rounded-2xl p-5 sm:p-6 space-y-3">
+        <h2 className="font-bold db-title text-base sm:text-lg">Ce conține</h2>
+        <Label>Un rând = un punct din listă</Label>
+        <textarea rows={6} className="g-input" value={(L.inside ?? []).join('\n')} onChange={e => setL({ inside: e.target.value.split('\n') })} />
+      </div>
+
+      <div className="g-card rounded-2xl p-5 sm:p-6 space-y-3">
+        <h2 className="font-bold db-title text-base sm:text-lg">Întrebări frecvente</h2>
+        {faq.map((f, i) => (
+          <div key={i} className="rounded-xl border border-black/[.08] p-3 space-y-2">
+            <input className="g-input" aria-label={`Întrebarea ${i + 1}`} placeholder="Întrebare" value={f.q} onChange={e => setL({ faq: faq.map((x, j) => (j === i ? { ...x, q: e.target.value } : x)) })} />
+            <textarea rows={2} className="g-input" aria-label={`Răspunsul ${i + 1}`} placeholder="Răspuns" value={f.a} onChange={e => setL({ faq: faq.map((x, j) => (j === i ? { ...x, a: e.target.value } : x)) })} />
+            <button type="button" className="text-sm underline text-[#B42318]" onClick={() => setL({ faq: faq.filter((_, j) => j !== i) })}>Șterge</button>
+          </div>
+        ))}
+        <button type="button" className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF]" onClick={() => setL({ faq: [...faq, { q: '', a: '' }] })}>＋ Adaugă întrebare</button>
+      </div>
+
+      <div className="g-card rounded-2xl p-5 sm:p-6 space-y-3">
+        <h2 className="font-bold db-title text-base sm:text-lg">Final de pagină și checkout</h2>
+        <div><Label>Titlu apel final</Label><input className="g-input" value={L.cta_title ?? ''} placeholder="Începe chiar azi" onChange={e => setL({ cta_title: e.target.value })} /></div>
+        <div><Label>Text apel final</Label><input className="g-input" value={L.cta_text ?? ''} placeholder="Acces imediat după plată, direct pe email." onChange={e => setL({ cta_text: e.target.value })} /></div>
+        <div><Label>Garanție</Label><textarea rows={2} className="g-input" value={L.guarantee ?? ''} placeholder="Dacă nu ești mulțumit(ă), scrie-ne în termen de 14 zile și primești toți banii înapoi, fără întrebări." onChange={e => setL({ guarantee: e.target.value })} /></div>
+        <div><Label>Text sub „Finalizează comanda”</Label><input className="g-input" value={L.checkout_text ?? ''} placeholder="Primești produsul pe email imediat după plată." onChange={e => setL({ checkout_text: e.target.value })} /></div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><Label>Format (în checkout)</Label><input className="g-input" value={L.format ?? ''} placeholder="PDF digital" onChange={e => setL({ format: e.target.value })} /></div>
+          <div><Label>Notă în checkout (opțional)</Label><input className="g-input" value={L.checkout_note ?? ''} placeholder="ex: Include 2 bonusuri" onChange={e => setL({ checkout_note: e.target.value })} /></div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -9,12 +9,15 @@ import { Icon } from './Icon'
 import MetaEvent from '@/components/meta/MetaEvent'
 import { getMetaContext, trackMeta } from '@/lib/meta/pixel'
 import { trackOnce } from '@/lib/track'
+import { normalizeLanding } from '@/components/shop/landing'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 const fmt = (n: number, c: string) => `${n.toLocaleString('ro-RO')} ${c.toUpperCase()}`
 
 export default function CheckoutForm({ product }: { product: PublicProduct }) {
+  const L = normalizeLanding(product)
+  const home = `/${product.slug}`
   const [bump, setBump] = useState(false)
   const hasBump = product.bump_active && !!product.bump_price
   const total = product.price_amount + (bump && hasBump ? product.bump_price! : 0)
@@ -30,7 +33,7 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
       <header className="sticky top-0 z-50 bg-ed-canvas/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
         <div className="h-16 max-w-[1080px] mx-auto px-5 flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <a href="/prompturi" aria-label="Înapoi" className="w-11 h-11 -ml-2 flex items-center justify-center hover:text-ed-berry transition-colors">
+            <a href={home} aria-label="Înapoi" className="w-11 h-11 -ml-2 flex items-center justify-center hover:text-ed-berry transition-colors">
               <Icon name="arrow_back_ios_new" className="text-[20px]" />
             </a>
             <Image src="/logo.png" alt="Roxii Dincă" width={84} height={28} className="h-7 w-auto object-contain" />
@@ -50,28 +53,30 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
         <div className="max-w-md mx-auto px-5 py-20 text-center">
           <h1 className="font-bodoni text-[28px] leading-9">Momentan indisponibil</h1>
           <p className="text-[15px] text-ed-muted mt-2">Vânzările sunt oprite temporar. Revino în curând!</p>
-          <a href="/prompturi" className="inline-block mt-6 text-ed-berry font-semibold underline underline-offset-4">Înapoi la prezentare</a>
+          <a href={home} className="inline-block mt-6 text-ed-berry font-semibold underline underline-offset-4">Înapoi la prezentare</a>
         </div>
       ) : (
         <div className="max-w-[1080px] mx-auto px-5 py-6 lg:py-10 lg:grid lg:grid-cols-12 lg:gap-10 lg:items-start">
           {/* Riepilogo (a destra su desktop) */}
           <div className="lg:col-span-5 lg:order-2 lg:sticky lg:top-24 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5 lg:hidden">
-              <Title />
+              <Title L={L} />
             </div>
             <div className="bg-ed-white p-4 rounded-lg ed-shadow border border-ed-line/60 flex flex-col gap-3.5">
               <div className="flex items-start gap-3">
                 <div className="relative w-20 h-24 rounded overflow-hidden shrink-0 bg-ed-mid">
-                  <Image src="/prompturi/cover.jpg" alt="50+ Prompturi Roxii Dincă" fill sizes="80px" className="object-cover" />
+                  {product.cover_url && <Image src={product.cover_url} alt={product.name} fill sizes="80px" className="object-cover" />}
                 </div>
                 <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
                   <div className="flex flex-col gap-1">
-                    <span className="ed-eyebrow !text-[10px] text-ed-berry">Ghid premium + bonusuri</span>
+                    <span className="ed-eyebrow !text-[10px] text-ed-berry">{L.checkout_badge}</span>
                     <h2 className="text-[14px] font-semibold leading-snug line-clamp-2">{product.name}</h2>
-                    <div className="flex items-center gap-1 text-ed-muted text-[11px]">
-                      <Icon name="auto_awesome" className="text-[13px] text-ed-berry" />
-                      <span>Include 3 bonusuri exclusive</span>
-                    </div>
+                    {L.checkout_note && (
+                      <div className="flex items-center gap-1 text-ed-muted text-[11px]">
+                        <Icon name="auto_awesome" className="text-[13px] text-ed-berry" />
+                        <span>{L.checkout_note}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-baseline gap-2 mt-2">
                     <span className="font-bodoni text-[22px] font-semibold">{fmt(product.price_amount, product.currency)}</span>
@@ -93,7 +98,7 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-ed-muted">Format:</span>
-                  <span className="font-medium">PDF digital</span>
+                  <span className="font-medium">{L.format}</span>
                 </div>
               </div>
             </div>
@@ -115,12 +120,12 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
               </label>
             )}
 
-            <Guarantee className="hidden lg:flex" />
+            <Guarantee text={L.guarantee} className="hidden lg:flex" />
           </div>
 
           {/* Form */}
           <div className="lg:col-span-7 lg:order-1 mt-4 lg:mt-0">
-            <div className="hidden lg:flex flex-col gap-1.5 mb-5"><Title /></div>
+            <div className="hidden lg:flex flex-col gap-1.5 mb-5"><Title L={L} /></div>
             <Elements
               stripe={stripePromise}
               options={{
@@ -141,7 +146,7 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
               }}>
               <PayForm slug={product.slug} bump={bump && hasBump} total={total} currency={product.currency} totalLabel={fmt(total, product.currency)} />
             </Elements>
-            <Guarantee className="lg:hidden mt-4" />
+            <Guarantee text={L.guarantee} className="lg:hidden mt-4" />
           </div>
         </div>
       )}
@@ -149,22 +154,20 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
   )
 }
 
-function Title() {
+function Title({ L }: { L: ReturnType<typeof normalizeLanding> }) {
   return (
     <>
       <div className="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-full bg-[#ffd9de]">
         <Icon name="verified" className="text-[13px] text-ed-berry" />
-        <span className="ed-eyebrow !text-[10px] text-ed-berry">Ediție limitată digitală</span>
+        <span className="ed-eyebrow !text-[10px] text-ed-berry">{L.checkout_eyebrow}</span>
       </div>
       <h1 className="font-bodoni text-[26px] leading-[34px] lg:text-[36px] lg:leading-[44px] font-medium">Finalizează comanda</h1>
-      <p className="text-[13px] leading-5 text-ed-muted">
-        Primești instant colecția de 50+ prompturi AI și începi să creezi ședințe foto virtuale impecabile.
-      </p>
+      <p className="text-[13px] leading-5 text-ed-muted">{L.checkout_text}</p>
     </>
   )
 }
 
-function Guarantee({ className = '' }: { className?: string }) {
+function Guarantee({ text, className = '' }: { text: string; className?: string }) {
   return (
     <div className={`bg-ed-white p-4 rounded-lg ed-shadow border border-ed-line/60 flex-col gap-4 ${className.includes('hidden') ? className : `flex ${className}`}`}>
       <div className="grid grid-cols-3 gap-2 text-center">
@@ -181,9 +184,7 @@ function Guarantee({ className = '' }: { className?: string }) {
         <Icon name="shield" className="text-[24px] text-ed-berry shrink-0 mt-0.5" />
         <div className="flex flex-col gap-0.5">
           <span className="text-[14px] font-bold">Investiție 100% fără risc</span>
-          <p className="text-[12px] leading-relaxed text-ed-muted">
-            Dacă nu obții imagini spectaculoase folosind prompturile și indicațiile din ghid, scrie-ne în termen de 14 zile și primești toți banii înapoi, fără întrebări.
-          </p>
+          <p className="text-[12px] leading-relaxed text-ed-muted">{text}</p>
         </div>
       </div>
     </div>
@@ -234,7 +235,7 @@ function PayForm({ slug, bump, total, currency, totalLabel }: { slug: string; bu
       elements,
       clientSecret: data.clientSecret,
       confirmParams: {
-        return_url: `${window.location.origin}/prompturi/multumim`,
+        return_url: `${window.location.origin}/${slug}/multumim`,
         payment_method_data: { billing_details: { name, email, phone } },
       },
     })

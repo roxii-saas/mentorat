@@ -21,6 +21,20 @@ export type Product = {
   bump_file_path: string | null
   email_subject: string | null
   email_body: string | null
+  cover_url: string | null
+  landing: Landing | null
+}
+
+// Conținutul paginii dedicate (editabil din admin). Orice câmp lipsă primește o valoare implicită în normalizeLanding.
+export type Landing = {
+  eyebrow?: string; headline?: string; subheadline?: string; badge?: string
+  benefits?: { title: string; text: string }[]
+  inside?: string[]
+  faq?: { q: string; a: string }[]
+  guarantee?: string
+  cta_title?: string; cta_text?: string
+  // checkout
+  checkout_eyebrow?: string; checkout_text?: string; checkout_badge?: string; checkout_note?: string; format?: string
 }
 
 // Default usati se Supabase non risponde (la landing esce comunque)
@@ -37,12 +51,22 @@ export const PRODUCT_DEFAULTS: Record<string, Partial<Product>> = {
     bump_name: 'Ghidul Video: Cum generezi imagini ultra-realiste fără aspect de plastic',
     bump_description: 'Tehnici avansate pas-cu-pas de texturare fină a pielii, control cinematic al luminilor și trucuri pentru evitarea artefactelor specifice AI.',
     bump_price: 49,
+    cover_url: '/prompturi/cover.jpg',
+    landing: {
+      checkout_eyebrow: 'Ediție limitată digitală',
+      checkout_text: 'Primești instant colecția de 50+ prompturi AI și începi să creezi ședințe foto virtuale impecabile.',
+      checkout_badge: 'Ghid premium + bonusuri',
+      checkout_note: 'Include 3 bonusuri exclusive',
+      format: 'PDF digital',
+      guarantee: 'Dacă nu obții imagini spectaculoase folosind prompturile și indicațiile din ghid, scrie-ne în termen de 14 zile și primești toți banii înapoi, fără întrebări.',
+    },
   },
 }
 
 // Colonne pubbliche (mai file_path / email nella landing)
-const PUBLIC_COLUMNS = 'id, slug, name, kind, price_amount, compare_price, currency, sales_active, bump_active, bump_name, bump_description, bump_price'
-export type PublicProduct = Pick<Product, 'id' | 'slug' | 'name' | 'kind' | 'price_amount' | 'compare_price' | 'currency' | 'sales_active' | 'bump_active' | 'bump_name' | 'bump_description' | 'bump_price'>
+const PUBLIC_COLUMNS = 'id, slug, name, kind, price_amount, compare_price, currency, sales_active, bump_active, bump_name, bump_description, bump_price, cover_url, landing'
+const LEGACY_COLUMNS = 'id, slug, name, kind, price_amount, compare_price, currency, sales_active, bump_active, bump_name, bump_description, bump_price'
+export type PublicProduct = Pick<Product, 'id' | 'slug' | 'name' | 'kind' | 'price_amount' | 'compare_price' | 'currency' | 'sales_active' | 'bump_active' | 'bump_name' | 'bump_description' | 'bump_price' | 'cover_url' | 'landing'>
 
 const fetchProduct = unstable_cache(
   async (slug: string) => {
@@ -54,9 +78,14 @@ const fetchProduct = unstable_cache(
         global: { fetch: (url, init) => fetch(url, { ...init, signal: AbortSignal.timeout(2500) }) },
       }
     )
-    const { data, error } = await supabase.from('products').select(PUBLIC_COLUMNS).eq('slug', slug).single()
-    if (error) throw error
-    return data as PublicProduct
+    let { data, error } = await supabase.from('products').select(PUBLIC_COLUMNS).eq('slug', slug).maybeSingle()
+    if (error) {
+      // Migrarea cu coloanele paginii (cover_url, landing) nu e încă aplicată → citește coloanele vechi, prețul rămâne cel din baza de date
+      const legacy = await supabase.from('products').select(LEGACY_COLUMNS).eq('slug', slug).maybeSingle()
+      if (legacy.error) throw legacy.error
+      data = legacy.data ? { ...legacy.data, cover_url: PRODUCT_DEFAULTS[slug]?.cover_url ?? null, landing: PRODUCT_DEFAULTS[slug]?.landing ?? null } : null
+    }
+    return (data as PublicProduct | null) ?? null
   },
   ['product'],
   { tags: [PRODUCTS_TAG], revalidate: 300 }
@@ -64,9 +93,19 @@ const fetchProduct = unstable_cache(
 
 export async function getPublicProduct(slug: string): Promise<PublicProduct> {
   try {
-    return await fetchProduct(slug)
+    const p = await fetchProduct(slug)
+    if (p) return p
+  } catch {}
+  return { id: '', ...PRODUCT_DEFAULTS[slug] } as PublicProduct
+}
+
+// Pentru paginile dinamice /<slug>: null = produsul nu există (→ 404). Dacă baza de date nu răspunde, doar produsele cunoscute au valori implicite.
+export async function findPublicProduct(slug: string): Promise<PublicProduct | null> {
+  try {
+    const p = await fetchProduct(slug)
+    return p && p.kind === 'digital' ? p : null
   } catch {
-    return { id: '', ...PRODUCT_DEFAULTS[slug] } as PublicProduct
+    return PRODUCT_DEFAULTS[slug] ? ({ id: '', ...PRODUCT_DEFAULTS[slug] } as PublicProduct) : null
   }
 }
 
