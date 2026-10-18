@@ -23,8 +23,14 @@ function button(href: string, label: string) {
   return `<a href="${href}" style="display:inline-block;background:#b90c55;color:#ffffff;text-decoration:none;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:15px 28px;border-radius:6px;">${label}</a>`
 }
 
-// Email di consegna al cliente: testo personalizzato dall'admin + link di download permanenti
-export async function sendDeliveryEmail(p: DeliveryPurchase, product: Product) {
+// Destinatari delle notifiche admin: lista del prodotto (separata da virgola) oppure indirizzo predefinito
+export function adminRecipients(product: Pick<Product, 'notify_emails'>): string[] {
+  const list = (product.notify_emails ?? '').split(/[,;\s]+/).map(x => x.trim()).filter(x => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x))
+  return list.length ? [...new Set(list)] : [ADMIN_EMAIL]
+}
+
+// Subiect + HTML al emailului de livrare (folosit și pentru copia trimisă adminului)
+function buildDeliveryEmail(p: DeliveryPurchase, product: Product) {
   const firstName = (p.name || p.email.split('@')[0]).split(' ')[0]
   const body = (product.email_body || 'Bună, {nume}!\n\nÎți mulțumesc pentru comandă. Găsești materialele mai jos.')
     .replaceAll('{nume}', firstName)
@@ -61,11 +67,24 @@ export async function sendDeliveryEmail(p: DeliveryPurchase, product: Product) {
 </table>
 </td></tr></table></body></html>`
 
+  return { subject, html }
+}
+
+// Email di consegna al cliente: testo personalizzato dall'admin + link di download permanenti
+export async function sendDeliveryEmail(p: DeliveryPurchase, product: Product) {
+  const { subject, html } = buildDeliveryEmail(p, product)
   return resend.emails.send({ from: FROM, to: p.email, subject, html })
 }
 
+// Seconda notifica (opzionale): copia identica dell'email ricevuta dal cliente, per vedere esattamente cosa ha ricevuto
+export async function sendAdminCopyEmail(p: DeliveryPurchase, product: Product) {
+  const { subject, html } = buildDeliveryEmail(p, product)
+  const banner = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;background:#fff7e6;color:#8a5300;padding:10px 16px;text-align:center;">Copie pentru admin — emailul trimis către ${esc(p.email)}</div>`
+  return resend.emails.send({ from: FROM, to: adminRecipients(product), subject: `Copie: ${subject} → ${p.email}`, html: banner + html })
+}
+
 // Notifica a Roxana per ogni vendita digitale
-export async function sendAdminSaleEmail(p: DeliveryPurchase, product: Product) {
+export async function sendAdminSaleEmail(p: DeliveryPurchase, product: Product, test = false) {
   const rows = [
     ['Produs', product.name + (p.bump_included ? ' + upgrade' : '')],
     ['Nume', p.name || '—'],
@@ -76,8 +95,8 @@ export async function sendAdminSaleEmail(p: DeliveryPurchase, product: Product) 
 
   return resend.emails.send({
     from: FROM,
-    to: ADMIN_EMAIL,
-    subject: `💸 Vânzare nouă: ${product.slug} — ${formatMoney(p.amount, p.currency)}`,
-    html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:14px;"><h2 style="font-family:Georgia,serif;font-weight:500;">Vânzare nouă</h2><table>${rows}</table></div>`,
+    to: adminRecipients(product),
+    subject: `${test ? '[TEST] ' : ''}💸 Vânzare nouă: ${product.slug} — ${formatMoney(p.amount, p.currency)}`,
+    html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:14px;"><h2 style="font-family:Georgia,serif;font-weight:500;">${test ? 'Email de test — așa arată notificarea' : 'Vânzare nouă'}</h2><table>${rows}</table></div>`,
   })
 }

@@ -4,12 +4,13 @@ import { isAdminRequest } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PRODUCT_FILES_BUCKET, PRODUCTS_TAG } from '@/lib/products'
 import { slugError } from '@/lib/product-slug'
+import { adminRecipients, sendAdminSaleEmail } from '@/lib/delivery'
 
 const EDITABLE = [
   'name', 'price_amount', 'compare_price', 'currency', 'sales_active',
   'bump_active', 'bump_name', 'bump_description', 'bump_price',
   'email_subject', 'email_body', 'cover_url', 'landing',
-  'promo_type', 'promo_value', 'promo_starts_at', 'promo_ends_at',
+  'promo_type', 'promo_value', 'promo_starts_at', 'promo_ends_at', 'notify_admin', 'notify_copy', 'notify_emails',
 ] as const
 
 const deny = () => NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
@@ -35,6 +36,15 @@ export async function PUT(req: Request) {
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const k of EDITABLE) if (k in body) update[k] = body[k]
+
+  // Notifiche admin: destinatari validi (max 5), booleani veri
+  if ('notify_emails' in body) {
+    const raw = String(body.notify_emails ?? '').split(/[,;\s]+/).map((x: string) => x.trim()).filter(Boolean)
+    if (raw.some((x: string) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x))) return NextResponse.json({ error: 'Una dintre adresele de email nu este validă.' }, { status: 400 })
+    if (raw.length > 5) return NextResponse.json({ error: 'Maxim 5 adrese de email.' }, { status: 400 })
+    update.notify_emails = raw.length ? raw.join(', ') : null
+  }
+  for (const k of ['notify_admin', 'notify_copy'] as const) if (k in body) update[k] = body[k] === true
 
   // Promoție programată: tip + valoare + (opțional) început/sfârșit
   if ('promo_type' in body) {
@@ -68,6 +78,17 @@ export async function POST(req: Request) {
   if (!(await isAdminRequest())) return deny()
   const body = await req.json()
   const { action, id, target, filename, path } = body
+
+  // Email de test către destinatarii notificărilor (cu setările SALVATE ale produsului)
+  if (action === 'test-notify') {
+    const { data: product } = await createAdminClient().from('products').select('*').eq('id', id).single()
+    if (!product) return NextResponse.json({ error: 'Produs inexistent.' }, { status: 404 })
+    const sample = { id: 'test', name: 'Client Test', email: 'client.test@exemplu.ro', phone: '0700 000 000', amount: product.price_amount, currency: product.currency, bump_included: false }
+    const to = adminRecipients(product)
+    const { error } = await sendAdminSaleEmail(sample, product, true)
+    if (error) return NextResponse.json({ error: `Resend: ${error.message}` }, { status: 500 })
+    return NextResponse.json({ ok: true, to })
+  }
 
   // Produs nou: pagina lui apare pe /<slug>; pornește cu vânzările oprite până când admin o activează
   if (action === 'create') {

@@ -27,6 +27,9 @@ export type Product = {
   promo_value: number | null
   promo_starts_at: string | null
   promo_ends_at: string | null
+  notify_admin?: boolean   // lipsește până la aplicarea migrării → tratat ca activ
+  notify_copy?: boolean
+  notify_emails?: string | null
 }
 
 // Conținutul paginii dedicate (editabil din admin). Orice câmp lipsă primește o valoare implicită în normalizeLanding.

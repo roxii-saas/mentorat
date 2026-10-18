@@ -14,12 +14,12 @@ import HomepagePage from '@/app/(admin)/admin/homepage/page'
 
 const BUCKET = 'product-files'
 
-export type Tab = 'previzualizare' | 'analiza' | 'detalii' | 'preturi' | 'upgrade' | 'livrare' | 'landing'
+export type Tab = 'previzualizare' | 'analiza' | 'detalii' | 'preturi' | 'upgrade' | 'livrare' | 'notificari' | 'landing'
 export type OrderLite = { id: string; name: string | null; email: string; amount: number | null; currency: string; created_at: string; bump_included: boolean }
 
 const TABS_DIGITAL: { key: Tab; label: string }[] = [
   { key: 'previzualizare', label: 'Previzualizare' }, { key: 'landing', label: 'Conținut pagină' }, { key: 'analiza', label: 'Analiză' },
-  { key: 'detalii', label: 'Detalii și preț' }, { key: 'preturi', label: 'Promoții și coduri' }, { key: 'upgrade', label: 'Upgrade' }, { key: 'livrare', label: 'Livrare (fișiere + email)' },
+  { key: 'detalii', label: 'Detalii și preț' }, { key: 'preturi', label: 'Promoții și coduri' }, { key: 'upgrade', label: 'Upgrade' }, { key: 'livrare', label: 'Livrare (fișiere + email)' }, { key: 'notificari', label: 'Notificări' },
 ]
 const TABS_MENTORAT: { key: Tab; label: string }[] = [
   { key: 'previzualizare', label: 'Previzualizare' }, { key: 'analiza', label: 'Analiză' },
@@ -112,7 +112,7 @@ export default function ProductWorkspace({ product: initial, initialTab, daily, 
             {tab === 'landing' && <HomepagePage />}
           </>
         ) : (
-          <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'preturi' || tab === 'upgrade' || tab === 'livrare' || tab === 'landing')}>
+          <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'preturi' || tab === 'upgrade' || tab === 'livrare' || tab === 'notificari' || tab === 'landing')}>
             <ProductForm initial={product} tab={tab} onSaved={np => { setProduct(np); setVersion(v => v + 1) }} />
             {tab === 'preturi' && <DiscountCodes product={product} />}
           </div>
@@ -266,6 +266,10 @@ function ProductForm({ initial, tab, onSaved }: { initial: Product; tab: Tab; on
 
       <div className="g-card rounded-2xl p-5 sm:p-6" hidden={tab !== 'preturi'}>
         <PromoEditor p={p} patch={x => setP(s => ({ ...s, ...x }))} />
+      </div>
+
+      <div className="g-card rounded-2xl p-5 sm:p-6" hidden={tab !== 'notificari'}>
+        <NotifyEditor p={p} patch={x => setP(s => ({ ...s, ...x }))} />
       </div>
 
       <div className="g-card rounded-2xl p-5 sm:p-6" hidden={tab !== 'upgrade'}>
@@ -755,6 +759,67 @@ function DiscountCodes({ product }: { product: Product }) {
           </table>
         </div>
       )}
+    </div>
+  )
+}
+
+
+// ───────── Notificări către admin la fiecare vânzare (alese pe produs) ─────────
+function NotifyEditor({ p, patch }: { p: Product; patch: (x: Partial<Product>) => void }) {
+  const on = p.notify_admin !== false
+  const copy = !!p.notify_copy
+  const [state, setState] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
+  const [msg, setMsg] = useState('')
+
+  const sendTest = async () => {
+    setState('sending'); setMsg('')
+    try {
+      const r = await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'test-notify', id: p.id }) })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error ?? 'Eroare')
+      setState('ok'); setMsg(`Email de test trimis la: ${(d.to as string[]).join(', ')}`)
+    } catch (e) { setState('error'); setMsg(e instanceof Error ? e.message : 'Eroare la trimitere') }
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="font-bold db-title text-base sm:text-lg">Notificări de vânzare</h2>
+        <p className="text-sm db-muted">Alegi ce emailuri primești tu când cineva cumpără <strong>{p.name}</strong>. Clientul își primește oricum emailul cu produsul (se modifică în „Livrare”).</p>
+      </div>
+
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-semibold db-text">1. Notificare „Vânzare nouă”</p>
+          <p className="text-sm db-muted">Un email scurt cu produsul, numele, emailul, telefonul și suma.</p>
+        </div>
+        <Toggle on={on} onClick={() => patch({ notify_admin: !on })} labels={['Activă', 'Oprită']} />
+      </div>
+
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-semibold db-text">2. Copie a emailului primit de client</p>
+          <p className="text-sm db-muted">Vezi exact ce a primit clientul (text și butoane de descărcare), ca să verifici că totul e în regulă.</p>
+        </div>
+        <Toggle on={copy} onClick={() => patch({ notify_copy: !copy })} labels={['Activă', 'Oprită']} />
+      </div>
+
+      {(on || copy) && (
+        <div>
+          <Label>Adrese de email care primesc notificările (separate prin virgulă, maxim 5)</Label>
+          <input className="g-input" value={p.notify_emails ?? ''} placeholder="Gol = adresa implicită a site-ului" onChange={e => patch({ notify_emails: e.target.value })} />
+        </div>
+      )}
+      {!on && !copy && <p className="text-sm text-[#8A5300] bg-[#FDF1DC] rounded-xl px-4 py-3">Nu vei primi nicio notificare pentru vânzările acestui produs. Vânzările rămân vizibile în Overview și Clienți.</p>}
+
+      <div className="rounded-xl border border-black/[.08] p-4 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={sendTest} disabled={state === 'sending' || (!on && !copy)} className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF] disabled:opacity-50">
+          {state === 'sending' ? 'Se trimite…' : 'Trimite un email de test'}
+        </button>
+        <p className={`text-sm ${state === 'error' ? 'text-[#B42318]' : state === 'ok' ? 'text-[#0B6B49]' : 'db-muted'}`} role="status">
+          {msg || 'Testul folosește setările deja salvate: apasă întâi „Salvează”.'}
+        </p>
+      </div>
     </div>
   )
 }

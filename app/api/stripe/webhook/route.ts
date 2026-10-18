@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendAdminSaleEmail, sendDeliveryEmail } from '@/lib/delivery'
+import { sendAdminCopyEmail, sendAdminSaleEmail, sendDeliveryEmail } from '@/lib/delivery'
 import { sendMetaPurchase } from '@/lib/meta/capi'
 import type { Product } from '@/lib/products'
 
@@ -75,15 +75,18 @@ async function handleDigitalPurchase(
   }
 
   // await necessario su Vercel (altrimenti il processo viene chiuso prima dell'invio)
-  const results = await Promise.allSettled([
-    sendDeliveryEmail(purchase, product),
-    sendAdminSaleEmail(purchase, product),
-    sendMetaPurchase(pi, { name: c.fullName, email: c.email, phone: c.phone, contentId: slug }),
-  ])
+  // Cliente: sempre. Notifiche admin: scelte per prodotto (vendita nuova; copia dell'email del cliente)
+  const tasks: [string, Promise<unknown>][] = [
+    ['cliente', sendDeliveryEmail(purchase, product)],
+    ['meta', sendMetaPurchase(pi, { name: c.fullName, email: c.email, phone: c.phone, contentId: slug })],
+  ]
+  if (product.notify_admin !== false) tasks.push(['admin', sendAdminSaleEmail(purchase, product)])
+  if (product.notify_copy) tasks.push(['admin-copia', sendAdminCopyEmail(purchase, product)])
+  const results = await Promise.allSettled(tasks.map(t => t[1]))
   results.forEach((r, i) => {
-    const who = ['cliente', 'admin', 'meta'][i]
+    const who = tasks[i][0]
     if (r.status === 'rejected') console.error(`[Webhook] Invio ${who} fallito:`, r.reason)
-    else if (i < 2 && (r.value as { error?: unknown } | undefined)?.error) console.error(`[Webhook] Resend ${who}:`, (r.value as { error: unknown }).error)
+    else if (who !== 'meta' && (r.value as { error?: unknown } | undefined)?.error) console.error(`[Webhook] Resend ${who}:`, (r.value as { error: unknown }).error)
   })
   console.log('[Webhook] Prodotto digitale consegnato:', slug, c.email)
 }
