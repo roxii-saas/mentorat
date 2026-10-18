@@ -135,14 +135,15 @@ Purchase "Deduplicato"; verifica dominio in Business Manager e priorità Purchas
 7. Valutare piano Supabase Pro (niente pause, file > 50 MB).
 8. Opzionale: Playfair (font landing) viene precaricato anche nelle pagine backend; spostarlo solo sulle landing per risparmiare ~30 KB.
 
-## Overview con preset + Live visitatori (2026-10-18, NON ancora committato/pushato finché l'utente non dice "pusha")
+## Overview con preset + Live visitatori (2026-10-18, ONLINE, commit fba96b9 + 7abea74; migration APPLICATE il 2026-10-18)
 - **Overview**: default "Azi" (vista per ora), preset Azi/Ieri/Questa settimana/Questo mese/Mese scorso + ultimi 7/30/90 + personalizzato. I filtri
   restano dopo il refresh nel cookie `ov_filters` (1 anno, letto sul server: `lib/overview-filters.ts`). Confronto con periodo allineato.
-  Vista oraria: migration `20261018120000_admin_sales_hourly.sql` (`admin_sales_by_hour`) — **da applicare**; senza, funziona con fallback JS.
+  Vista oraria: migration `20261018120000_admin_sales_hourly.sql` (`admin_sales_by_hour`) — applicata.
 - **Live** (`/admin/live`, `components/admin/live/*`, API `app/api/admin/live`): mappa Leaflet (calore + punti per fase), KPI, avviso "vicini all'acquisto",
   lista visitatori con cronologia, imbuto, fonti/UTM/paesi/città/dispositivi/pagine. Aggiorna ogni 5 s.
 - **Tracking** senza cookie: `components/track/Tracker.tsx` → `POST /api/track` (`lib/track-server.ts`): id anonimo = sha256(segreto|giorno|ip|ua), IP mai salvato,
-  geo da header Vercel, DNT/GPC rispettati, bot/admin/percorsi privati esclusi, retention 90 giorni. Segreto: `TRACK_SALT` (o service role key).
-  Migration `20261018120100_live_visitors.sql` (tabelle + `track_visit`, `admin_live_*`) — **da applicare** (senza, Live mostra errore).
+  geo da header Vercel, DNT/GPC rispettati, bot/admin/percorsi privati esclusi, retention 90 giorni. Segreto: `TRACK_SALT` (impostato su Vercel; altrimenti service role key).
+  Migration `20261018120100_live_visitors.sql` (tabelle + `track_visit`, `admin_live_*`) — applicata.
 - Testi legali aggiornati (cookie `ov_filters` + statistiche anonime). Test in scratchpad (PGlite, node, puppeteer) tutti verdi.
 - Da chiedere a Roxana/utente: "mappa termica" interpretata come mappa geografica live; se intendeva heatmap dei click sulla pagina, è un altro lavoro.
+- Mappa: tiles OpenStreetMap (CARTO chiedeva API key). Live NON ancora verificato online con visitatori reali: controllare dopo il deploy.
