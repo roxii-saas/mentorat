@@ -6,7 +6,7 @@ import { addDays, bucharestDay } from '@/lib/admin-analytics'
 import { loadDailySales } from '@/lib/admin-sales'
 import type { Product } from '@/lib/products'
 
-const TABS: Tab[] = ['previzualizare', 'analiza', 'detalii', 'upgrade', 'livrare', 'landing']
+const TABS: Tab[] = ['previzualizare', 'analiza', 'detalii', 'preturi', 'upgrade', 'livrare', 'landing']
 
 export default async function ProductPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ t?: string }> }) {
   await requireAdmin()

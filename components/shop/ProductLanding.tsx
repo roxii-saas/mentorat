@@ -4,10 +4,11 @@ import { formatMoney, type PublicProduct } from '@/lib/products'
 import { Icon } from '@/components/prompturi/Icon'
 import MetaEvent from '@/components/meta/MetaEvent'
 import CookieSettingsLink from '@/components/meta/CookieSettingsLink'
+import { formatBucharest } from '@/lib/pricing'
 import { normalizeLanding } from './landing'
 
 // Pagina dedicată a unui produs digital: se construiește din datele produsului (preț, upgrade) și din conținutul editat în admin.
-export default function ProductLanding({ product }: { product: PublicProduct }) {
+export default function ProductLanding({ product }: { product: PublicProduct & { promo_ends?: string | null } }) {
   const L = normalizeLanding(product)
   const price = formatMoney(product.price_amount, product.currency)
   const compare = product.compare_price ?? 0
@@ -62,6 +63,7 @@ export default function ProductLanding({ product }: { product: PublicProduct }) 
                       {compare > 0 && <span className="text-[15px] text-ed-muted line-through opacity-70 whitespace-nowrap">{compare} {cur}</span>}
                     </div>
                     <span className="text-[12px] font-semibold text-ed-muted block mt-0.5">• Plată securizată unică</span>
+                    {product.promo_ends && <span className="text-[12px] font-semibold text-ed-berry block mt-0.5">Ofertă valabilă până la {formatBucharest(product.promo_ends)}</span>}
                   </div>
                   {discountPct > 0 && (
                     <div className="bg-ed-rose text-[#3f0018] px-2.5 py-1 rounded-sm text-right shrink-0">

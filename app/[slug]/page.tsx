@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { findPublicProduct } from '@/lib/products'
 import { SLUG_RE } from '@/lib/product-slug'
+import { withCurrentPrice } from '@/lib/pricing'
 import { normalizeLanding } from '@/components/shop/landing'
 import ProductLanding from '@/components/shop/ProductLanding'
 
 // ISR: rigenerează la 5 min și imediat când admin salvează produsul
-export const revalidate = 300
+export const revalidate = 60
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -25,5 +26,5 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!SLUG_RE.test(slug)) notFound()
   const product = await findPublicProduct(slug)
   if (!product) notFound()
-  return <ProductLanding product={product} />
+  return <ProductLanding product={withCurrentPrice(product)} />
 }

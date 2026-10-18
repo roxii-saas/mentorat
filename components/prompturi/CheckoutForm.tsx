@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
@@ -20,7 +20,36 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
   const home = `/${product.slug}`
   const [bump, setBump] = useState(false)
   const hasBump = product.bump_active && !!product.bump_price
-  const total = product.price_amount + (bump && hasBump ? product.bump_price! : 0)
+  // Prețul vine de pe server (promoții și coduri se verifică acolo): aici doar se afișează
+  const [basePrice, setBasePrice] = useState(product.price_amount)
+  const [subtotal, setSubtotal] = useState(product.price_amount)
+  const [applied, setApplied] = useState<{ code: string; label: string } | null>(null)
+  const [codeInput, setCodeInput] = useState('')
+  const [codeMsg, setCodeMsg] = useState('')
+  const [checking, setChecking] = useState(false)
+  const total = subtotal + (bump && hasBump ? product.bump_price! : 0)
+
+  // Reconfirmă prețul curent la deschiderea paginii (pagina poate fi veche de câteva minute, iar o promoție poate începe sau expira)
+  useEffect(() => {
+    let dead = false
+    fetch('/api/checkout/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: product.slug }) })
+      .then(r => r.json()).then(q => { if (!dead && q.ok) { setBasePrice(q.price); setSubtotal(q.price) } }).catch(() => {})
+    return () => { dead = true }
+  }, [product.slug])
+
+  const applyCode = async () => {
+    if (!codeInput.trim()) return
+    setChecking(true); setCodeMsg('')
+    try {
+      const r = await fetch('/api/checkout/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: product.slug, code: codeInput }) })
+      const q = await r.json()
+      if (q.ok && q.code) { setApplied(q.code); setSubtotal(q.subtotal); setBasePrice(q.price); setCodeInput('') }
+      else setCodeMsg(q.error ?? 'Codul nu a putut fi verificat.')
+    } catch { setCodeMsg('Codul nu a putut fi verificat. Încearcă din nou.') }
+    setChecking(false)
+  }
+  const removeCode = () => { setApplied(null); setSubtotal(basePrice); setCodeMsg('') }
+  const strike = applied ? basePrice : product.compare_price ?? 0
 
   return (
     <div className="min-h-screen bg-ed-canvas">
@@ -79,12 +108,12 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
                     )}
                   </div>
                   <div className="flex items-baseline gap-2 mt-2">
-                    <span className="font-bodoni text-[22px] font-semibold">{fmt(product.price_amount, product.currency)}</span>
-                    {!!product.compare_price && product.compare_price > product.price_amount && (
+                    <span className="font-bodoni text-[22px] font-semibold">{fmt(subtotal, product.currency)}</span>
+                    {strike > subtotal && (
                       <>
-                        <span className="text-[13px] text-ed-muted line-through opacity-70">{fmt(product.compare_price, product.currency)}</span>
+                        <span className="text-[13px] text-ed-muted line-through opacity-70">{fmt(strike, product.currency)}</span>
                         <span className="ed-eyebrow !text-[10px] text-ed-berry bg-ed-rose/50 px-1.5 py-0.5 rounded">
-                          -{Math.floor((1 - product.price_amount / product.compare_price) * 100)}%
+                          -{Math.floor((1 - subtotal / strike) * 100)}%
                         </span>
                       </>
                     )}
@@ -120,6 +149,24 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
               </label>
             )}
 
+            <div className="bg-ed-white p-4 rounded-lg ed-shadow border border-ed-line/60">
+              <label htmlFor="discount-code" className="text-[13px] font-semibold">Ai un cod de reducere?</label>
+              {applied ? (
+                <div className="mt-2 flex items-center justify-between gap-2 bg-ed-low rounded px-3 py-2 text-[13px]">
+                  <span>Cod <strong>{applied.code}</strong> aplicat ({applied.label})</span>
+                  <button type="button" onClick={removeCode} className="underline text-ed-muted">Șterge</button>
+                </div>
+              ) : (
+                <div className="mt-2 flex gap-2">
+                  <input id="discount-code" className={`${inputCls} uppercase`} value={codeInput} autoComplete="off" placeholder="COD"
+                    onChange={e => setCodeInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); applyCode() } }} />
+                  <button type="button" onClick={applyCode} disabled={checking || !codeInput.trim()}
+                    className="px-4 rounded bg-ed-black text-white text-[13px] font-semibold disabled:opacity-50 shrink-0">{checking ? '…' : 'Aplică'}</button>
+                </div>
+              )}
+              {codeMsg && <p role="alert" className="text-[12px] text-[#93000a] mt-2">{codeMsg}</p>}
+            </div>
+
             <Guarantee text={L.guarantee} className="hidden lg:flex" />
           </div>
 
@@ -144,7 +191,7 @@ export default function CheckoutForm({ product }: { product: PublicProduct }) {
                   rules: { '.Input': { border: '1px solid #e8e2d9', boxShadow: 'none' }, '.Input:focus': { border: '1px solid #111113', boxShadow: '0 0 0 2px rgba(185,12,85,0.1)' } },
                 },
               }}>
-              <PayForm slug={product.slug} bump={bump && hasBump} total={total} currency={product.currency} totalLabel={fmt(total, product.currency)} />
+              <PayForm slug={product.slug} code={applied?.code ?? ''} bump={bump && hasBump} total={total} currency={product.currency} totalLabel={fmt(total, product.currency)} />
             </Elements>
             <Guarantee text={L.guarantee} className="lg:hidden mt-4" />
           </div>
@@ -193,7 +240,7 @@ function Guarantee({ text, className = '' }: { text: string; className?: string 
 
 const inputCls = 'w-full bg-ed-white border border-ed-line text-ed-ink placeholder:text-ed-soft px-3.5 py-2.5 rounded focus:outline-none focus:border-ed-black focus:ring-2 focus:ring-ed-berry/10 transition-all'
 
-function PayForm({ slug, bump, total, currency, totalLabel }: { slug: string; bump: boolean; total: number; currency: string; totalLabel: string }) {
+function PayForm({ slug, code, bump, total, currency, totalLabel }: { slug: string; code: string; bump: boolean; total: number; currency: string; totalLabel: string }) {
   const stripe = useStripe()
   const elements = useElements()
   const [name, setName] = useState('')
@@ -222,11 +269,18 @@ function PayForm({ slug, bump, total, currency, totalLabel }: { slug: string; bu
     const res = await fetch('/api/stripe/product-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, bump, name, email, phone, meta: getMetaContext() }),
+      body: JSON.stringify({ slug, bump, code, name, email, phone, meta: getMetaContext() }),
     })
     const data = await res.json()
     if (!res.ok || !data.clientSecret) {
       setError(data.error ?? 'A apărut o eroare. Încearcă din nou.')
+      setBusy(false)
+      return
+    }
+
+    // Dacă prețul calculat pe server diferă de cel afișat (ex: promoția a expirat chiar acum), nu încasăm o sumă nevăzută de client
+    if (data.amount !== total) {
+      setError(`Prețul s-a modificat și este acum ${fmt(data.amount, currency)}. Reîncarcă pagina și verifică totalul.`)
       setBusy(false)
       return
     }

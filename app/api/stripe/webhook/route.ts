@@ -59,11 +59,19 @@ async function handleDigitalPurchase(
     stripe_payment_intent_id: pi.id,
     product_id: product.id,
     bump_included: pi.metadata?.bump === '1',
+    ...(pi.metadata?.discount_code ? { discount_code: pi.metadata.discount_code, discount_amount: Number(pi.metadata.discount_amount) || null } : {}),
   }).select('id, name, email, phone, amount, currency, bump_included').single()
 
   if (error || !purchase) {
     console.error('[Webhook] Errore salvataggio acquisto digitale:', error)
     return
+  }
+
+  // Codice sconto usato: conta l'utilizzo (solo alla prima registrazione dell'acquisto → niente doppi conteggi sui retry di Stripe)
+  if (pi.metadata?.discount_code) {
+    const { data: row } = await supabase.from('discount_codes').select('id, used_count')
+      .eq('product_id', product.id).ilike('code', pi.metadata.discount_code.replace(/[%_\\]/g, m => '\\' + m)).maybeSingle()
+    if (row) await supabase.from('discount_codes').update({ used_count: row.used_count + 1 }).eq('id', row.id)
   }
 
   // await necessario su Vercel (altrimenti il processo viene chiuso prima dell'invio)

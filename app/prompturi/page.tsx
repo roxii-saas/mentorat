@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { getPublicProduct, formatMoney } from '@/lib/products'
+import { formatBucharest, withCurrentPrice } from '@/lib/pricing'
 import { Icon } from '@/components/prompturi/Icon'
 import MetaEvent from '@/components/meta/MetaEvent'
 import CookieSettingsLink from '@/components/meta/CookieSettingsLink'
@@ -9,12 +10,12 @@ import {
 } from '@/components/prompturi/content'
 
 // ISR: rigenera ogni 5 min e subito quando l'admin salva il prodotto
-export const revalidate = 300
+export const revalidate = 60
 
 const CHECKOUT = '/prompturi/checkout'
 
 export default async function PrompturiPage() {
-  const product = await getPublicProduct('prompturi')
+  const product = withCurrentPrice(await getPublicProduct('prompturi'))
   const price = formatMoney(product.price_amount, product.currency)
   const compare = product.compare_price ?? 0
   const discountPct = compare > product.price_amount ? Math.floor((1 - product.price_amount / compare) * 100) : 0
@@ -61,6 +62,7 @@ export default async function PrompturiPage() {
                       {compare > 0 && <span className="text-[15px] text-ed-muted line-through opacity-70 whitespace-nowrap">{compare} {cur}</span>}
                     </div>
                     <span className="text-[12px] font-semibold text-ed-muted block mt-0.5">• Plată securizată unică</span>
+                    {product.promo_ends && <span className="text-[12px] font-semibold text-ed-berry block mt-0.5">Ofertă valabilă până la {formatBucharest(product.promo_ends)}</span>}
                   </div>
                   {discountPct > 0 && (
                     <div className="bg-ed-rose text-[#3f0018] px-2.5 py-1 rounded-sm text-right shrink-0">

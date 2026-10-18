@@ -9,6 +9,7 @@ const EDITABLE = [
   'name', 'price_amount', 'compare_price', 'currency', 'sales_active',
   'bump_active', 'bump_name', 'bump_description', 'bump_price',
   'email_subject', 'email_body', 'cover_url', 'landing',
+  'promo_type', 'promo_value', 'promo_starts_at', 'promo_ends_at',
 ] as const
 
 const deny = () => NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
@@ -34,6 +35,24 @@ export async function PUT(req: Request) {
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const k of EDITABLE) if (k in body) update[k] = body[k]
+
+  // Promoție programată: tip + valoare + (opțional) început/sfârșit
+  if ('promo_type' in body) {
+    if (!body.promo_type) {
+      Object.assign(update, { promo_type: null, promo_value: null, promo_starts_at: null, promo_ends_at: null })
+    } else {
+      const val = Math.round(Number(body.promo_value))
+      if (!['price', 'percent'].includes(body.promo_type)) return NextResponse.json({ error: 'Tip de promoție invalid.' }, { status: 400 })
+      if (!Number.isFinite(val) || val < 1) return NextResponse.json({ error: 'Valoarea promoției trebuie să fie cel puțin 1.' }, { status: 400 })
+      if (body.promo_type === 'percent' && val > 99) return NextResponse.json({ error: 'Reducerea poate fi cel mult 99%.' }, { status: 400 })
+      const ok = (v: unknown) => v == null || v === '' || !Number.isNaN(Date.parse(String(v)))
+      if (!ok(body.promo_starts_at) || !ok(body.promo_ends_at)) return NextResponse.json({ error: 'Dată invalidă.' }, { status: 400 })
+      if (body.promo_starts_at && body.promo_ends_at && Date.parse(body.promo_ends_at) <= Date.parse(body.promo_starts_at)) return NextResponse.json({ error: 'Sfârșitul promoției trebuie să fie după început.' }, { status: 400 })
+      update.promo_value = val
+      update.promo_starts_at = body.promo_starts_at || null
+      update.promo_ends_at = body.promo_ends_at || null
+    }
+  }
 
   const { data, error } = await createAdminClient()
     .from('products').update(update).eq('id', body.id).select('*').single()

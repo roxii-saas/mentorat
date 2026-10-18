@@ -23,6 +23,10 @@ export type Product = {
   email_body: string | null
   cover_url: string | null
   landing: Landing | null
+  promo_type: 'price' | 'percent' | null
+  promo_value: number | null
+  promo_starts_at: string | null
+  promo_ends_at: string | null
 }
 
 // Conținutul paginii dedicate (editabil din admin). Orice câmp lipsă primește o valoare implicită în normalizeLanding.
@@ -64,9 +68,9 @@ export const PRODUCT_DEFAULTS: Record<string, Partial<Product>> = {
 }
 
 // Colonne pubbliche (mai file_path / email nella landing)
-const PUBLIC_COLUMNS = 'id, slug, name, kind, price_amount, compare_price, currency, sales_active, bump_active, bump_name, bump_description, bump_price, cover_url, landing'
+const PUBLIC_COLUMNS = 'id, slug, name, kind, price_amount, compare_price, currency, sales_active, bump_active, bump_name, bump_description, bump_price, cover_url, landing, promo_type, promo_value, promo_starts_at, promo_ends_at'
 const LEGACY_COLUMNS = 'id, slug, name, kind, price_amount, compare_price, currency, sales_active, bump_active, bump_name, bump_description, bump_price'
-export type PublicProduct = Pick<Product, 'id' | 'slug' | 'name' | 'kind' | 'price_amount' | 'compare_price' | 'currency' | 'sales_active' | 'bump_active' | 'bump_name' | 'bump_description' | 'bump_price' | 'cover_url' | 'landing'>
+export type PublicProduct = Pick<Product, 'id' | 'slug' | 'name' | 'kind' | 'price_amount' | 'compare_price' | 'currency' | 'sales_active' | 'bump_active' | 'bump_name' | 'bump_description' | 'bump_price' | 'cover_url' | 'landing' | 'promo_type' | 'promo_value' | 'promo_starts_at' | 'promo_ends_at'>
 
 const fetchProduct = unstable_cache(
   async (slug: string) => {
@@ -83,12 +87,12 @@ const fetchProduct = unstable_cache(
       // Migrarea cu coloanele paginii (cover_url, landing) nu e încă aplicată → citește coloanele vechi, prețul rămâne cel din baza de date
       const legacy = await supabase.from('products').select(LEGACY_COLUMNS).eq('slug', slug).maybeSingle()
       if (legacy.error) throw legacy.error
-      data = legacy.data ? { ...legacy.data, cover_url: PRODUCT_DEFAULTS[slug]?.cover_url ?? null, landing: PRODUCT_DEFAULTS[slug]?.landing ?? null } : null
+      data = legacy.data ? { ...legacy.data, cover_url: PRODUCT_DEFAULTS[slug]?.cover_url ?? null, landing: PRODUCT_DEFAULTS[slug]?.landing ?? null, promo_type: null, promo_value: null, promo_starts_at: null, promo_ends_at: null } : null
     }
     return (data as PublicProduct | null) ?? null
   },
   ['product'],
-  { tags: [PRODUCTS_TAG], revalidate: 300 }
+  { tags: [PRODUCTS_TAG], revalidate: 60 }
 )
 
 export async function getPublicProduct(slug: string): Promise<PublicProduct> {

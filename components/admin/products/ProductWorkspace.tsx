@@ -2,23 +2,24 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { slugError, slugify } from '@/lib/product-slug'
 import { createClient } from '@/lib/supabase/client'
 import type { Landing, Product } from '@/lib/products'
 import BarChart from '@/components/admin/BarChart'
+import { applyCode, bucharestInputToIso, codeLabel, codeProblem, currentPrice, formatBucharest, isoToBucharestInput, promoPrice, promoState, type CodeFields } from '@/lib/pricing'
 import { buildBuckets, daysBetween, indexDaily, money, nf, sumBuckets, type DailyRow } from '@/lib/admin-analytics'
 import SetariPage from '@/app/(admin)/admin/setari/page'
 import HomepagePage from '@/app/(admin)/admin/homepage/page'
 
 const BUCKET = 'product-files'
 
-export type Tab = 'previzualizare' | 'analiza' | 'detalii' | 'upgrade' | 'livrare' | 'landing'
+export type Tab = 'previzualizare' | 'analiza' | 'detalii' | 'preturi' | 'upgrade' | 'livrare' | 'landing'
 export type OrderLite = { id: string; name: string | null; email: string; amount: number | null; currency: string; created_at: string; bump_included: boolean }
 
 const TABS_DIGITAL: { key: Tab; label: string }[] = [
   { key: 'previzualizare', label: 'Previzualizare' }, { key: 'landing', label: 'Conținut pagină' }, { key: 'analiza', label: 'Analiză' },
-  { key: 'detalii', label: 'Detalii și preț' }, { key: 'upgrade', label: 'Upgrade' }, { key: 'livrare', label: 'Livrare (fișiere + email)' },
+  { key: 'detalii', label: 'Detalii și preț' }, { key: 'preturi', label: 'Promoții și coduri' }, { key: 'upgrade', label: 'Upgrade' }, { key: 'livrare', label: 'Livrare (fișiere + email)' },
 ]
 const TABS_MENTORAT: { key: Tab; label: string }[] = [
   { key: 'previzualizare', label: 'Previzualizare' }, { key: 'analiza', label: 'Analiză' },
@@ -111,8 +112,9 @@ export default function ProductWorkspace({ product: initial, initialTab, daily, 
             {tab === 'landing' && <HomepagePage />}
           </>
         ) : (
-          <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'upgrade' || tab === 'livrare' || tab === 'landing')}>
+          <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'preturi' || tab === 'upgrade' || tab === 'livrare' || tab === 'landing')}>
             <ProductForm initial={product} tab={tab} onSaved={np => { setProduct(np); setVersion(v => v + 1) }} />
+            {tab === 'preturi' && <DiscountCodes product={product} />}
           </div>
         )}
       </div>
@@ -260,6 +262,10 @@ function ProductForm({ initial, tab, onSaved }: { initial: Product; tab: Tab; on
             <FileSlot product={p} target="bump" label="Fișier upgrade (doar pentru cine îl cumpără)" onUploaded={np => { setP(np); onSaved(np) }} />
           </div>
         )}
+      </div>
+
+      <div className="g-card rounded-2xl p-5 sm:p-6" hidden={tab !== 'preturi'}>
+        <PromoEditor p={p} patch={x => setP(s => ({ ...s, ...x }))} />
       </div>
 
       <div className="g-card rounded-2xl p-5 sm:p-6" hidden={tab !== 'upgrade'}>
@@ -549,6 +555,189 @@ function LandingEditor({ p, patch }: { p: Product; patch: (x: Partial<Product>) 
           <div><Label>Notă în checkout (opțional)</Label><input className="g-input" value={L.checkout_note ?? ''} placeholder="ex: Include 2 bonusuri" onChange={e => setL({ checkout_note: e.target.value })} /></div>
         </div>
       </div>
+    </div>
+  )
+}
+
+
+// ───────── Promoție programată: prețul se schimbă singur la început și revine singur la sfârșit ─────────
+function PromoEditor({ p, patch }: { p: Product; patch: (x: Partial<Product>) => void }) {
+  const mode = p.promo_type ?? ''
+  const state = promoState(p)
+  const cur = currentPrice(p)
+  const resulting = p.promo_type && p.promo_value ? promoPrice(p) : null
+  const STATE_TEXT = { none: '', scheduled: 'Programată: nu a început încă', active: 'Activă acum: clienții văd prețul redus', ended: 'Încheiată: se vede din nou prețul normal' } as const
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-bold db-title text-base sm:text-lg">Promoție programată</h2>
+        <p className="text-sm db-muted">Alegi prețul sau reducerea și între ce zile și ore e valabilă. Se pornește și se oprește singură; nu mai trebuie să schimbi prețul de mână. Orele sunt ora României.</p>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div>
+          <Label>Tip</Label>
+          <select className="g-input" value={mode} onChange={e => {
+            const v = e.target.value as '' | 'price' | 'percent'
+            patch(v ? { promo_type: v, promo_value: p.promo_value ?? (v === 'percent' ? 20 : Math.max(1, Math.round(p.price_amount * 0.8))) } : { promo_type: null, promo_value: null, promo_starts_at: null, promo_ends_at: null })
+          }}>
+            <option value="">Fără promoție</option>
+            <option value="price">Duc prețul la o sumă fixă</option>
+            <option value="percent">Aplic o reducere în procente</option>
+          </select>
+        </div>
+        {mode && (
+          <div>
+            <Label>{mode === 'price' ? `Noul preț (${p.currency.toUpperCase()})` : 'Reducere (%)'}</Label>
+            <input type="number" min="1" max={mode === 'percent' ? 99 : undefined} className="g-input" value={p.promo_value ?? ''}
+              onChange={e => patch({ promo_value: e.target.value ? parseInt(e.target.value) : null })} />
+          </div>
+        )}
+      </div>
+      {mode && (
+        <>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label>Începe (zi și oră)</Label>
+              <input type="datetime-local" className="g-input" value={isoToBucharestInput(p.promo_starts_at)}
+                onChange={e => patch({ promo_starts_at: e.target.value ? bucharestInputToIso(e.target.value) : null })} />
+              <p className="text-xs db-muted mt-1">Gol = de acum.</p>
+            </div>
+            <div>
+              <Label>Se termină (zi și oră)</Label>
+              <input type="datetime-local" className="g-input" value={isoToBucharestInput(p.promo_ends_at)}
+                onChange={e => patch({ promo_ends_at: e.target.value ? bucharestInputToIso(e.target.value) : null })} />
+              <p className="text-xs db-muted mt-1">Gol = fără sfârșit, până o oprești tu.</p>
+            </div>
+          </div>
+          <div className="rounded-xl bg-[#F6F6FA] px-4 py-3 text-sm space-y-0.5" role="status">
+            <p>Preț normal: <strong>{money(p.price_amount, p.currency)}</strong> → în promoție: <strong>{resulting ? money(resulting, p.currency) : '—'}</strong></p>
+            <p className="db-muted">{STATE_TEXT[state]}{state === 'active' ? ` · acum se vinde cu ${money(cur.price, p.currency)}` : ''}</p>
+            <p className="db-muted">{p.promo_starts_at ? `De la ${formatBucharest(p.promo_starts_at)}` : 'De acum'}{p.promo_ends_at ? ` până la ${formatBucharest(p.promo_ends_at)}` : ', fără dată de final'} (ora României)</p>
+          </div>
+        </>
+      )}
+      <p className="text-xs db-muted">Apasă „Salvează” de mai jos ca să aplici promoția. Pagina de vânzare arată prețul vechi tăiat și, dacă există dată de final, „Ofertă valabilă până la…”.</p>
+    </div>
+  )
+}
+
+// ───────── Coduri de reducere ─────────
+type CodeRow = CodeFields & { id: string; code: string; product_id: string }
+
+function DiscountCodes({ product }: { product: Product }) {
+  const [codes, setCodes] = useState<CodeRow[] | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [f, setF] = useState({ code: '', type: 'percent' as CodeFields['type'], value: '10', starts: '', ends: '', max: '' })
+
+  useEffect(() => {
+    let dead = false
+    fetch(`/api/admin/discount-codes?product_id=${product.id}`).then(async r => {
+      const d = await r.json()
+      if (dead) return
+      if (!r.ok) { setError(d.error ?? 'Nu pot încărca codurile.'); setCodes([]) } else setCodes(d)
+    }).catch(() => { if (!dead) { setError('Nu pot încărca codurile.'); setCodes([]) } })
+    return () => { dead = true }
+  }, [product.id])
+
+  const gen = () => setF(x => ({ ...x, code: Array.from({ length: 8 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 31)]).join('') }))
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setBusy(true); setError('')
+    const r = await fetch('/api/admin/discount-codes', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        product_id: product.id, code: f.code.trim(), type: f.type, value: Number(f.value),
+        starts_at: f.starts ? bucharestInputToIso(f.starts) : null, ends_at: f.ends ? bucharestInputToIso(f.ends) : null,
+        max_uses: f.max ? Number(f.max) : null,
+      }),
+    })
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok) setError(d.error ?? 'Nu s-a putut crea codul.')
+    else { setCodes(c => [d, ...(c ?? [])]); setF(x => ({ ...x, code: '', starts: '', ends: '', max: '' })) }
+    setBusy(false)
+  }
+  const toggle = async (c: CodeRow) => {
+    const r = await fetch('/api/admin/discount-codes', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, active: !c.active }) })
+    const d = await r.json()
+    if (r.ok) setCodes(cs => (cs ?? []).map(x => (x.id === c.id ? d : x))); else setError(d.error ?? 'Eroare')
+  }
+  const remove = async (c: CodeRow) => {
+    if (!window.confirm(`Ștergi codul ${c.code}? Comenzile deja făcute nu se schimbă.`)) return
+    const r = await fetch(`/api/admin/discount-codes?id=${c.id}`, { method: 'DELETE' })
+    if (r.ok) setCodes(cs => (cs ?? []).filter(x => x.id !== c.id)); else setError('Nu s-a putut șterge.')
+  }
+  const status = (c: CodeRow) => {
+    const pr = codeProblem(c)
+    if (!pr) return { t: 'Valabil', c: 'text-[#0B6B49]' }
+    if (!c.active) return { t: 'Oprit', c: 'text-[#8A5300]' }
+    if (pr.includes('încă')) return { t: 'Programat', c: 'text-[#5A00C2]' }
+    if (pr.includes('expirat')) return { t: 'Expirat', c: 'text-[#B42318]' }
+    return { t: 'Epuizat', c: 'text-[#B42318]' }
+  }
+  const price = currentPrice(product).price
+  const preview = Number(f.value) > 0 ? applyCode(price, { type: f.type, value: Number(f.value) }) : null
+
+  return (
+    <div className="g-card rounded-2xl p-5 sm:p-6 mt-4 space-y-4">
+      <div>
+        <h2 className="font-bold db-title text-base sm:text-lg">Coduri de reducere</h2>
+        <p className="text-sm db-muted">Clientul scrie codul în checkout. Reducerea se aplică prețului din acel moment (dacă e o promoție activă, peste prețul promoției); upgrade-ul nu se reduce.</p>
+      </div>
+
+      <form onSubmit={create} className="rounded-xl border border-black/[.08] p-4 space-y-3">
+        <div className="grid sm:grid-cols-[1fr_auto] gap-2 items-end">
+          <div><Label>Cod</Label><input className="g-input uppercase" required value={f.code} placeholder="ex: PRIMAVARA20" onChange={e => setF({ ...f, code: e.target.value })} /></div>
+          <button type="button" onClick={gen} className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF]">Generează</button>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <Label>Tip de reducere</Label>
+            <select className="g-input" value={f.type} onChange={e => setF({ ...f, type: e.target.value as CodeFields['type'] })}>
+              <option value="percent">Procent din preț</option>
+              <option value="amount">Sumă fixă scăzută</option>
+              <option value="price">Duce prețul la o sumă fixă</option>
+            </select>
+          </div>
+          <div>
+            <Label>{f.type === 'percent' ? 'Procent (%)' : f.type === 'amount' ? `Suma scăzută (${product.currency.toUpperCase()})` : `Prețul final (${product.currency.toUpperCase()})`}</Label>
+            <input type="number" min="1" max={f.type === 'percent' ? 99 : undefined} required className="g-input" value={f.value} onChange={e => setF({ ...f, value: e.target.value })} />
+          </div>
+          <div><Label>Valabil de la (opțional)</Label><input type="datetime-local" className="g-input" value={f.starts} onChange={e => setF({ ...f, starts: e.target.value })} /></div>
+          <div><Label>Valabil până la (opțional)</Label><input type="datetime-local" className="g-input" value={f.ends} onChange={e => setF({ ...f, ends: e.target.value })} /></div>
+          <div><Label>Număr maxim de utilizări (opțional)</Label><input type="number" min="1" className="g-input" value={f.max} placeholder="nelimitat" onChange={e => setF({ ...f, max: e.target.value })} /></div>
+        </div>
+        <p className="text-xs db-muted">Orele sunt ora României. {preview != null && <>La prețul de acum ({money(price, product.currency)}) clientul ar plăti <strong>{money(preview, product.currency)}</strong>.</>}</p>
+        <button type="submit" disabled={busy} className="g-btn g-btn-md">{busy ? 'Se creează…' : 'Creează codul'}</button>
+      </form>
+
+      {error && <p role="alert" className="text-[#B42318] text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
+
+      {codes === null ? <p className="text-sm db-muted">Se încarcă…</p> : codes.length === 0 ? <p className="text-sm db-muted">Niciun cod încă.</p> : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="text-left text-xs font-semibold db-muted"><th className="pb-2">Cod</th><th className="pb-2">Reducere</th><th className="pb-2">Valabilitate</th><th className="pb-2 text-right">Folosit</th><th className="pb-2 pl-3">Stare</th><th className="pb-2" /></tr></thead>
+            <tbody>{codes.map(c => {
+              const st = status(c)
+              return (
+                <tr key={c.id} className="border-t border-[#EEEEF4]">
+                  <td className="py-2 pr-3 font-mono font-semibold">{c.code}</td>
+                  <td className="py-2 pr-3 whitespace-nowrap">{codeLabel(c, product.currency)}</td>
+                  <td className="py-2 pr-3 text-xs">{c.starts_at ? formatBucharest(c.starts_at) : 'de acum'}<br />{c.ends_at ? `până ${formatBucharest(c.ends_at)}` : 'fără sfârșit'}</td>
+                  <td className="py-2 pr-3 text-right tnum">{c.used_count}{c.max_uses != null ? ` / ${c.max_uses}` : ''}</td>
+                  <td className={`py-2 pl-3 pr-3 font-semibold ${st.c}`}>{st.t}</td>
+                  <td className="py-2 text-right whitespace-nowrap">
+                    <button type="button" onClick={() => toggle(c)} className="underline mr-3">{c.active ? 'Oprește' : 'Activează'}</button>
+                    <button type="button" onClick={() => remove(c)} className="underline text-[#B42318]">Șterge</button>
+                  </td>
+                </tr>
+              )
+            })}</tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
