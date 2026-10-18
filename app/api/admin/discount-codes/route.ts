@@ -15,34 +15,48 @@ export async function GET(req: Request) {
   return NextResponse.json(data)
 }
 
-export async function POST(req: Request) {
-  if (!(await isAdminRequest())) return deny()
-  const b = await req.json().catch(() => ({}))
+function parse(b: Record<string, unknown>) {
   const code = String(b.code ?? '').trim()
   const value = Math.round(Number(b.value))
   const starts = iso(b.starts_at), ends = iso(b.ends_at)
   const maxUses = b.max_uses === '' || b.max_uses == null ? null : Math.round(Number(b.max_uses))
-  if (!b.product_id) return NextResponse.json({ error: 'Produs lipsă.' }, { status: 400 })
-  if (!CODE_RE.test(code)) return NextResponse.json({ error: 'Codul are 3–30 de caractere: litere, cifre, - sau _.' }, { status: 400 })
-  if (!['percent', 'amount', 'price'].includes(b.type)) return NextResponse.json({ error: 'Tip de reducere invalid.' }, { status: 400 })
-  if (!Number.isFinite(value) || value < 1) return NextResponse.json({ error: 'Valoarea trebuie să fie cel puțin 1.' }, { status: 400 })
-  if (b.type === 'percent' && value > 99) return NextResponse.json({ error: 'Procentul poate fi cel mult 99.' }, { status: 400 })
-  if (starts && ends && Date.parse(ends) <= Date.parse(starts)) return NextResponse.json({ error: 'Data de final trebuie să fie după cea de început.' }, { status: 400 })
-  if (maxUses != null && (!Number.isFinite(maxUses) || maxUses < 1)) return NextResponse.json({ error: 'Numărul maxim de utilizări trebuie să fie cel puțin 1.' }, { status: 400 })
+  const bad = (error: string) => ({ error })
+  if (!CODE_RE.test(code)) return bad('Codul are 3–30 de caractere: litere, cifre, - sau _.')
+  if (!['percent', 'amount', 'price'].includes(String(b.type))) return bad('Tip de reducere invalid.')
+  if (!Number.isFinite(value) || value < 1) return bad('Valoarea trebuie să fie cel puțin 1.')
+  if (b.type === 'percent' && value > 99) return bad('Procentul poate fi cel mult 99.')
+  if (starts && ends && Date.parse(ends) <= Date.parse(starts)) return bad('Data de final trebuie să fie după cea de început.')
+  if (maxUses != null && (!Number.isFinite(maxUses) || maxUses < 1)) return bad('Numărul maxim de utilizări trebuie să fie cel puțin 1.')
+  return { fields: { code, type: String(b.type), value, starts_at: starts, ends_at: ends, max_uses: maxUses } }
+}
+const dupError = (error: { code?: string; message: string }) =>
+  NextResponse.json({ error: error.code === '23505' ? 'Există deja un cod cu acest nume la acest produs.' : error.message }, { status: error.code === '23505' ? 409 : 400 })
 
-  const { data, error } = await createAdminClient().from('discount_codes').insert({
-    product_id: b.product_id, code, type: b.type, value, starts_at: starts, ends_at: ends, max_uses: maxUses,
-  }).select('*').single()
-  if (error) return NextResponse.json({ error: error.code === '23505' ? 'Există deja un cod cu acest nume la acest produs.' : error.message }, { status: error.code === '23505' ? 409 : 400 })
+export async function POST(req: Request) {
+  if (!(await isAdminRequest())) return deny()
+  const b = await req.json().catch(() => ({}))
+  if (!b.product_id) return NextResponse.json({ error: 'Produs lipsă.' }, { status: 400 })
+  const r = parse(b)
+  if ('error' in r) return NextResponse.json({ error: r.error }, { status: 400 })
+  const { data, error } = await createAdminClient().from('discount_codes').insert({ product_id: b.product_id, ...r.fields }).select('*').single()
+  if (error) return dupError(error)
   return NextResponse.json(data)
 }
 
+// PATCH: doar { id, active } oprește/pornește codul; cu restul câmpurilor îl modifică (utilizările deja făcute rămân)
 export async function PATCH(req: Request) {
   if (!(await isAdminRequest())) return deny()
   const b = await req.json().catch(() => ({}))
-  if (!b.id || typeof b.active !== 'boolean') return NextResponse.json({ error: 'Date lipsă.' }, { status: 400 })
-  const { data, error } = await createAdminClient().from('discount_codes').update({ active: b.active }).eq('id', b.id).select('*').single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (!b.id) return NextResponse.json({ error: 'Date lipsă.' }, { status: 400 })
+  let update: Record<string, unknown>
+  if ('code' in b) {
+    const r = parse(b)
+    if ('error' in r) return NextResponse.json({ error: r.error }, { status: 400 })
+    update = r.fields
+  } else if (typeof b.active === 'boolean') update = { active: b.active }
+  else return NextResponse.json({ error: 'Date lipsă.' }, { status: 400 })
+  const { data, error } = await createAdminClient().from('discount_codes').update(update).eq('id', b.id).select('*').single()
+  if (error) return dupError(error)
   return NextResponse.json(data)
 }
 

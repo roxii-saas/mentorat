@@ -629,7 +629,9 @@ function DiscountCodes({ product }: { product: Product }) {
   const [codes, setCodes] = useState<CodeRow[] | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [f, setF] = useState({ code: '', type: 'percent' as CodeFields['type'], value: '10', starts: '', ends: '', max: '' })
+  const emptyForm = { code: '', type: 'percent' as CodeFields['type'], value: '10', starts: '', ends: '', max: '' }
+  const [f, setF] = useState(emptyForm)
+  const [editing, setEditing] = useState<CodeRow | null>(null)
 
   useEffect(() => {
     let dead = false
@@ -643,22 +645,32 @@ function DiscountCodes({ product }: { product: Product }) {
 
   const gen = () => setF(x => ({ ...x, code: Array.from({ length: 8 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 31)]).join('') }))
 
-  const create = async (e: React.FormEvent) => {
+  const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true); setError('')
+    const payload = {
+      code: f.code.trim(), type: f.type, value: Number(f.value),
+      starts_at: f.starts ? bucharestInputToIso(f.starts) : null, ends_at: f.ends ? bucharestInputToIso(f.ends) : null,
+      max_uses: f.max ? Number(f.max) : null,
+    }
     const r = await fetch('/api/admin/discount-codes', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        product_id: product.id, code: f.code.trim(), type: f.type, value: Number(f.value),
-        starts_at: f.starts ? bucharestInputToIso(f.starts) : null, ends_at: f.ends ? bucharestInputToIso(f.ends) : null,
-        max_uses: f.max ? Number(f.max) : null,
-      }),
+      method: editing ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editing ? { id: editing.id, ...payload } : { product_id: product.id, ...payload }),
     })
     const d = await r.json().catch(() => ({}))
-    if (!r.ok) setError(d.error ?? 'Nu s-a putut crea codul.')
-    else { setCodes(c => [d, ...(c ?? [])]); setF(x => ({ ...x, code: '', starts: '', ends: '', max: '' })) }
+    if (!r.ok) setError(d.error ?? 'Nu s-a putut salva codul.')
+    else {
+      setCodes(c => (editing ? (c ?? []).map(x => (x.id === d.id ? d : x)) : [d, ...(c ?? [])]))
+      setEditing(null); setF(emptyForm)
+    }
     setBusy(false)
   }
+  const edit = (c: CodeRow) => {
+    setEditing(c); setError('')
+    setF({ code: c.code, type: c.type, value: String(c.value), starts: isoToBucharestInput(c.starts_at), ends: isoToBucharestInput(c.ends_at), max: c.max_uses != null ? String(c.max_uses) : '' })
+    document.getElementById('code-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+  const cancelEdit = () => { setEditing(null); setF(emptyForm); setError('') }
   const toggle = async (c: CodeRow) => {
     const r = await fetch('/api/admin/discount-codes', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, active: !c.active }) })
     const d = await r.json()
@@ -667,7 +679,7 @@ function DiscountCodes({ product }: { product: Product }) {
   const remove = async (c: CodeRow) => {
     if (!window.confirm(`Ștergi codul ${c.code}? Comenzile deja făcute nu se schimbă.`)) return
     const r = await fetch(`/api/admin/discount-codes?id=${c.id}`, { method: 'DELETE' })
-    if (r.ok) setCodes(cs => (cs ?? []).filter(x => x.id !== c.id)); else setError('Nu s-a putut șterge.')
+    if (r.ok) { setCodes(cs => (cs ?? []).filter(x => x.id !== c.id)); if (editing?.id === c.id) cancelEdit() } else setError('Nu s-a putut șterge.')
   }
   const status = (c: CodeRow) => {
     const pr = codeProblem(c)
@@ -687,7 +699,8 @@ function DiscountCodes({ product }: { product: Product }) {
         <p className="text-sm db-muted">Clientul scrie codul în checkout. Reducerea se aplică prețului din acel moment (dacă e o promoție activă, peste prețul promoției); upgrade-ul nu se reduce.</p>
       </div>
 
-      <form onSubmit={create} className="rounded-xl border border-black/[.08] p-4 space-y-3">
+      <form id="code-form" onSubmit={save} className={`rounded-xl border p-4 space-y-3 ${editing ? 'border-[#B800BA] bg-[#FBF0FB]' : 'border-black/[.08]'}`}>
+        {editing && <p className="text-sm font-semibold text-[#8A008D]">Modifici codul {editing.code} — a fost folosit de {editing.used_count} ori (rămâne contorul).</p>}
         <div className="grid sm:grid-cols-[1fr_auto] gap-2 items-end">
           <div><Label>Cod</Label><input className="g-input uppercase" required value={f.code} placeholder="ex: PRIMAVARA20" onChange={e => setF({ ...f, code: e.target.value })} /></div>
           <button type="button" onClick={gen} className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF]">Generează</button>
@@ -710,7 +723,10 @@ function DiscountCodes({ product }: { product: Product }) {
           <div><Label>Număr maxim de utilizări (opțional)</Label><input type="number" min="1" className="g-input" value={f.max} placeholder="nelimitat" onChange={e => setF({ ...f, max: e.target.value })} /></div>
         </div>
         <p className="text-xs db-muted">Orele sunt ora României. {preview != null && <>La prețul de acum ({money(price, product.currency)}) clientul ar plăti <strong>{money(preview, product.currency)}</strong>.</>}</p>
-        <button type="submit" disabled={busy} className="g-btn g-btn-md">{busy ? 'Se creează…' : 'Creează codul'}</button>
+        <div className="flex gap-2">
+          <button type="submit" disabled={busy} className="g-btn g-btn-md">{busy ? 'Se salvează…' : editing ? 'Salvează modificările' : 'Creează codul'}</button>
+          {editing && <button type="button" onClick={cancelEdit} className="g-btn g-btn-md !bg-white !text-[#2B2B38] border border-[#D3D3DF]">Renunță</button>}
+        </div>
       </form>
 
       {error && <p role="alert" className="text-[#B42318] text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>}
@@ -729,6 +745,7 @@ function DiscountCodes({ product }: { product: Product }) {
                   <td className="py-2 pr-3 text-right tnum">{c.used_count}{c.max_uses != null ? ` / ${c.max_uses}` : ''}</td>
                   <td className={`py-2 pl-3 pr-3 font-semibold ${st.c}`}>{st.t}</td>
                   <td className="py-2 text-right whitespace-nowrap">
+                    <button type="button" onClick={() => edit(c)} className="underline mr-3 font-semibold">Modifică</button>
                     <button type="button" onClick={() => toggle(c)} className="underline mr-3">{c.active ? 'Oprește' : 'Activează'}</button>
                     <button type="button" onClick={() => remove(c)} className="underline text-[#B42318]">Șterge</button>
                   </td>
