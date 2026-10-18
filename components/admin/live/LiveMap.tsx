@@ -48,8 +48,8 @@ export default function LiveMap({ sessions, heat, selected, onSelect }: Props) {
       await import('leaflet.heat')
       if (dead || !el.current || state.current) return
       const map = L.map(el.current, { center: [46, 15], zoom: 4, minZoom: 2, worldCopyJump: true, scrollWheelZoom: true })
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap, © CARTO', maxZoom: 18,
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 18,
       }).addTo(map)
       const dots = L.layerGroup().addTo(map)
       state.current = { L, map, dots, heat: null }
