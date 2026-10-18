@@ -32,48 +32,61 @@ const shortName = (p: Pick<Product, 'slug'>) => p.slug.charAt(0).toUpperCase() +
 const fmtPrice = (p: Pick<Product, 'price_amount' | 'currency'>) => money(p.price_amount, p.currency)
 
 // Alegi produsul (slug-ul se vede peste tot), apoi lucrezi doar pe el: previzualizare, analiză, preț, upgrade, livrare.
-export default function ProductWorkspace({ products, activeSlug, initialTab, daily, today, orders }: {
-  products: Product[]; activeSlug: string; initialTab: Tab
+// Lista produselor: doar alegi produsul (sau creezi unul nou); modificarea se face în pagina lui
+export function ProductList({ products, daily, today }: { products: Product[]; daily: DailyRow[]; today: string }) {
+  const days30 = daysBetween(addDaysLocal(today, -29), today)
+  return (
+    <div className="space-y-4 sm:space-y-5">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold db-title">Produse</h1>
+        <p className="db-muted font-sans text-sm mt-0.5">Alege produsul pe care vrei să îl vezi sau să îl modifici. Fiecare produs are pagina lui de administrare.</p>
+      </div>
+      <div className="grid items-start grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        {products.map(p => {
+          const t = sumBuckets(buildBuckets(days30, 'day', indexDaily(daily, p.id)))
+          return (
+            <Link key={p.id} href={`/admin/produse/${p.slug}`} className="g-card block p-4 sm:p-5 hover:bg-[#FAFAFD] transition-colors">
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="text-[16px] leading-snug font-bold text-[#15151C]">{shortName(p)}</h2>
+                <span className={`text-xs font-semibold whitespace-nowrap ${p.sales_active ? 'text-[#0B6B49]' : 'text-[#8A5300]'}`}>{p.sales_active ? '● Vânzări active' : '● Oprite'}</span>
+              </div>
+              <p className="text-sm db-muted mt-1 line-clamp-2">{p.name}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-[#5A5A6C]">
+                <code className="bg-[#F1F1F6] rounded px-1.5 py-0.5 text-[#2B2B38]">{landingPath(p)}</code>
+                <span>{p.kind === 'mentorat' ? 'Mentorat' : 'Produs digital'} · {fmtPrice(p)}</span>
+              </div>
+              <p className="mt-3 text-sm text-[#2B2B38]"><strong className="tnum">{nf(t.sales)}</strong> vânzări în ultimele 30 de zile</p>
+              <p className="mt-3 text-sm font-semibold text-[#8A008D]">Deschide și modifică →</p>
+            </Link>
+          )
+        })}
+        <NewProduct />
+      </div>
+    </div>
+  )
+}
+
+// Pagina unui produs: previzualizare, analiză și modificare — doar pentru produsul ales
+export default function ProductWorkspace({ product: initial, initialTab, daily, today, orders }: {
+  product: Product; initialTab: Tab
   daily: DailyRow[]; today: string; orders: OrderLite[]
 }) {
-  const [list, setList] = useState(products)
-  const product = list.find(p => p.slug === activeSlug) ?? list[0]
-  const tabs = product?.kind === 'mentorat' ? TABS_MENTORAT : TABS_DIGITAL
+  const [product, setProduct] = useState(initial)
+  const tabs = product.kind === 'mentorat' ? TABS_MENTORAT : TABS_DIGITAL
   const [tab, setTabState] = useState<Tab>(tabs.some(t => t.key === initialTab) ? initialTab : 'previzualizare')
   const [version, setVersion] = useState(0)
   const setTab = (t: Tab) => {
     setTabState(t)
     try { const u = new URL(window.location.href); u.searchParams.set('t', t); window.history.replaceState(null, '', u) } catch {}
   }
-  if (!product) return <div className="g-card rounded-2xl p-8 text-center db-muted font-sans text-sm">Niciun produs încă.</div>
-  const href = (slug: string) => `/admin/produse?p=${slug}&t=${tab}`
 
   return (
     <div className="space-y-4 sm:space-y-5">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold db-title">Produse</h1>
-        <p className="db-muted font-sans text-sm mt-0.5">Alege produsul, apoi vezi pagina lui, analizează vânzările și modifică-l. Fiecare produs are secțiunea lui.</p>
+        <Link href="/admin/produse" className="text-sm font-semibold text-[#8A008D] hover:underline">← Toate produsele</Link>
+        <h1 className="text-xl sm:text-2xl font-bold db-title mt-1">{shortName(product)}</h1>
+        <p className="db-muted font-sans text-sm mt-0.5">Vezi pagina, analizează vânzările și modifică acest produs.</p>
       </div>
-
-      <nav aria-label="Alege produsul" className="grid items-start grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3">
-        {list.map(p => {
-          const on = p.id === product.id
-          return (
-            <Link key={p.id} href={href(p.slug)} scroll={false} aria-current={on ? 'page' : undefined}
-              className={`g-card block px-4 py-3.5 transition-colors ${on ? '!border-[#B800BA] ring-1 ring-[#B800BA]' : 'hover:bg-[#FAFAFD]'}`}>
-              <div className="flex items-center justify-between gap-2">
-                <span className={`text-[15px] font-bold ${on ? 'text-[#8A008D]' : 'text-[#15151C]'}`}>{shortName(p)}</span>
-                <span className={`text-xs font-semibold ${p.sales_active ? 'text-[#0B6B49]' : 'text-[#8A5300]'}`}>{p.sales_active ? '● Vânzări active' : '● Oprite'}</span>
-              </div>
-              <div className="mt-1 flex items-center gap-2 text-[13px] text-[#5A5A6C]">
-                <code className="bg-[#F1F1F6] rounded px-1.5 py-0.5 text-[#2B2B38]">{landingPath(p)}</code>
-                <span>{p.kind === 'mentorat' ? 'Mentorat' : 'Produs digital'} · {fmtPrice(p)}</span>
-              </div>
-            </Link>
-          )
-        })}
-        <NewProduct />
-      </nav>
 
       {/* Banda care spune clar ce produs editezi */}
       <div className="rounded-[12px] border border-[#E6C2E8] bg-[#FBF0FB] px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
@@ -99,7 +112,7 @@ export default function ProductWorkspace({ products, activeSlug, initialTab, dai
           </>
         ) : (
           <div className="max-w-3xl" hidden={!(tab === 'detalii' || tab === 'upgrade' || tab === 'livrare' || tab === 'landing')}>
-            <ProductForm initial={product} tab={tab} onSaved={np => { setList(ps => ps.map(x => (x.id === np.id ? np : x))); setVersion(v => v + 1) }} />
+            <ProductForm initial={product} tab={tab} onSaved={np => { setProduct(np); setVersion(v => v + 1) }} />
           </div>
         )}
       </div>
@@ -400,17 +413,17 @@ function NewProduct() {
     })
     const d = await r.json().catch(() => ({}))
     if (!r.ok) { setError(d.error || 'Nu s-a putut crea produsul.'); setBusy(false); return }
-    router.push(`/admin/produse?p=${d.slug}&t=landing`)
+    router.push(`/admin/produse/${d.slug}?t=landing`)
     router.refresh()
   }
 
   if (!open) return (
-    <button onClick={() => setOpen(true)} className="g-card px-4 py-3.5 text-left border-dashed hover:bg-[#FAFAFD] flex items-center gap-2 text-[15px] font-bold text-[#8A008D]">
+    <button onClick={() => setOpen(true)} className="g-card p-5 text-left border-dashed hover:bg-[#FAFAFD] flex items-center gap-2 text-[15px] font-bold text-[#8A008D] min-h-[120px]">
       <span aria-hidden className="text-xl leading-none">＋</span> Produs nou
     </button>
   )
   return (
-    <form onSubmit={create} className="g-card p-4 space-y-3 sm:col-span-2">
+    <form onSubmit={create} className="g-card p-4 space-y-3 sm:col-span-2 lg:col-span-3">
       <h2 className="font-bold db-text text-base">Produs digital nou</h2>
       <div>
         <Label>Nume produs</Label>
