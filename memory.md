@@ -16,7 +16,7 @@ Supabase: progetto `sivrczlkoqtyjeiuvvvq`, regione Frankfurt (`eu-central-1`), p
 - `/prompturi` landing pacchetto 50+ prompt (design Stitch "Haute Editorial", token Tailwind `ed-*`
   in `globals.css`, font Bodoni Moda + Plus Jakarta Sans, icone Material Symbols in sottoinsieme).
 - `/prompturi/checkout` → `/prompturi/multumim`. `/descarca/<purchaseId>[?f=bonus]` = download.
-- Admin: Overview (analisi zi cu zi, filtro prodotto/periodo), Clienti (`?p=<slug>&q=&page=`), Calendar, Disponibilitate, **Produse**, Home page, Setări.
+- Admin: Overview (analisi zi cu zi, filtro prodotto/periodo), **Live**, Clienti (`?p=<slug>&q=&page=`), Calendar, Disponibilitate, **Produse** (lista → `/admin/produse/<slug>`), Home page, Setări.
 
 ## Architettura multi-prodotto (2026-10-04)
 - Tabella `products` (slug, kind `mentorat|digital`, prezzo, compare_price, valuta, sales_active,
@@ -147,3 +147,24 @@ Purchase "Deduplicato"; verifica dominio in Business Manager e priorità Purchas
 - Testi legali aggiornati (cookie `ov_filters` + statistiche anonime). Test in scratchpad (PGlite, node, puppeteer) tutti verdi.
 - Da chiedere a Roxana/utente: "mappa termica" interpretata come mappa geografica live; se intendeva heatmap dei click sulla pagina, è un altro lavoro.
 - Mappa: tiles OpenStreetMap (CARTO chiedeva API key). Live NON ancora verificato online con visitatori reali: controllare dopo il deploy.
+
+## Prodotti: pagine dedicate, promo, codici, notifiche (2026-10-19 → 21, ONLINE fino al commit 002e6e5; TUTTE le migration APPLICATE)
+- **Admin Produse**: `/admin/produse` = solo elenco (+ "Produs nou", slug validato in `lib/product-slug.ts`); `/admin/produse/<slug>?t=<scheda>` =
+  `components/admin/products/ProductWorkspace.tsx`. Schede digitali: Previzualizare (iframe, non tracciato), Conținut pagină, Analiză, Detalii e preț,
+  Promoții e coduri, Upgrade, Livrare, Notificări. Mentorat: riusa Setări + Home page (non ha promo/codici/notifiche per prodotto).
+- **Pagina dedicata**: `app/[slug]` (landing), `[slug]/checkout`, `[slug]/multumim` da template `components/shop/ProductLanding.tsx`; contenuto in
+  `products.landing` (jsonb) + `cover_url` (bucket home-images). `/prompturi` resta la pagina speciale (testi nel codice `components/prompturi/content.ts`);
+  le route statiche vincono sul `[slug]`. Migration `20261019120000`.
+- **Promo a tempo + codici** (`20261020120000`): `products.promo_*` (prezzo fisso o %, inizio/fine) e tabella `discount_codes` (%, importo, prezzo finale,
+  validità, max usi, attivo; modificabili). Ore sempre Europe/Bucharest (`lib/pricing.ts`). Il prezzo di pagamento lo calcola SOLO il server
+  (`lib/checkout-price.ts`, `/api/checkout/quote`, `/api/stripe/product-intent`); codice su prezzo corrente (sopra la promo), bump non scontato, minimo 2.
+  Il webhook salva `purchases.discount_code/discount_amount` e incrementa `used_count` solo alla prima registrazione. Pagine pubbliche ISR 60 s.
+- **Notifiche admin per prodotto** (`20261021120000`): `notify_admin` (vendita nuova, default on), `notify_copy` (copia dell'email del cliente, default off),
+  `notify_emails` (max 5; vuoto = ADMIN_EMAIL). Pulsante email di test. Email al cliente sempre inviata. Mentorat: destinatario = secret Supabase
+  `ADMIN_NOTIFICATION_EMAIL` (edge function), non configurabile da admin.
+- Test (scratchpad, non nel repo): `pg/pricing-test.mts`, `pg/quote-test.mts` (con loader alias `ALIAS_ROOT`), screenshot puppeteer. NON provati online: pagamento
+  Stripe con codice/promo reale, email di test, creazione prodotto da admin, `/admin/live` con visitatori veri.
+- Nota sicurezza aperta: `products` è leggibile da chiunque con la chiave anon (policy `using (true)`), incl. `file_path` e `email_body`; il bucket resta privato.
+  Da restringere (colonne/vista pubblica).
+- Idee non fatte: più promozioni programmate in lista per prodotto; promo/codici per il Mentorat; editor dei testi della landing Prompturi da admin;
+  heatmap dei click sulla pagina (se per "mappa termica" intendeva quella).
