@@ -5,22 +5,32 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
-  PRODUCT_COLORS, bestBucket, bucharestDay, bucharestTime, buildBuckets, clampDay, dayDiff, daysBetween,
-  addDays, indexDaily, longDay, money, nf, pctChange, productLabel, revenueText, shortDay, sumBuckets, sumDays,
-  type DailyRow, type Gran, type ProductInfo,
+  PRODUCT_COLORS, addDays, bestBucket, bucharestDay, bucharestHour, bucharestTime, buildBuckets, buildHourBuckets,
+  compareBounds, dayDiff, daysBetween, indexDaily, indexHourly, isSingleDay, longDay, money, nf, pctChange,
+  productLabel, rangeBounds, rangeNote, revenueText, shortDay, sumBuckets, sumDays,
+  type DailyRow, type Gran, type HourRow, type ProductInfo, type RangeKey,
 } from '@/lib/admin-analytics'
-import { WINDOW_DAYS, fetchOrders, type OrderRow, type OrdersResult } from '@/lib/admin-sales'
+import { WINDOW_DAYS, fetchHourly, fetchOrders, type OrderRow, type OrdersResult } from '@/lib/admin-sales'
+import { writeFiltersCookie, type OverviewFilters } from '@/lib/overview-filters'
 import BarChart from '@/components/admin/BarChart'
 
-type RangeKey = 7 | 30 | 90 | 365 | 'custom'
 type RecentRow = { id: string; name: string | null; email: string; amount: number | null; currency: string; created_at: string; product_id: string | null; bump_included: boolean }
 type OrdersState = { loading: boolean; error?: string; data?: OrdersResult }
+type View = Gran | 'hour'
 
-const GRAN_UNIT: Record<Gran, string> = { day: 'zi', week: 'săptămână', month: 'lună' }
+const UNIT: Record<View, string> = { hour: 'oră', day: 'zi', week: 'săptămână', month: 'lună' }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const defaultGran = (len: number): Gran => (len > 200 ? 'month' : len > 60 ? 'week' : 'day')
 
 const CARD = 'bg-white border border-[#E4E4EC] rounded-[14px] shadow-[0_1px_2px_rgba(16,16,32,.04)]'
+
+const PRESETS: { v: RangeKey; label: string }[] = [
+  { v: 'today', label: 'Azi' }, { v: 'yesterday', label: 'Ieri' }, { v: 'week', label: 'Săptămâna aceasta' },
+  { v: 'month', label: 'Luna aceasta' }, { v: 'lastmonth', label: 'Luna trecută' },
+]
+const ROLLING: { v: RangeKey; label: string }[] = [
+  { v: 7, label: '7 zile' }, { v: 30, label: '30 zile' }, { v: 90, label: '90 zile' }, { v: 365, label: '12 luni' },
+]
 
 function Segmented<T extends string | number>({ label, value, options, onChange }: {
   label: string; value: T; options: { v: T; label: string }[]; onChange: (v: T) => void
@@ -45,6 +55,17 @@ function Segmented<T extends string | number>({ label, value, options, onChange 
   )
 }
 
+function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-pressed={on} onClick={onClick}
+      className={`min-h-11 sm:min-h-9 px-3.5 rounded-full border text-sm leading-5 font-semibold transition-colors whitespace-nowrap ${
+        on ? 'border-[#B800BA] bg-[#FBEBFB] text-[#8A008D]' : 'border-[#D3D3DF] bg-white text-[#34343F] hover:bg-[#F6F6FA]'
+      }`}>
+      {children}
+    </button>
+  )
+}
+
 type PInfo = ProductInfo & { colorFg: string; colorBg: string; colorBar: string }
 
 function Chip({ p, children }: { p: PInfo | undefined; children: React.ReactNode }) {
@@ -57,17 +78,20 @@ function Chip({ p, children }: { p: PInfo | undefined; children: React.ReactNode
   )
 }
 
-export default function OverviewDashboard({ today, products, daily, recent }: {
-  today: string; products: ProductInfo[]; daily: DailyRow[]; recent: RecentRow[]
+export default function OverviewDashboard({ today, nowHour, initial, products, daily, recent }: {
+  today: string; nowHour: number; initial: OverviewFilters
+  products: ProductInfo[]; daily: DailyRow[]; recent: RecentRow[]
 }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const [product, setProduct] = useState<string>('all')
-  const [range, setRange] = useState<RangeKey>(30)
-  const [gran, setGran] = useState<Gran>('day')
-  const [custom, setCustom] = useState({ from: addDays(today, -29), to: today })
+  const [product, setProduct] = useState<string>(initial.product)
+  const [range, setRange] = useState<RangeKey>(initial.range)
+  const [gran, setGran] = useState<Gran>(initial.gran)
+  const [custom, setCustom] = useState({ from: initial.from ?? addDays(today, -29), to: initial.to ?? today })
   const [open, setOpen] = useState('')
   const [orders, setOrders] = useState<Record<string, OrdersState>>({})
+  const [hourly, setHourly] = useState<{ day: string; rows: HourRow[]; error?: string } | null>(null)
+  const [hour, setHour] = useState(nowHour)
   const [connected, setConnected] = useState(false)
 
   const pinfo = useMemo<PInfo[]>(() => products.map((p, i) => {
@@ -75,6 +99,17 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
     return { ...p, colorFg: c.fg, colorBg: c.bg, colorBar: c.bar }
   }), [products])
   const byId = useMemo(() => new Map(pinfo.map(p => [p.id, p])), [pinfo])
+
+  // Filtrele rămân după reîncărcarea paginii
+  useEffect(() => {
+    writeFiltersCookie({ product, range, gran, ...(range === 'custom' ? { from: custom.from, to: custom.to } : {}) })
+  }, [product, range, gran, custom])
+
+  // Ora curentă (pentru "Azi": se arată orele până acum)
+  useEffect(() => {
+    const t = setInterval(() => setHour(bucharestHour(new Date())), 60_000)
+    return () => clearInterval(t)
+  }, [])
 
   // Vânzare nouă → reîncarcă datele dal server
   useEffect(() => {
@@ -88,23 +123,31 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
   }, [supabase, router])
 
   const minDay = addDays(today, -(WINDOW_DAYS - 1))
-  const { from, to } = useMemo(() => {
-    if (range === 'custom') {
-      const a = clampDay(custom.from, minDay, today), b = clampDay(custom.to, minDay, today)
-      return a <= b ? { from: a, to: b } : { from: b, to: a }
-    }
-    return { from: addDays(today, -(range - 1)), to: today }
-  }, [range, custom, today, minDay])
-  const len = dayDiff(from, to) + 1
-  const prevFrom = addDays(from, -len), prevTo = addDays(from, -1)
-  const hasPrev = prevFrom >= minDay
+  const { from, to } = useMemo(() => rangeBounds(range, today, custom, minDay), [range, today, custom, minDay])
+  const single = isSingleDay(range)
+  const view: View = single ? 'hour' : gran
+  const cmp = useMemo(() => compareBounds(range, from, to), [range, from, to])
+  const hasPrev = cmp.from >= minDay
+
+  // Dettaglio orario: se carică per ziua aleasă (și se reîncarcă după fiecare vânzare nouă)
+  useEffect(() => {
+    if (!single) return
+    let off = false
+    fetchHourly(supabase, from)
+      .then(rows => { if (!off) setHourly({ day: from, rows }) })
+      .catch(e => { if (!off) setHourly({ day: from, rows: [], error: e instanceof Error ? e.message : 'Eroare la încărcare' }) })
+    return () => { off = true }
+  }, [single, from, supabase, daily])
 
   const filter = product === 'all' ? null : product
   const idx = useMemo(() => indexDaily(daily, filter), [daily, filter])
-  const days = useMemo(() => daysBetween(from, to), [from, to])
-  const buckets = useMemo(() => buildBuckets(days, gran, idx), [days, gran, idx])
+  const hourRows = hourly && hourly.day === from ? hourly.rows : null
+  const buckets = useMemo(() => {
+    if (single) return buildHourBuckets(from, from === today ? hour : 23, indexHourly(hourRows ?? [], filter))
+    return buildBuckets(daysBetween(from, to), gran, idx)
+  }, [single, from, to, today, hour, hourRows, filter, gran, idx])
   const total = useMemo(() => sumBuckets(buckets), [buckets])
-  const prev = useMemo(() => (hasPrev ? sumDays(daysBetween(prevFrom, prevTo), idx) : null), [hasPrev, prevFrom, prevTo, idx])
+  const prev = useMemo(() => (hasPrev ? sumDays(daysBetween(cmp.from, cmp.to), idx) : null), [hasPrev, cmp, idx])
   const best = useMemo(() => bestBucket(buckets), [buckets])
 
   const selected = filter ? pinfo.filter(p => p.id === filter) : pinfo
@@ -114,11 +157,11 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
     return list.length ? list : ['ron']
   }, [selected, total])
 
-  const unit = GRAN_UNIT[gran]
-  const periodNote = range === 'custom' ? `${shortDay(from)} – ${shortDay(to)}` : range === 365 ? 'ultimele 12 luni' : `ultimele ${range} zile`
+  const unit = UNIT[view]
+  const periodNote = rangeNote(range, from, to)
   const salesDelta = prev ? pctChange(total.sales, prev.sales) : null
 
-  const step = Math.max(1, Math.ceil(buckets.length / 7))
+  const step = Math.max(1, Math.ceil(buckets.length / (view === 'hour' ? 8 : 7)))
   const mkBars = (pick: (b: (typeof buckets)[number]) => number, fmt: (n: number) => string) =>
     buckets.map((b, i) => ({ value: pick(b), tip: `${b.long}: ${fmt(pick(b))}`, label: b.label, showLabel: i % step === 0 }))
 
@@ -139,29 +182,32 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
 
   const rows = useMemo(() => [...buckets].reverse(), [buckets])
 
+  // Ordinele unei perioade. Pentru orele unei zile se încarcă o singură dată ordinele zilei și se filtrează după oră.
   const toggle = async (b: (typeof buckets)[number]) => {
-    const key = `${filter ?? 'all'}|${b.from}|${b.to}`
+    const key = `${filter ?? 'all'}|${b.key}`
     if (open === key) { setOpen(''); return }
     setOpen(key)
-    if (orders[key]?.data || orders[key]?.loading) return
-    setOrders(o => ({ ...o, [key]: { loading: true } }))
+    const fetchKey = single ? `${filter ?? 'all'}|${b.from}|zi` : key
+    if (orders[fetchKey]?.data || orders[fetchKey]?.loading) return
+    setOrders(o => ({ ...o, [fetchKey]: { loading: true } }))
     try {
-      const data = await fetchOrders(supabase, b.from, b.to, filter, 20)
-      setOrders(o => ({ ...o, [key]: { loading: false, data } }))
+      const data = await fetchOrders(supabase, b.from, b.to, filter, single ? 200 : 20)
+      setOrders(o => ({ ...o, [fetchKey]: { loading: false, data } }))
     } catch (e) {
-      setOrders(o => ({ ...o, [key]: { loading: false, error: e instanceof Error ? e.message : 'Eroare la încărcare' } }))
+      setOrders(o => ({ ...o, [fetchKey]: { loading: false, error: e instanceof Error ? e.message : 'Eroare la încărcare' } }))
     }
   }
 
   const pickRange = (v: RangeKey) => {
     setRange(v)
     setOpen('')
-    setGran(defaultGran(v === 'custom' ? dayDiff(custom.from, custom.to) + 1 : v))
+    const r = rangeBounds(v, today, custom, minDay)
+    if (!isSingleDay(v)) setGran(defaultGran(dayDiff(r.from, r.to) + 1))
   }
 
   const orderWhen = (o: OrderRow) => {
     const t = bucharestTime(o.created_at)
-    return gran === 'day' ? t : `${shortDay(bucharestDay(o.created_at))}, ${t}`
+    return view === 'day' || view === 'hour' ? t : `${shortDay(bucharestDay(o.created_at))}, ${t}`
   }
 
   const kpis: { label: string; lines: { t: string; size: string }[]; delta?: { text: string; ok: boolean }; note: string }[] = [
@@ -174,7 +220,7 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
       label: 'Vânzări',
       lines: [{ t: nf(total.sales), size: 'text-3xl' }],
       delta: salesDelta === null ? undefined : { text: `${salesDelta >= 0 ? '↑' : '↓'} ${Math.abs(salesDelta)}%`, ok: salesDelta >= 0 },
-      note: [salesDelta === null ? '' : 'față de perioada anterioară', total.bumps > 0 ? `${nf(total.bumps)} cu upgrade` : ''].filter(Boolean).join(' · ') || periodNote,
+      note: [salesDelta === null ? '' : cmp.label, total.bumps > 0 ? `${nf(total.bumps)} cu upgrade` : ''].filter(Boolean).join(' · ') || periodNote,
     },
     {
       label: 'Comandă medie',
@@ -194,6 +240,7 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
   const tableTitle = `${cap(unit)} cu ${unit}`
   const clientiHref = filter ? `/admin/clienti?p=${byId.get(filter)?.slug ?? ''}` : '/admin/clienti'
   const COLS = 'sm:grid-cols-[minmax(120px,1.1fr)_76px_minmax(130px,1.2fr)_minmax(130px,1.2fr)_20px]'
+  const hourLoading = single && !hourRows && !hourly?.error
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
@@ -201,7 +248,7 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-[26px] sm:text-[28px] leading-[34px] sm:leading-9 font-bold tracking-[-0.01em] db-title">Overview</h1>
-          <p className="text-sm sm:text-[15px] leading-6 db-muted">Încasări pe produs, zi cu zi · {longDay(today)} {today.slice(0, 4)}</p>
+          <p className="text-sm sm:text-[15px] leading-6 db-muted">Încasări pe produs · {longDay(today)} {today.slice(0, 4)}</p>
         </div>
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] leading-5 font-semibold ${connected ? 'bg-[#E3F6EE] text-[#0B6B49]' : 'bg-[#EEEEF4] text-[#5A5A6C]'}`}>
           <span className={`w-2 h-2 rounded-full ${connected ? 'bg-[#12A06E]' : 'bg-[#8A8AA0]'}`} />
@@ -210,25 +257,27 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
       </div>
 
       {/* Filtre */}
-      <section aria-label="Filtre" className={`${CARD} p-4 sm:px-5 flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-x-5 sm:items-end`}>
-        <Segmented label="Produs" value={product} onChange={v => { setProduct(v); setOpen('') }}
-          options={[{ v: 'all', label: 'Toate' }, ...pinfo.map(p => ({ v: p.id, label: productLabel(p) }))]} />
-        <Segmented<RangeKey> label="Perioadă" value={range} onChange={pickRange}
-          options={[{ v: 7, label: '7 zile' }, { v: 30, label: '30 zile' }, { v: 90, label: '90 zile' }, { v: 365, label: '12 luni' }]} />
-        <Segmented label="Detaliu" value={gran} onChange={v => { setGran(v); setOpen('') }}
-          options={[{ v: 'day', label: 'Zi' }, { v: 'week', label: 'Săptămână' }, { v: 'month', label: 'Lună' }]} />
-        <div className="sm:flex-1" />
-        <button type="button" aria-pressed={range === 'custom'} onClick={() => pickRange('custom')}
-          className={`inline-flex items-center justify-center gap-2 h-12 sm:h-[42px] px-4 rounded-[10px] border text-sm font-semibold transition-colors ${
-            range === 'custom' ? 'border-[#B800BA] bg-[#FBEBFB] text-[#8A008D]' : 'border-[#D3D3DF] bg-white text-[#15151C] hover:bg-[#F6F6FA]'
-          }`}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden>
-            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          Interval personalizat
-        </button>
+      <section aria-label="Filtre" className={`${CARD} p-4 sm:px-5 flex flex-col gap-4`}>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-x-6 sm:items-end">
+          <Segmented label="Produs" value={product} onChange={v => { setProduct(v); setOpen('') }}
+            options={[{ v: 'all', label: 'Toate' }, ...pinfo.map(p => ({ v: p.id, label: productLabel(p) }))]} />
+          {!single && (
+            <Segmented label="Detaliu" value={gran} onChange={v => { setGran(v); setOpen('') }}
+              options={[{ v: 'day', label: 'Zi' }, { v: 'week', label: 'Săptămână' }, { v: 'month', label: 'Lună' }]} />
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <div className="text-[13px] leading-[18px] font-semibold text-[#5A5A6C]">Perioadă</div>
+          <div role="group" aria-label="Perioadă" className="flex flex-wrap items-center gap-2">
+            {PRESETS.map(p => <Pill key={String(p.v)} on={range === p.v} onClick={() => pickRange(p.v)}>{p.label}</Pill>)}
+            <span className="hidden sm:block w-px h-6 bg-[#E4E4EC] mx-1" aria-hidden />
+            {ROLLING.map(p => <Pill key={String(p.v)} on={range === p.v} onClick={() => pickRange(p.v)}>{p.label}</Pill>)}
+            <span className="hidden sm:block w-px h-6 bg-[#E4E4EC] mx-1" aria-hidden />
+            <Pill on={range === 'custom'} onClick={() => pickRange('custom')}>Interval personalizat</Pill>
+          </div>
+        </div>
         {range === 'custom' && (
-          <div className="basis-full grid grid-cols-2 gap-3 sm:max-w-md">
+          <div className="grid grid-cols-2 gap-3 sm:max-w-md">
             <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5A5A6C]">
               De la
               <input type="date" className="g-input" value={custom.from} min={minDay} max={today}
@@ -283,18 +332,23 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
         <section aria-label={tableTitle} className={`${CARD} w-full xl:flex-[2_1_0%] min-w-0 overflow-hidden`}>
           <div className="px-4 sm:px-5 pt-4 sm:pt-[18px] pb-3.5">
             <h2 className="text-lg leading-[26px] font-semibold db-title">{tableTitle}</h2>
-            <div className="text-sm leading-5 db-muted">Apasă pe un rând ca să vezi comenzile din acea perioadă.</div>
+            <div className="text-sm leading-5 db-muted">
+              {hourLoading ? 'Se încarcă orele…' : hourly?.error && single ? <span className="text-[#B42318]">Nu am putut încărca orele: {hourly.error}</span> : 'Apasă pe un rând ca să vezi comenzile din acea perioadă.'}
+            </div>
           </div>
           <div className={`hidden sm:grid ${COLS} gap-3 px-5 py-2.5 bg-[#F6F6FA] border-y border-[#E4E4EC] text-[13px] leading-[18px] font-semibold text-[#5A5A6C]`}>
             <div>Perioadă</div><div>Vânzări</div><div>Venit</div><div>Produse</div><div />
           </div>
           <div className="max-h-[520px] overflow-y-auto border-t border-[#E4E4EC] sm:border-t-0">
             {rows.map(b => {
-              const key = `${filter ?? 'all'}|${b.from}|${b.to}`
+              const key = `${filter ?? 'all'}|${b.key}`
               const isOpen = open === key
-              const st = orders[key]
+              const st = orders[single ? `${filter ?? 'all'}|${b.from}|zi` : key]
               const empty = b.agg.sales === 0
               const chips = Object.entries(b.agg.prod).filter(([, v]) => v.sales > 0)
+              const h = single ? Number(b.key.slice(-2)) : -1
+              const shown = st?.data ? (single ? st.data.rows.filter(o => bucharestHour(o.created_at) === h) : st.data.rows) : []
+              const hiddenCount = single ? Math.max(0, b.agg.sales - shown.length) : (st?.data ? st.data.total - st.data.rows.length : 0)
               return (
                 <div key={b.key} className="border-b border-[#EEEEF4] last:border-b-0">
                   <button type="button" aria-expanded={isOpen} aria-controls={`o-${b.key}`} onClick={() => toggle(b)}
@@ -329,7 +383,7 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
                       {empty && <div className="py-2 text-sm db-muted">Nicio vânzare în această perioadă.</div>}
                       {!empty && st?.loading && <div className="py-3 text-sm db-muted">Se încarcă comenzile…</div>}
                       {!empty && st?.error && <div className="py-3 text-sm text-[#B42318]">Nu am putut încărca comenzile: {st.error}</div>}
-                      {st?.data?.rows.map(o => {
+                      {!empty && shown.map(o => {
                         const p = o.product_id ? byId.get(o.product_id) : undefined
                         return (
                           <div key={o.id} className="grid grid-cols-[56px_minmax(0,1fr)_auto] sm:grid-cols-[96px_minmax(120px,1fr)_130px_100px] gap-x-3 gap-y-0.5 items-center py-2 border-b border-[#EEEEF4] last:border-b-0 text-sm leading-5">
@@ -343,9 +397,9 @@ export default function OverviewDashboard({ today, products, daily, recent }: {
                           </div>
                         )
                       })}
-                      {st?.data && st.data.total > st.data.rows.length && (
+                      {!empty && st?.data && hiddenCount > 0 && (
                         <Link href={clientiHref} className="inline-block pt-3 text-[13px] leading-[18px] font-semibold text-[#8A008D] hover:underline">
-                          + {st.data.total - st.data.rows.length} alte comenzi · vezi toate în Clienți
+                          + {hiddenCount} alte comenzi · vezi toate în Clienți
                         </Link>
                       )}
                     </div>

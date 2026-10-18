@@ -931,13 +931,13 @@ function BuyBtn({ onClick, loading, price, active, large, white, full, subtle, c
     </button>
   )
   if (subtle) return (
-    <button onClick={onClick} disabled={loading}
+    <button onClick={onClick} disabled={loading} data-track="buy"
       className={`inline-flex items-center justify-center gap-2 font-sans font-semibold text-[#ED03E9] border border-[#ED03E9]/35 rounded-xl hover:bg-[#ED03E9]/6 hover:border-[#ED03E9]/60 transition-all active:scale-[.98] ${full ? 'w-full py-3 text-sm' : 'text-[12px] px-4 py-2.5'}`}>
       {loading ? 'Se procesează...' : <>{ctaText}{ctaShowPrice ? ` · ${price}` : ''} <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5"><path d="M4 10h12M10 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
     </button>
   )
   return (
-    <button onClick={onClick} disabled={loading}
+    <button onClick={onClick} disabled={loading} data-track="buy"
       className={`group relative inline-flex items-center justify-center gap-2.5 font-sans font-bold rounded-2xl transition-all active:scale-[.98] disabled:opacity-70 overflow-hidden
         ${white ? 'bg-white text-[#ED03E9] hover:bg-gray-50 shadow-xl' : 'bg-gradient-to-r from-[#ED03E9] to-[#6B00E8] text-white shadow-xl shadow-[#ED03E9]/30 hover:shadow-[#ED03E9]/50 hover:shadow-2xl'}
         ${large ? 'px-10 py-5 text-lg' : full ? 'w-full py-3.5 text-base' : 'px-7 py-3.5 text-sm'}`}>

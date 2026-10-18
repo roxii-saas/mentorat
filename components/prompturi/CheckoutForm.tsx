@@ -8,6 +8,7 @@ import type { PublicProduct } from '@/lib/products'
 import { Icon } from './Icon'
 import MetaEvent from '@/components/meta/MetaEvent'
 import { getMetaContext, trackMeta } from '@/lib/meta/pixel'
+import { trackOnce } from '@/lib/track'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -213,6 +214,7 @@ function PayForm({ slug, bump, total, currency, totalLabel }: { slug: string; bu
       return
     }
 
+    trackOnce('submit', { pr: slug, v: total, c: currency })
     trackMeta('AddPaymentInfo', {
       value: total, currency: currency.toUpperCase(), content_ids: [slug], content_type: 'product',
     })
@@ -242,7 +244,7 @@ function PayForm({ slug, bump, total, currency, totalLabel }: { slug: string; bu
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
+    <form onSubmit={submit} onFocusCapture={() => trackOnce('focus')} className="flex flex-col gap-4">
       <div className="bg-ed-white p-4 sm:p-5 rounded-lg ed-shadow border border-ed-line/60 flex flex-col gap-3.5">
         <Step n={1} title="Datele tale de contact" />
         <Field label="Nume și prenume *" icon="person">

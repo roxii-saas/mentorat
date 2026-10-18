@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { stripe } from '@/lib/stripe'
 import { Icon } from '@/components/prompturi/Icon'
 import MetaEvent from '@/components/meta/MetaEvent'
+import TrackPurchase from '@/components/track/TrackPurchase'
 
 export const metadata: Metadata = {
   title: 'Mulțumim! — Roxii Dincă',
@@ -28,6 +29,7 @@ export default async function MultumimPage({ searchParams }: PageProps<'/promptu
 
   return (
     <main className="min-h-screen flex items-center justify-center px-5 py-16">
+      {purchase && <TrackPurchase pi={purchase.id} product={purchase.slug} value={purchase.value} currency={purchase.currency} />}
       {purchase && (
         // eventId = id del PaymentIntent → deduplicato con il Purchase inviato dal server (Conversions API)
         <MetaEvent name="Purchase" eventId={purchase.id} once params={{

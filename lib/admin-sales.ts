@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { addDays, aggregateRaw, bucharestMidnightUtc, type DailyRow, type RawPurchase } from '@/lib/admin-analytics'
+import { addDays, aggregateRaw, aggregateRawHourly, bucharestMidnightUtc, type DailyRow, type HourRow, type RawPurchase } from '@/lib/admin-analytics'
 
 // Finestra di dati caricata nell'Overview: 2 anni (serve anche per confrontare "12 luni" col periodo precedente)
 export const WINDOW_DAYS = 730
@@ -56,4 +56,19 @@ export async function fetchOrders(
   const { data: rows, count, error: e2 } = await q
   if (e2) throw new Error(e2.message)
   return { total: count ?? rows?.length ?? 0, rows: (rows ?? []) as OrderRow[] }
+}
+
+// Totali per ora di un singolo giorno (vista "Azi" / "Ieri"). Stesso ripiego delle funzioni sopra.
+export async function fetchHourly(supabase: SupabaseClient, day: string): Promise<HourRow[]> {
+  const { data, error } = await supabase.rpc('admin_sales_by_hour', { p_day: day })
+  if (!error && Array.isArray(data)) return data as HourRow[]
+
+  const { data: part, error: e } = await supabase
+    .from('purchases')
+    .select('amount, currency, created_at, product_id, bump_included')
+    .gte('created_at', bucharestMidnightUtc(day).toISOString())
+    .lt('created_at', bucharestMidnightUtc(addDays(day, 1)).toISOString())
+    .limit(5000)
+  if (e) throw new Error(e.message)
+  return aggregateRawHourly((part ?? []) as RawPurchase[])
 }

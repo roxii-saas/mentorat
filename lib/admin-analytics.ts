@@ -166,3 +166,108 @@ export const PRODUCT_COLORS = [
   { fg: '#8A5300', bg: '#FDF1DC', bar: '#B36A00' },
 ] as const
 export const productLabel = (p: Pick<ProductInfo, 'slug'>) => p.slug.charAt(0).toUpperCase() + p.slug.slice(1)
+
+// ── Periodi predefiniti (Azi, Ieri, Săptămâna aceasta, …) ─────────────────────────────
+export type RangeKey = 'today' | 'yesterday' | 'week' | 'month' | 'lastmonth' | 7 | 30 | 90 | 365 | 'custom'
+export const isSingleDay = (r: RangeKey) => r === 'today' || r === 'yesterday'
+
+export const monthStart = (iso: string) => iso.slice(0, 8) + '01'
+export const lastDayOfMonth = (iso: string) => {
+  const [y, m] = iso.split('-').map(Number)
+  return fromUTC(Date.UTC(y, m, 0)) // giorno 0 del mese successivo = ultimo giorno di questo mese
+}
+
+export function rangeBounds(r: RangeKey, today: string, custom?: { from: string; to: string }, minDay?: string): { from: string; to: string } {
+  switch (r) {
+    case 'today': return { from: today, to: today }
+    case 'yesterday': { const y = addDays(today, -1); return { from: y, to: y } }
+    case 'week': return { from: weekStart(today), to: today }
+    case 'month': return { from: monthStart(today), to: today }
+    case 'lastmonth': { const end = addDays(monthStart(today), -1); return { from: monthStart(end), to: end } }
+    case 'custom': {
+      const c = custom ?? { from: today, to: today }
+      let a = c.from, b = c.to
+      if (a > b) [a, b] = [b, a]
+      if (minDay) { a = clampDay(a, minDay, today); b = clampDay(b, minDay, today) }
+      else { a = a > today ? today : a; b = b > today ? today : b }
+      return { from: a, to: b }
+    }
+    default: return { from: addDays(today, -(r - 1)), to: today }
+  }
+}
+
+// Periodo con cui confrontare: per i periodi "fino a oggi" si confronta la stessa porzione del periodo precedente
+export function compareBounds(r: RangeKey, from: string, to: string): { from: string; to: string; label: string } {
+  if (r === 'today') return { from: addDays(from, -1), to: addDays(from, -1), label: 'față de ieri' }
+  if (r === 'yesterday') return { from: addDays(from, -1), to: addDays(from, -1), label: 'față de ziua precedentă' }
+  if (r === 'week') return { from: addDays(from, -7), to: addDays(to, -7), label: 'față de săptămâna trecută (aceeași perioadă)' }
+  if (r === 'month') {
+    const pf = monthStart(addDays(from, -1))
+    const pt = addDays(pf, Number(to.slice(8)) - 1)
+    const pl = lastDayOfMonth(pf)
+    return { from: pf, to: pt > pl ? pl : pt, label: 'față de luna trecută (aceeași perioadă)' }
+  }
+  if (r === 'lastmonth') {
+    const pe = addDays(from, -1)
+    return { from: monthStart(pe), to: pe, label: 'față de luna precedentă' }
+  }
+  const len = dayDiff(from, to) + 1
+  return { from: addDays(from, -len), to: addDays(from, -1), label: 'față de perioada anterioară' }
+}
+
+export const RANGE_LABEL: Record<string, string> = {
+  today: 'azi', yesterday: 'ieri', week: 'săptămâna aceasta', month: 'luna aceasta', lastmonth: 'luna trecută',
+}
+export function rangeNote(r: RangeKey, from: string, to: string): string {
+  if (typeof r === 'string' && r !== 'custom') return RANGE_LABEL[r]
+  if (r === 365) return 'ultimele 12 luni'
+  if (typeof r === 'number') return `ultimele ${r} zile`
+  return from === to ? shortDay(from) : `${shortDay(from)} – ${shortDay(to)}`
+}
+
+// ── Dettaglio orario (per Azi / Ieri) ─────────────────────────────────────────────────
+export type HourRow = { hour: number; product_id: string | null; currency: string; sales: number; revenue: number; bumps: number }
+const hourFmt = new Intl.DateTimeFormat('en-GB', { timeZone: BUSINESS_TZ, hour: '2-digit', hourCycle: 'h23' })
+export const bucharestHour = (d: Date | string) => Number(hourFmt.format(typeof d === 'string' ? new Date(d) : d))
+
+export function indexHourly(rows: HourRow[], productId: string | null): Map<number, DayAgg> {
+  const idx = new Map<number, DayAgg>()
+  for (const r of rows) {
+    const pid = r.product_id ?? NO_PRODUCT
+    if (productId !== null && pid !== productId) continue
+    const cur = r.currency.toLowerCase()
+    const a = idx.get(r.hour) ?? emptyAgg()
+    a.sales += r.sales
+    a.bumps += r.bumps
+    addCur(a.cur, cur, r.sales, r.revenue)
+    const p = (a.prod[pid] ??= { sales: 0, cur: {} })
+    p.sales += r.sales
+    addCur(p.cur, cur, r.sales, r.revenue)
+    idx.set(r.hour, a)
+  }
+  return idx
+}
+
+const hh = (h: number) => String(h).padStart(2, '0')
+// 24 ore del giorno (se è oggi, solo fino all'ora corrente)
+export function buildHourBuckets(day: string, lastHour: number, idx: Map<number, DayAgg>): Bucket[] {
+  return Array.from({ length: lastHour + 1 }, (_, h) => ({
+    key: `${day}T${hh(h)}`, from: day, to: day, label: hh(h),
+    long: `${hh(h)}:00 – ${hh((h + 1) % 24)}:00`, agg: idx.get(h) ?? emptyAgg(),
+  }))
+}
+
+export function aggregateRawHourly(rows: RawPurchase[]): HourRow[] {
+  const m = new Map<string, HourRow>()
+  for (const r of rows) {
+    const hour = bucharestHour(r.created_at)
+    const cur = (r.currency ?? 'eur').toLowerCase()
+    const key = `${hour}|${r.product_id ?? ''}|${cur}`
+    const t = m.get(key) ?? { hour, product_id: r.product_id, currency: cur, sales: 0, revenue: 0, bumps: 0 }
+    t.sales += 1
+    t.revenue += r.amount ?? 0
+    if (r.bump_included) t.bumps += 1
+    m.set(key, t)
+  }
+  return [...m.values()].sort((a, b) => a.hour - b.hour)
+}

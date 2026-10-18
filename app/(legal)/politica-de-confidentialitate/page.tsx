@@ -30,6 +30,7 @@ export default function PoliticaConfidentialitate() {
         <li>Comunicarea cu clienta privind pașii următori în program</li>
         <li>Respectarea obligațiilor legale (contabilitate, fiscalitate)</li>
         <li>Trimiterea de comunicări legate de serviciul achiziționat</li>
+        <li>Statistici anonime despre vizitatori (țară/oraș aproximativ, dispozitiv, sursă, pagini vizitate, etapa din procesul de cumpărare), fără cookie-uri și fără stocarea adresei IP — interes legitim (art. 6 alin. 1 lit. f GDPR); nu se măsoară vizitatorii cu „Do Not Track” / GPC activ</li>
         <li>Măsurarea eficienței reclamelor noastre (Meta Pixel și API-ul de conversii Meta) — doar dacă accepți cookie-urile de marketing</li>
       </ul>
 
@@ -49,6 +50,7 @@ export default function PoliticaConfidentialitate() {
         <li><strong>Date de rezervare și mentorat:</strong> 3 ani de la ultima interacțiune</li>
         <li><strong>Date de facturare:</strong> 10 ani (conform legislației contabile românești)</li>
         <li><strong>Date tehnice (cookie-uri):</strong> maximum 2 ani</li>
+        <li><strong>Statistici anonime ale vizitatorilor:</strong> 90 de zile</li>
       </ul>
 
       <h2 className="font-serif text-[#0A0A0A]">5. Destinatarii datelor</h2>

@@ -52,13 +52,18 @@ export default function PoliticaCookie() {
         <tbody>
           <tr><td><code>admin-period</code></td><td>Preferință perioadă analiză (admin)</td><td>localStorage</td></tr>
           <tr><td><code>sb-col</code></td><td>Stare sidebar (extins/colapsat)</td><td>localStorage</td></tr>
+          <tr><td><code>ov_filters</code></td><td>Filtrele alese în panoul admin (doar pentru administratoare)</td><td>1 an</td></tr>
         </tbody>
       </table>
 
       <h3 className="font-serif text-[#0A0A0A]">c) Cookie-uri de performanță</h3>
       <p>
-        În prezent, nu utilizăm servicii de analiză terțe (Google Analytics, etc.)
-        pe această platformă. Dacă acest lucru se va schimba, vom actualiza prezenta politică
+        Nu utilizăm servicii de analiză terțe (Google Analytics, etc.). Pentru a înțelege câți vizitatori
+        avem și de unde vin, folosim o statistică proprie, anonimă, <strong>fără cookie-uri și fără a stoca
+        nimic pe dispozitivul tău</strong>: un cod aleatoriu valabil doar în ziua respectivă, calculat pe server
+        din date tehnice ale cererii, fără a păstra adresa IP. Se rețin doar țara/orașul aproximativ, tipul
+        de dispozitiv și browser, sursa vizitei, paginile vizitate și etapa atinsă (de ex. „a ajuns în checkout”),
+        timp de maximum 90 de zile. Nu se măsoară vizitatorii care au activat „Do Not Track” / Global Privacy Control. Dacă acest lucru se va schimba, vom actualiza prezenta politică
         și vom solicita consimțământul tău.
       </p>
 

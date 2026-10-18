@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Playfair_Display, Inter } from "next/font/google"
 import "./globals.css"
 import MetaPixel from "@/components/meta/MetaPixel"
+import Tracker from "@/components/track/Tracker"
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans">
         {children}
         <MetaPixel />
+        <Tracker />
       </body>
     </html>
   )

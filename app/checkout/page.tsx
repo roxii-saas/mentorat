@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import MetaEvent from '@/components/meta/MetaEvent'
 import { getMetaContext, trackMeta } from '@/lib/meta/pixel'
+import { trackOnce } from '@/lib/track'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -176,6 +177,7 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
     setSubmitting(true)
     setError('')
 
+    trackOnce('submit', { pr: 'mentorat', v: order.amount, c: order.currency.toLowerCase() })
     trackMeta('AddPaymentInfo', {
       value: order.amount, currency: order.currency.toUpperCase(), content_ids: ['mentorat'], content_type: 'product',
     })
@@ -236,7 +238,7 @@ function CheckoutForm({ order }: { order: OrderInfo }) {
               <h1 className="font-serif font-bold text-[#0A0A0A] text-2xl sm:text-3xl mb-2">Finalizează comanda</h1>
               <p className="text-[#737373] font-sans text-sm mb-7">Completează datele de mai jos pentru a finaliza plata.</p>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} onFocusCapture={() => trackOnce('focus')} className="space-y-5">
 
                 {/* Date personale */}
                 <div>

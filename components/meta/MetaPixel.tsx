@@ -2,20 +2,18 @@
 
 import { useEffect, useSyncExternalStore } from 'react'
 import { usePathname } from 'next/navigation'
+import { isPrivatePath } from '@/lib/private-paths'
 import {
   META_ENABLED, getConsent, onConsentChange, resetConsent, setConsent,
   startIfConsented, trackPageView,
 } from '@/lib/meta/pixel'
 
-// Aree interne: nessun tracciamento e nessun banner (admin, area cliente, autenticazione)
-const PRIVATE_PREFIXES = ['/admin', '/dashboard', '/login', '/reset-password', '/update-password', '/descarca']
-const isPrivate = (path: string) => PRIVATE_PREFIXES.some(p => path === p || path.startsWith(`${p}/`))
 
 export default function MetaPixel() {
   const pathname = usePathname()
   // Il consenso vive in localStorage (stato esterno): sul server è 'loading' → nessun mismatch di idratazione
   const consent = useSyncExternalStore(onConsentChange, getConsent, () => 'loading' as const)
-  const priv = isPrivate(pathname)
+  const priv = isPrivatePath(pathname)
 
   // Link "Setări cookie" nel footer → riapre il banner
   useEffect(() => {

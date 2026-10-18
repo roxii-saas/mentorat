@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { stripe } from '@/lib/stripe'
 import MetaEvent from '@/components/meta/MetaEvent'
+import TrackPurchase from '@/components/track/TrackPurchase'
 
 export default async function CheckoutSuccessPage({ searchParams }: PageProps<'/checkout/success'>) {
   // Stripe rimanda qui con ?payment_intent=pi_…: importo e stato si leggono da Stripe, non dall'URL
@@ -16,6 +17,7 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<'/
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+      {purchase && <TrackPurchase pi={purchase.id} product="mentorat" value={purchase.value} currency={purchase.currency} />}
       {purchase && (
         <MetaEvent name="Purchase" eventId={purchase.id} once params={{
           value: purchase.value, currency: purchase.currency, content_ids: ['mentorat'], content_type: 'product', num_items: 1,
