@@ -13,7 +13,8 @@ export default function MetaPixel() {
   const pathname = usePathname()
   // Il consenso vive in localStorage (stato esterno): sul server è 'loading' → nessun mismatch di idratazione
   const consent = useSyncExternalStore(onConsentChange, getConsent, () => 'loading' as const)
-  const priv = isPrivatePath(pathname)
+  const framed = useSyncExternalStore(() => () => {}, () => window.self !== window.top, () => false)   // previzualizare în admin
+  const priv = isPrivatePath(pathname) || framed
 
   // Link "Setări cookie" nel footer → riapre il banner
   useEffect(() => {

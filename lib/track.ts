@@ -8,6 +8,7 @@ export function trackingAllowed(): boolean {
   if (typeof window === 'undefined') return false
   const n = navigator as Navigator & { globalPrivacyControl?: boolean; msDoNotTrack?: string }
   if (n.doNotTrack === '1' || (window as unknown as { doNotTrack?: string }).doNotTrack === '1' || n.msDoNotTrack === '1' || n.globalPrivacyControl === true) return false
+  if (window.self !== window.top) return false   // previzualizarea din admin (iframe) nu se numără
   return !isPrivatePath(location.pathname)
 }
 
